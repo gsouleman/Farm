@@ -2566,6 +2566,7 @@ const app = {
                 <td>${section.area.toFixed(4)}</td>
                 <td>${section.percentage.toFixed(1)}%</td>
                 <td>
+                    <button class="btn btn-sm btn-primary" onclick="app.editSection('${section.id}')" title="Edit section" style="margin-right: 0.5rem;">✏️</button>
                     <button class="btn btn-sm btn-danger" onclick="app.deleteSection('${section.id}')" title="Delete section">🗑️</button>
                 </td>
             </tr>
@@ -2589,6 +2590,125 @@ const app = {
         this.saveData();
         this.renderFarmSectionsTable();
         alert('Section deleted successfully');
+    },
+
+    // Edit section
+    editSection(sectionId) {
+        const farm = this.getCurrentFarm();
+        const section = farm.sections.find(s => s.id === sectionId);
+
+        if (!section) {
+            alert('Section not found');
+            return;
+        }
+
+        // Create edit modal
+        const modal = document.createElement('div');
+        modal.className = 'modal active';
+        modal.innerHTML = `
+            <div class="modal-overlay" onclick="this.closest('.modal').remove()"></div>
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h3 class="modal-title">✏️ Edit Section</h3>
+                    <button class="btn-close" onclick="this.closest('.modal').remove()">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Section Name</label>
+                        <input type="text" class="form-control" id="editSectionName" value="${section.name}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Section Type</label>
+                        <select class="form-select" id="editSectionType">
+                            <option value="fruit-trees" ${section.type === 'fruit-trees' ? 'selected' : ''}>Fruit Trees</option>
+                            <option value="cash-crops" ${section.type === 'cash-crops' ? 'selected' : ''}>Cash Crops</option>
+                            <option value="infrastructure" ${section.type === 'infrastructure' ? 'selected' : ''}>Infrastructure</option>
+                            <option value="fallow-land" ${section.type === 'fallow-land' ? 'selected' : ''}>Fallow Land</option>
+                            <option value="other" ${section.type === 'other' ? 'selected' : ''}>Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Crop Type (if applicable)</label>
+                        <input type="text" class="form-control" id="editSectionCrop" value="${section.cropType || ''}" placeholder="e.g., Avocado, Cassava">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Area (hectares)</label>
+                        <input type="number" step="0.0001" class="form-control" id="editSectionArea" value="${section.area}" required min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Color</label>
+                        <input type="color" class="form-control" id="editSectionColor" value="${section.color}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Notes (optional)</label>
+                        <textarea class="form-control" id="editSectionNotes" rows="3">${section.notes || ''}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancel</button>
+                    <button class="btn btn-primary" onclick="app.saveEditedSection('${sectionId}')">💾 Save Changes</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    },
+
+    // Save edited section
+    saveEditedSection(sectionId) {
+        const name = document.getElementById('editSectionName').value.trim();
+        const type = document.getElementById('editSectionType').value;
+        const cropType = document.getElementById('editSectionCrop').value.trim();
+        const area = parseFloat(document.getElementById('editSectionArea').value);
+        const color = document.getElementById('editSectionColor').value;
+        const notes = document.getElementById('editSectionNotes').value.trim();
+
+        if (!name || !area || area <= 0) {
+            alert('Please fill in all required fields');
+            return;
+        }
+
+        const farm = this.getCurrentFarm();
+        const section = farm.sections.find(s => s.id === sectionId);
+
+        if (!section) {
+            alert('Section not found');
+            return;
+        }
+
+        // Update section properties
+        section.name = name;
+        section.type = type;
+        section.cropType = cropType || null;
+        section.area = area;
+        section.color = color;
+        section.notes = notes || null;
+
+        // Recalculate percentage
+        const totalArea = this.farmData.area || 1;
+        section.percentage = (area / totalArea) * 100;
+
+        // Update polygon color if it exists
+        const polygonRef = this.sectionPolygons.find(sp => sp.id === sectionId);
+        if (polygonRef) {
+            polygonRef.polygon.setOptions({
+                strokeColor: color,
+                fillColor: color
+            });
+        }
+
+        this.saveData();
+        this.renderFarmSectionsTable();
+        this.renderGraphicalMap(); // Update graphical view
+
+        // Close modal
+        document.querySelector('.modal.active').remove();
+
+        alert('Section updated successfully');
     },
 
     // Toggle between satellite and graphical map views
