@@ -3,8 +3,7 @@
     "version": "1.0.0",
     "description": "Full-stack Farm Management System",
     "scripts": {
-        "install-backend": "cd backend && npm install",
-        "start": "cd backend && npm start",
-        "build": "npm run install-backend"
+        "postinstall": "cd backend && npm install",
+        "start": "cd backend && npm start"
     }
 }
