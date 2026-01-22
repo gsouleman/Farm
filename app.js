@@ -2553,7 +2553,7 @@ const app = {
         const sections = this.getCurrentFarm().sections || [];
 
         if (sections.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No sections defined yet. Click "Draw New Section" to start.</td></tr>';
+            tbody.innerHTML = '';
             return;
         }
 
