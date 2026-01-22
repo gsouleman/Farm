@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="Farm Management System for Maloure Farm - Track expenses, crops, and generate investor reports">
+  <title>Maloure Farm Management | Njimoun, Foumban</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap"
+    rel="stylesheet">
+
+  <!-- Chart.js for Data Visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+
+  <!-- Google Maps JavaScript API -->
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC69anL37mnv1FRacYvHLpsnxrCcIzB8cs&libraries=drawing&callback=Function.prototype"
+    async defer></script>
+
+  <!-- Tesseract.js for OCR (Image Coordinate Extraction) -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+
+  <!-- PDF.js for PDF Parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3/build/pdf.min.js"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container" style="display: flex; align-items: center; justify-content: space-between; gap: 2rem;">
+      <!-- Far Left: Logo + Farm Name -->
+      <div style="display: flex; align-items: center; gap: 0.5rem; color: white; font-weight: 600; font-size: 1.2rem;">
+        <span style="font-size: 2rem;">🌾</span>
+        <span id="farmNameDisplay">Maloure Farm</span>
+      </div>
+
+      <!-- Center: Navigation Tabs + Dropdown -->
+      <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; justify-content: center;">
+        <ul class="navbar-nav"
+          style="display: flex; gap: 0.25rem; margin: 0; padding: 0; list-style: none; align-items: center;">
+          <li><a href="#dashboard" class="nav-link active" onclick="app.showTab('dashboard')">Dashboard</a></li>
+          <li><a href="#farm-info" class="nav-link" onclick="app.showTab('farm-info')">Farm Info</a></li>
+          <li><a href="#financial" class="nav-link" onclick="app.showTab('financial')">Financial</a></li>
+          <li><a href="#crops" class="nav-link" onclick="app.showTab('crops')">Crops</a></li>
+          <li><a href="#reports" class="nav-link" onclick="app.showTab('reports')">Reports</a></li>
+
+          <!-- Dropdown Menu -->
+          <li style="position: relative;">
+            <select id="farmSelector" class="form-control" onchange="app.handleFarmDropdown(this.value)"
+              style="height: 40px; padding: 0.5rem 2rem 0.5rem 1rem; border-radius: 4px; cursor: pointer; background: rgba(255,255,255,0.95); border: none; font-weight: 500;">
+              <option value="">Select Farm ▼</option>
+              <option value="maloure-farm">Maloure Farm</option>
+              <option value="create-new">➕ Create New Farm</option>
+            </select>
+          </li>
+
+          <!-- Language Selector -->
+          <li style="position: relative;">
+            <select id="languageSelector" class="form-control" onchange="app.setLanguage(this.value)"
+              style="height: 40px; padding: 0.5rem 2rem 0.5rem 1rem; border-radius: 4px; cursor: pointer; background: rgba(255,255,255,0.95); border: none; font-weight: 500;">
+              <option value="en">🇬🇧 English</option>
+              <option value="fr">🇫🇷 Français</option>
+            </select>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main>
+
+    <!-- Dashboard Section -->
+    <section id="dashboard" class="section">
+      <div class="container">
+        <h1 class="text-center mb-4">Farm Overview Dashboard</h1>
+
+        <!-- Key Metrics -->
+        <div class="grid grid-4 mb-4">
+          <div class="stat-card">
+            <div class="stat-card-icon">📍</div>
+            <div class="stat-card-label">Total Area</div>
+            <div class="stat-card-value" id="totalArea">2.75 ha</div>
+            <div class="stat-card-trend text-muted">680.16 m perimeter</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-icon">💰</div>
+            <div class="stat-card-label">Total Revenue</div>
+            <div class="stat-card-value" id="totalRevenue">₣0</div>
+            <div class="stat-card-trend trend-up" id="revenueTrend">↑ 0%</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-icon">📊</div>
+            <div class="stat-card-label">Total Expenses</div>
+            <div class="stat-card-value" id="totalExpenses">₣0</div>
+            <div class="stat-card-trend trend-down" id="expenseTrend">↓ 0%</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-icon">💵</div>
+            <div class="stat-card-label">Net Cash Flow</div>
+            <div class="stat-card-value" id="netCashFlow">₣0</div>
+            <div class="stat-card-trend" id="cashFlowTrend">--</div>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-2 mb-4">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Cash Flow Trend</h3>
+            </div>
+            <div class="card-body">
+              <canvas id="cashFlowChart"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Land Utilization</h3>
+            </div>
+            <div class="card-body">
+              <canvas id="landUtilizationChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Recent Transactions</h3>
+            <button class="btn btn-primary btn-sm" onclick="app.openAddTransactionModal()">
+              ➕ Add Transaction
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="table-container">
+              <table class="table" id="recentTransactionsTable">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="recentTransactionsBody">
+                  <tr>
+                    <td colspan="5" class="text-center text-muted">No transactions yet</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Farm Information Section -->
+    <section id="farm-info" class="section" style="display: none;">
+      <div class="container">
+        <h2 class="section-title">Farm Overview</h2>
+
+        <!-- Single Column Layout for Better Button Fit -->
+        <div style="display: flex; flex-direction: column; gap: 2rem;">
+          <!-- Two Column Layout: Location (Left) and Map (Right) -->
+          <div style="display: flex; gap: 1.5rem; align-items: flex-start;">
+
+            <!-- Left Column: Location & Specifications (40%) -->
+            <div style="flex: 0 0 35%; min-width: 320px;">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">📍 Location & Specifications</h3>
+                </div>
+                <div class="card-body">
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <label>Farm Name:</label>
+                      <span id="farmName">Maloure Farm</span>
+                    </div>
+                    <div class="info-item">
+                      <label>Location:</label>
+                      <span id="farmLocation">Maloure Village, Njimoun Subdivision, Foumban</span>
+                    </div>
+                    <div class="info-item">
+                      <label>Total Area:</label>
+                      <span id="farmArea">2.75 hectares</span>
+                    </div>
+                    <div class="info-item">
+                      <label>Perimeter:</label>
+                      <span id="farmPerimeter">680.16 meters</span>
+                    </div>
+                    <div class="info-item">
+                      <label>Center Coordinates:</label>
+                      <span id="farmCoordinates">5.916982, 11.043742</span>
+                    </div>
+                  </div>
+
+                  <!-- Land Allocation Table -->
+                  <div style="margin-top: 1.5rem;">
+                    <h4 style="margin-bottom: 1rem;">Land Allocation</h4>
+                    <div class="table-container">
+                      <table class="table">
+                        <thead>
+                          <tr>
+                            <th>ZONE</th>
+                            <th>AREA (HA)</th>
+                            <th>PERCENTAGE</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>Fruit Trees</td>
+                            <td>1.00</td>
+                            <td>36.4%</td>
+                          </tr>
+                          <tr>
+                            <td>Cash Crops</td>
+                            <td>1.50</td>
+                            <td>54.5%</td>
+                          </tr>
+                          <tr>
+                            <td>Farm House</td>
+                            <td>0.15</td>
+                            <td>5.5%</td>
+                          </tr>
+                          <tr>
+                            <td>Residential</td>
+                            <td>0.10</td>
+                            <td>3.6%</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Farm Map (60% - Wider for buttons) -->
+            <div style="flex: 1; min-width: 600px;">
+              <!-- Farm Map & Crop Allocation (Consolidated) -->
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title" style="margin: 0;">🗺️ Farm Map</h3>
+                  <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <button class="btn btn-secondary btn-sm" onclick="app.toggleMapView('satellite')"
+                      id="satelliteViewBtn">
+                      🛰️ Satellite View
+                    </button>
+                    <button class="btn btn-outline btn-sm" onclick="app.toggleMapView('graphical')"
+                      id="graphicalViewBtn">
+                      📊 Graphical View
+                    </button>
+                    <button class="btn btn-success btn-sm" onclick="app.openCoordinateEditorModal()"
+                      title="Edit farm plot coordinates">
+                      ✏️ Edit Coordinates
+                    </button>
+                    <button class="btn btn-secondary btn-sm"
+                      onclick="document.getElementById('coordinateUploadInput').click()">
+                      📤 Upload
+                    </button>
+                    <button class="btn btn-primary btn-sm" onclick="app.toggleDrawingMode()" id="drawSectionBtn">
+                      📐 Crop Allocation
+                    </button>
+                    <input type="file" id="coordinateUploadInput" accept=".pdf,.jpg,.jpeg,.png" style="display: none;"
+                      onchange="app.extractCoordinatesFromFile(event)">
+                  </div>
+                </div>
+                <div class="card-body">
+                  <!-- Google Maps Container -->
+                  <div id="farmMap" style="width: 100%; height: 650px; border-radius: 8px; background: #e5e5e5;">
+                    <div
+                      style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666;">
+                      <div style="text-align: center;">
+                        <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">📍 Loading Map...</p>
+                        <small>If map doesn't load, please add your Google Maps API key in index.html</small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Canvas for Graphical View -->
+                  <canvas id="farmMapCanvas" width="800" height="650"
+                    style="width: 100%; height: 650px; border-radius: 8px; display: none; background: #f8faf9; border: 1px solid #ddd;">
+                  </canvas>
+
+                  <!-- Sections Table (shown below map when in allocation mode) -->
+                  <div id="sectionsTableContainer" style="margin-top: 1.5rem; display: none;">
+                    <h4 style="margin-bottom: 1rem; color: var(--color-primary);">📐 Crop Allocation Sections</h4>
+                    <div class="table-container">
+                      <table class="table">
+                        <thead>
+                          <tr>
+                            <th style="width: 50px;">COLOR</th>
+                            <th>SECTION NAME</th>
+                            <th>TYPE</th>
+                            <th>CROP</th>
+                            <th>AREA (ha)</th>
+                            <th>% OF FARM</th>
+                            <th>ACTIONS</th>
+                          </tr>
+                        </thead>
+                        <tbody id="farmSectionsTable">
+                          <tr>
+                            <td colspan="7" class="text-center text-muted">No sections defined yet. Click "Crop
+                              Allocation"
+                              to start drawing.</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div> <!-- End Two Column Layout -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Financial Management Section -->
+    <section id="financial" class="section">
+      <div class="container">
+        <h2 class="text-center mb-4">Financial Management</h2>
+
+        <div class="grid grid-3">
+          <!-- Expense Categories -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Expense Breakdown</h3>
+            </div>
+            <div class="card-body">
+              <canvas id="expenseBreakdownChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Income Sources -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Income Sources</h3>
+            </div>
+            <div class="card-body">
+              <canvas id="incomeSourcesChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Monthly Summary -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Monthly Summary</h3>
+            </div>
+            <div class="card-body">
+              <div class="stat-card-label">Current Month</div>
+              <div class="stat-card-value text-primary" id="currentMonth">January 2026</div>
+
+              <div class="mt-3">
+                <p><strong>Income:</strong> <span id="monthlyIncome">₣0</span></p>
+                <p><strong>Expenses:</strong> <span id="monthlyExpenses">₣0</span></p>
+                <p><strong>Net:</strong> <span id="monthlyNet" class="text-success">₣0</span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- All Transactions -->
+        <div class="card mt-4">
+          <div class="card-header">
+            <h3 class="card-title">All Transactions</h3>
+            <div class="flex" style="gap: 1rem;">
+              <button class="btn btn-primary btn-sm" onclick="app.openAddTransactionModal()">
+                ➕ Add Transaction
+              </button>
+              <button class="btn btn-secondary btn-sm" onclick="app.exportTransactions()">
+                📥 Export
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="table-container">
+              <table class="table" id="allTransactionsTable">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="allTransactionsBody">
+                  <tr>
+                    <td colspan="6" class="text-center text-muted">No transactions yet</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Crops Management Section -->
+    <section id="crops" class="section bg-light">
+      <div class="container">
+        <h2 class="text-center mb-4">Crop Management</h2>
+
+        <!-- Fruit Trees -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h3 class="card-title">🍋 Fruit Trees</h3>
+            <button class="btn btn-success btn-sm" onclick="app.openAddCropModal('fruit')">
+              ➕ Add Fruit Tree
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="table-container">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Count</th>
+                    <th>Planted Date</th>
+                    <th>Status</th>
+                    <th>Expected Harvest</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="fruitTreesBody">
+                  <tr>
+                    <td colspan="6" class="text-center text-muted">No fruit trees recorded yet</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cash Crops -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">🌾 Cash Crops</h3>
+            <button class="btn btn-success btn-sm" onclick="app.openAddCropModal('cash')">
+              ➕ Add Cash Crop
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="table-container">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Area (ha)</th>
+                    <th>Planted Date</th>
+                    <th>Status</th>
+                    <th>Harvest Date</th>
+                    <th>Yield (kg)</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="cashCropsBody">
+                  <tr>
+                    <td colspan="7" class="text-center text-muted">No cash crops recorded yet</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reports Section -->
+    <section id="reports" class="section">
+      <div class="container">
+        <h2 class="text-center mb-4">Investor Reports</h2>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Generate Professional Reports</h3>
+          </div>
+          <div class="card-body">
+            <div class="grid grid-3">
+              <button class="btn btn-primary btn-lg" onclick="app.generateFinancialReport()">
+                📊 Financial Report
+              </button>
+              <button class="btn btn-primary btn-lg" onclick="app.generateOperationsReport()">
+                🌾 Operations Report
+              </button>
+              <button class="btn btn-primary btn-lg" onclick="app.generateInvestorPresentation()">
+                💼 Investor Presentation
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Report Preview -->
+        <div class="card mt-4" id="reportPreview" style="display: none;">
+          <div class="card-header">
+            <h3 class="card-title">Report Preview</h3>
+            <button class="btn btn-secondary btn-sm" onclick="window.print()">
+              🖨️ Print
+            </button>
+          </div>
+          <div class="card-body" id="reportContent">
+            <!-- Report content will be dynamically inserted here -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Add Transaction Modal -->
+  <div class="modal-overlay" id="addTransactionModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Transaction</h3>
+        <button class="modal-close" onclick="app.closeModal('addTransactionModal')">&times;</button>
+      </div>
+      <form id="transactionForm" onsubmit="app.addTransaction(event)">
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input type="date" class="form-control" id="transactionDate" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Type</label>
+          <select class="form-control" id="transactionType" required onchange="app.updateCategoryOptions()">
+            <option value="">Select type...</option>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-control" id="transactionCategory" required>
+            <option value="">Select type first...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <input type="text" class="form-control" id="transactionDescription" required placeholder="Brief description">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Amount (XAF)</label>
+          <input type="number" class="form-control" id="transactionAmount" required min="0" step="0.01">
+        </div>
+
+        <div class="flex" style="justify-content: flex-end; gap: 1rem;">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('addTransactionModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Transaction</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Crop Modal -->
+  <div class="modal-overlay" id="addCropModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="cropModalTitle">Add Crop</h3>
+        <button class="modal-close" onclick="app.closeModal('addCropModal')">&times;</button>
+      </div>
+      <form id="cropForm" onsubmit="app.addCrop(event)">
+        <input type="hidden" id="cropCategory">
+
+        <div class="form-group">
+          <label class="form-label">Type</label>
+          <select class="form-control" id="cropType" required>
+            <option value="">Select type...</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="cropCountGroup">
+          <label class="form-label">Count</label>
+          <input type="number" class="form-control" id="cropCount" min="1">
+        </div>
+
+        <div class="form-group" id="cropAreaGroup">
+          <label class="form-label">Area (hectares)</label>
+          <input type="number" class="form-control" id="cropArea" min="0.01" step="0.01">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Planted Date</label>
+          <input type="date" class="form-control" id="cropPlantedDate" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-control" id="cropStatus" required>
+            <option value="planted">Planted</option>
+            <option value="growing">Growing</option>
+            <option value="flowering">Flowering</option>
+            <option value="fruiting">Fruiting</option>
+            <option value="ready">Ready for Harvest</option>
+            <option value="harvested">Harvested</option>
+          </select>
+        </div>
+
+        <div class="flex" style="justify-content: flex-end; gap: 1rem;">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('addCropModal')">Cancel</button>
+          <button type="submit" class="btn btn-success">Add Crop</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Create New Farm Modal -->
+  <div class="modal-overlay" id="createFarmModal">
+    <div class="modal" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Create New Farm</h3>
+        <button class="modal-close" onclick="app.closeModal('createFarmModal')">&times;</button>
+      </div>
+      <form id="farmForm" onsubmit="app.createNewFarm(event)">
+        <div class="form-group">
+          <label class="form-label">Farm Name</label>
+          <input type="text" class="form-control" id="newFarmName" required placeholder="e.g., Maloure Farm">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Location</label>
+          <input type="text" class="form-control" id="newFarmLocation" required
+            placeholder="e.g., Maloure Village, Njimoun, Foumban">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Boundary Coordinates (Optional)</label>
+          <textarea class="form-control" id="newFarmBoundaries" rows="5" placeholder="Paste coordinates in format: lat,lng (one per line)
+Example:
+5.916982,11.043742
+5.916911,11.043793
+5.916782,11.043831"></textarea>
+          <small class="text-muted">If provided, area will be calculated automatically. Otherwise, enter manually
+            below.</small>
+        </div>
+
+        <div class="flex" style="gap: 1rem; margin-bottom: 1rem;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="app.calculateAreaFromBoundaries()">📐
+            Calculate Area from Boundaries</button>
+          <span id="calculatedAreaDisplay" style="font-weight: bold; color: var(--color-success);"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Total Area (hectares)</label>
+          <input type="number" class="form-control" id="newFarmArea" required min="0.01" step="0.01"
+            placeholder="e.g., 2.75">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Perimeter (meters) - Optional</label>
+          <input type="number" class="form-control" id="newFarmPerimeter" min="0" step="0.01"
+            placeholder="e.g., 680.16">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Center Latitude</label>
+          <input type="number" class="form-control" id="newFarmLat" required step="0.000001"
+            placeholder="e.g., 5.916982">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Center Longitude</label>
+          <input type="number" class="form-control" id="newFarmLng" required step="0.000001"
+            placeholder="e.g., 11.043742">
+        </div>
+
+        <div class="flex" style="justify-content: flex-end; gap: 1rem;">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('createFarmModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Farm</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Section Configuration Modal -->
+  <div class="modal-overlay" id="sectionModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Configure Farm Section</h3>
+        <button class="modal-close" onclick="app.closeModal('sectionModal')">&times;</button>
+      </div>
+      <form id="sectionForm" onsubmit="app.saveFarmSection(event)">
+        <div class="form-group">
+          <label class="form-label">Section Name</label>
+          <input type="text" class="form-control" id="sectionName" required placeholder="e.g., Apple Orchard">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Section Type</label>
+          <select class="form-control" id="sectionType" required>
+            <option value="">Select type...</option>
+            <option value="fruit-trees">Fruit Trees</option>
+            <option value="cash-crops">Cash Crops</option>
+            <option value="infrastructure">Infrastructure</option>
+            <option value="fallow">Fallow Land</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <input type="hidden" id="sectionId">
+
+        <div class="form-group">
+          <label class="form-label">Crop Type (if applicable)</label>
+          <input type="text" class="form-control" id="sectionCrop" placeholder="e.g., Avocado, Cassava">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Area (hectares)</label>
+          <input type="number" class="form-control" id="sectionArea" step="0.01" min="0.01" required
+            placeholder="e.g., 1.5">
+          <small style="color: #666; font-size: 0.85rem;">Enter the surface area in hectares</small>
+        </div>
+
+        <div class="form-label">Section Color</label>
+          <input type="color" class="form-control" id="sectionColor" value="#4CAF50">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <textarea class="form-control" id="sectionNotes" rows="3"
+            placeholder="Additional notes about this section"></textarea>
+        </div>
+
+        <div class="flex" style="justify-content: flex-end; gap: 1rem;">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('sectionModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Section</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Custom Category Modal -->
+  <div class="modal-overlay" id="customCategoryModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Custom Category</h3>
+        <button class="modal-close" onclick="app.closeModal('customCategoryModal')">&times;</button>
+      </div>
+      <form id="customCategoryForm" onsubmit="app.addCustomCategory(event)">
+        <div class="form-group">
+          <label class="form-label">Category Name</label>
+          <input type="text" class="form-control" id="customCategoryName" required placeholder="Enter category name">
+        </div>
+
+        <div class="flex" style="justify-content: flex-end; gap: 1rem;">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('customCategoryModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Category</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Coordinate Editor Modal -->
+  <div class="modal-overlay" id="coordinateEditorModal">
+    <div class="modal" style="max-width: 900px;">
+      <div class="modal-header">
+        <h3 class="modal-title">✏️ Edit Farm Boundary Coordinates</h3>
+        <button class="modal-close" onclick="app.closeModal('coordinateEditorModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin-bottom: 1rem; color: #666;">
+          Enter coordinates for the farm plot boundaries. At least 3 points are required to form a polygon.
+        </p>
+
+        <!-- Add New Coordinate -->
+        <div class="card" style="margin-bottom: 1.5rem; background: #f8faf9;">
+          <div class="card-header">
+            <h4 style="margin: 0; font-size: 1rem;">➕ Add New Point</h4>
+          </div>
+          <div class="card-body">
+            <div style="display: flex; gap: 1rem; align-items: flex-end;">
+              <div class="form-group" style="flex: 1; margin: 0;">
+                <label class="form-label">Latitude (-90 to 90)</label>
+                <input type="number" class="form-control" id="newPointLat" step="0.000001" placeholder="e.g., 5.916982"
+                  min="-90" max="90">
+              </div>
+              <div class="form-group" style="flex: 1; margin: 0;">
+                <label class="form-label">Longitude (-180 to 180)</label>
+                <input type="number" class="form-control" id="newPointLng" step="0.000001" placeholder="e.g., 11.043742"
+                  min="-180" max="180">
+              </div>
+              <button class="btn btn-primary" onclick="app.addCoordinatePoint()" style="margin-bottom: 0;">
+                ➕ Add Point
+              </button>
+            </div>
+            <div id="coordinateError" style="color: #cc0000; margin-top: 0.5rem; display: none;"></div>
+          </div>
+        </div>
+
+        <!-- Bulk Import Coordinates -->
+        <div class="card" style="margin-bottom: 1.5rem; background: #f0f8ff;">
+          <div class="card-header">
+            <h4 style="margin: 0; font-size: 1rem;">📋 Bulk Import Coordinates</h4>
+          </div>
+          <div class="card-body">
+            <p style="margin-bottom: 0.5rem; font-size: 0.9rem; color: #666;">
+              Paste multiple coordinates (one per line). Supported formats:
+            </p>
+            <ul style="margin: 0.5rem 0; padding-left: 1.5rem; font-size: 0.85rem; color: #666;">
+              <li><code>lat,lng</code> - Example: <code>5.916982,11.043742</code></li>
+              <li><code>lat lng</code> - Example: <code>5.916982 11.043742</code></li>
+              <li><code>lat, lng</code> - Example: <code>5.916982, 11.043742</code></li>
+            </ul>
+            <textarea class="form-control" id="bulkCoordinatesInput" rows="5" placeholder="Paste coordinates here (one per line)
+Example:
+5.916982,11.043742
+5.916911,11.043793
+5.916782,11.043831" style="font-family: monospace; font-size: 0.9rem; margin-bottom: 0.5rem;"></textarea>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <button class="btn btn-primary" onclick="app.importBulkCoordinates()" style="margin: 0;">
+                📥 Import Coordinates
+              </button>
+              <button class="btn btn-outline" onclick="document.getElementById('bulkCoordinatesInput').value = ''"
+                style="margin: 0;">
+                Clear
+              </button>
+              <span id="bulkImportStatus" style="font-size: 0.9rem; color: #4caf50; display: none;"></span>
+            </div>
+            <div id="bulkImportError" style="color: #cc0000; margin-top: 0.5rem; font-size: 0.9rem; display: none;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Current Coordinates Table -->
+        <div class="card">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h4 style="margin: 0; font-size: 1rem;">📍 Current Boundary Points (<span id="coordinateCount">0</span>)
+            </h4>
+            <button class="btn btn-danger btn-sm" onclick="app.clearAllCoordinates()" style="margin: 0;">
+              🗑️ Clear All
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">#</th>
+                    <th>LATITUDE</th>
+                    <th>LONGITUDE</th>
+                    <th style="width: 100px;">ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody id="coordinatesTableBody">
+                  <tr>
+                    <td colspan="4" class="text-center text-muted">No coordinates defined</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer"
+        style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-top: 1px solid #e0e0e0;">
+        <div style="color: #666; font-size: 0.9rem;">
+          <span id="validationMessage">✓ Ready to save</span>
+        </div>
+        <div style="display: flex; gap: 1rem;">
+          <button type="button" class="btn btn-outline"
+            onclick="app.closeModal('coordinateEditorModal')">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="app.saveCoordinates()" id="saveCoordinatesBtn">
+            💾 Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="section bg-primary" style="color: white; text-align: center; padding: 2rem 0;">
+    <div class="container">
+      <p>&copy; 2026 Maloure Farm Management System | Njimoun, Foumban</p>
+      <p class="text-muted" style="margin-top: 0.5rem; font-size: 0.875rem;">
+        Professional farm management for sustainable agriculture
+      </p>
+    </div>
+  </footer>
+
+  <!-- Application Script -->
+  <script src="app.js"></script>
+
+</body>
+
+</html>

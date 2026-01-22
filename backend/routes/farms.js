@@ -1,0 +1,170 @@
+const express = require('express');
+const { body, validationResult } = require('express-validator');
+const db = require('../config/database');
+const authMiddleware = require('../middleware/auth');
+
+const router = express.Router();
+
+// All routes require authentication
+router.use(authMiddleware);
+
+// Get all farms for current user
+router.get('/', async (req, res) => {
+    try {
+        const result = await db.query(
+            'SELECT * FROM farms WHERE user_id = $1 ORDER BY created_at DESC',
+            [req.userId]
+        );
+
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Get farms error:', error);
+        res.status(500).json({ error: { message: 'Failed to fetch farms' } });
+    }
+});
+
+// Get single farm
+router.get('/:id', async (req, res) => {
+    try {
+        const result = await db.query(
+            'SELECT * FROM farms WHERE id = $1 AND user_id = $2',
+            [req.params.id, req.userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: { message: 'Farm not found' } });
+        }
+
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Get farm error:', error);
+        res.status(500).json({ error: { message: 'Failed to fetch farm' } });
+    }
+});
+
+// Create farm
+router.post('/', [
+    body('name').notEmpty().trim(),
+    body('location').optional().trim(),
+    body('area').optional().isFloat({ min: 0 }),
+    body('perimeter').optional().isFloat({ min: 0 }),
+    body('centerLat').optional().isFloat(),
+    body('centerLng').optional().isFloat(),
+    body('boundaries').optional().isArray(),
+    body('zones').optional().isObject()
+], async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ error: { message: 'Validation failed', details: errors.array() } });
+        }
+
+        const { name, location, area, perimeter, centerLat, centerLng, boundaries, zones } = req.body;
+
+        const result = await db.query(
+            `INSERT INTO farms (user_id, name, location, area, perimeter, center_lat, center_lng, boundaries, zones)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       RETURNING *`,
+            [
+                req.userId,
+                name,
+                location || null,
+                area || null,
+                perimeter || null,
+                centerLat || null,
+                centerLng || null,
+                boundaries ? JSON.stringify(boundaries) : null,
+                zones ? JSON.stringify(zones) : null
+            ]
+        );
+
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        console.error('Create farm error:', error);
+        res.status(500).json({ error: { message: 'Failed to create farm' } });
+    }
+});
+
+// Update farm
+router.put('/:id', [
+    body('name').optional().notEmpty().trim(),
+    body('location').optional().trim(),
+    body('area').optional().isFloat({ min: 0 }),
+    body('perimeter').optional().isFloat({ min: 0 }),
+    body('centerLat').optional().isFloat(),
+    body('centerLng').optional().isFloat(),
+    body('boundaries').optional().isArray(),
+    body('zones').optional().isObject()
+], async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ error: { message: 'Validation failed', details: errors.array() } });
+        }
+
+        // Check ownership
+        const farmCheck = await db.query(
+            'SELECT id FROM farms WHERE id = $1 AND user_id = $2',
+            [req.params.id, req.userId]
+        );
+
+        if (farmCheck.rows.length === 0) {
+            return res.status(404).json({ error: { message: 'Farm not found' } });
+        }
+
+        const { name, location, area, perimeter, centerLat, centerLng, boundaries, zones } = req.body;
+
+        const result = await db.query(
+            `UPDATE farms 
+       SET name = COALESCE($1, name),
+           location = COALESCE($2, location),
+           area = COALESCE($3, area),
+           perimeter = COALESCE($4, perimeter),
+           center_lat = COALESCE($5, center_lat),
+           center_lng = COALESCE($6, center_lng),
+           boundaries = COALESCE($7, boundaries),
+           zones = COALESCE($8, zones),
+           updated_at = NOW()
+       WHERE id = $9 AND user_id = $10
+       RETURNING *`,
+            [
+                name,
+                location,
+                area,
+                perimeter,
+                centerLat,
+                centerLng,
+                boundaries ? JSON.stringify(boundaries) : null,
+                zones ? JSON.stringify(zones) : null,
+                req.params.id,
+                req.userId
+            ]
+        );
+
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Update farm error:', error);
+        res.status(500).json({ error: { message: 'Failed to update farm' } });
+    }
+});
+
+// Delete farm
+router.delete('/:id', async (req, res) => {
+    try {
+        const result = await db.query(
+            'DELETE FROM farms WHERE id = $1 AND user_id = $2 RETURNING id',
+            [req.params.id, req.userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: { message: 'Farm not found' } });
+        }
+
+        res.json({ message: 'Farm deleted successfully', id: result.rows[0].id });
+    } catch (error) {
+        console.error('Delete farm error:', error);
+        res.status(500).json({ error: { message: 'Failed to delete farm' } });
+    }
+});
+
+module.exports = router;

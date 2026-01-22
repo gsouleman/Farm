@@ -1,0 +1,17 @@
+            <div class="card-header">
+              <h3 class="card-title">🗺️ Farm Boundary Map</h3>
+              <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <button class="btn btn-secondary btn-sm" onclick="app.toggleMapView('satellite')" id="satelliteViewBtn">
+                  🛰️ Satellite View
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="app.toggleMapView('graphical')" id="graphicalViewBtn">
+                  📊 Graphical View
+                </button>
+                <div style="border-left: 1px solid #ccc; height: 24px;"></div>
+                <label class="btn btn-secondary btn-sm" style="cursor: pointer; margin: 0;">
+                  📄 Upload Coordinates (PDF/Image)
+                  <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display: none;" 
+                         onchange="app.extractCoordinatesFromFile(event)">
+                </label>
+              </div>
+            </div>

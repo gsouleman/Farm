@@ -1,0 +1,14 @@
+# Render deployment configuration
+
+# Build Command
+npm install
+
+# Start Command  
+npm start
+
+# Environment Variables (set in Render dashboard)
+# DATABASE_URL
+# JWT_SECRET
+# JWT_EXPIRES_IN
+# NODE_ENV
+# FRONTEND_URL
