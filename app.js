@@ -669,12 +669,12 @@ loadData() {
     }
 
     // Update UI to show current farm name
-    if (farmNameEl && this.getCurrentFarm()) {
-    if (farmNameEl) farmNameEl.textContent = this.getCurrentFarm().name;
+        farmNameEl.textContent = this.getCurrentFarm().name;
+    }
 
-    // Update farm selector if it exists
-// Save data to localStorage
-saveData() {
+    //Update farm selector if it exists
+    this.updateFarmSelector();
+},
     localStorage.setItem('allFarms', JSON.stringify(this.farms));
     localStorage.setItem('currentFarmId', this.currentFarmId);
 },
