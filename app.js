@@ -2024,8 +2024,61 @@ const app = {
         return colors[status] || 'info';
     },
 
+    // Edit current farm
+    editFarm() {
+        const farm = this.getCurrentFarm();
+        if (!farm) return;
+
+        this.editingFarmId = farm.id;
+
+        // Populate modal fields
+        document.getElementById('newFarmName').value = farm.name;
+        document.getElementById('newFarmLocation').value = farm.location;
+        document.getElementById('newFarmLat').value = farm.centerCoordinates.lat;
+        document.getElementById('newFarmLng').value = farm.centerCoordinates.lng;
+        document.getElementById('newFarmArea').value = farm.area;
+        document.getElementById('newFarmPerimeter').value = farm.perimeter || 0;
+
+        if (farm.boundaries && farm.boundaries.length > 0) {
+            document.getElementById('newFarmBoundaries').value = farm.boundaries.map(c => `${c.lat},${c.lng}`).join('\n');
+        }
+
+        // Update modal title and button
+        document.querySelector('#createFarmModal .modal-title').textContent = 'Edit Farm';
+        document.querySelector('#createFarmModal .btn-primary').textContent = 'Update Farm';
+
+        document.getElementById('createFarmModal').classList.add('active');
+    },
+
+    // Delete current farm
+    deleteFarm() {
+        const farm = this.getCurrentFarm();
+        if (!farm) return;
+
+        if (confirm(`Are you sure you want to delete ${farm.name}? This action cannot be undone.`)) {
+            // Remove farm
+            this.farms = this.farms.filter(f => f.id !== farm.id);
+
+            // Switch to another farm or reset
+            if (this.farms.length > 0) {
+                this.selectFarm(this.farms[0].id);
+            } else {
+                this.currentFarmId = null;
+                localStorage.removeItem('currentFarmId');
+                location.reload(); // Reload to show empty state
+            }
+
+            this.saveData();
+            this.updateFarmSelector();
+        }
+    },
+
     // Create new farm
     openCreateFarmModal() {
+        this.editingFarmId = null; // Reset editing state
+        document.querySelector('#createFarmModal .modal-title').textContent = 'Create New Farm';
+        document.querySelector('#createFarmModal .btn-primary').textContent = 'Create Farm';
+
         document.getElementById('createFarmModal').classList.add('active');
         document.getElementById('farmForm').reset();
     },
@@ -2052,19 +2105,47 @@ const app = {
             }
         }
 
-        const farmName = document.getElementById('newFarmName').value;
-        const farmId = farmName.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
+        const name = document.getElementById('newFarmName').value;
+        const location = document.getElementById('newFarmLocation').value;
+        const area = parseFloat(document.getElementById('newFarmArea').value);
+        const perimeter = parseFloat(document.getElementById('newFarmPerimeter').value) || 0;
+        const centerCoordinates = {
+            lat: parseFloat(document.getElementById('newFarmLat').value),
+            lng: parseFloat(document.getElementById('newFarmLng').value)
+        };
+
+        if (this.editingFarmId) {
+            // Update existing farm
+            const farm = this.farms.find(f => f.id === this.editingFarmId);
+            if (farm) {
+                farm.name = name;
+                farm.location = location;
+                farm.area = area;
+                farm.perimeter = perimeter;
+                farm.centerCoordinates = centerCoordinates;
+                if (boundaries.length > 0) farm.boundaries = boundaries;
+
+                this.saveData();
+                this.updateFarmSelector();
+                this.renderFarmDetails();
+
+                this.closeModal('createFarmModal');
+                alert('Farm updated successfully!');
+                this.editingFarmId = null;
+                return;
+            }
+        }
+
+        // Create new farm
+        const farmId = name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
 
         const newFarm = {
             id: farmId,
-            name: farmName,
-            location: document.getElementById('newFarmLocation').value,
-            area: parseFloat(document.getElementById('newFarmArea').value),
-            perimeter: parseFloat(document.getElementById('newFarmPerimeter').value) || 0,
-            centerCoordinates: {
-                lat: parseFloat(document.getElementById('newFarmLat').value),
-                lng: parseFloat(document.getElementById('newFarmLng').value)
-            },
+            name: name,
+            location: location,
+            area: area,
+            perimeter: perimeter,
+            centerCoordinates: centerCoordinates,
             boundaries: boundaries,
             zones: {
                 fruitTrees: { area: 0, percentage: 0 },
@@ -2088,7 +2169,6 @@ const app = {
         // Save to localStorage
         this.saveData();
 
-        // Update UI
         // Update UI
         this.renderFarmDetails();
         this.renderDashboard();
@@ -2240,6 +2320,10 @@ const app = {
             // Update the area field
             document.getElementById('newFarmArea').value = areaInHectares.toFixed(4);
 
+            // Calculate perimeter
+            const perimeterInMeters = this.calculatePerimeter(coordinates);
+            document.getElementById('newFarmPerimeter').value = perimeterInMeters.toFixed(2);
+
             // Calculate center point
             const center = this.calculateCentroid(coordinates);
             document.getElementById('newFarmLat').value = center.lat.toFixed(6);
@@ -2247,7 +2331,7 @@ const app = {
 
             // Show success message
             document.getElementById('calculatedAreaDisplay').textContent =
-                `âœ“ Calculated: ${areaInHectares.toFixed(4)} ha from ${coordinates.length} points`;
+                `✓ Calculated: ${areaInHectares.toFixed(4)} ha & ${perimeterInMeters.toFixed(2)} m perimeter from ${coordinates.length} points`;
 
         } catch (error) {
             alert('Error parsing coordinates. Please ensure format is: lat,lng (one per line)');
@@ -2278,6 +2362,34 @@ const app = {
 
         area = Math.abs(area * R * R / 2);
         return area;
+    },
+
+    // Calculate perimeter using Haversine formula
+    calculatePerimeter(coordinates) {
+        if (coordinates.length < 2) return 0;
+
+        let perimeter = 0;
+        const R = 6371000; // Earth's radius in meters
+
+        for (let i = 0; i < coordinates.length; i++) {
+            const j = (i + 1) % coordinates.length;
+
+            const lat1 = coordinates[i].lat * Math.PI / 180;
+            const lat2 = coordinates[j].lat * Math.PI / 180;
+            const dLat = (coordinates[j].lat - coordinates[i].lat) * Math.PI / 180;
+            const dLng = (coordinates[j].lng - coordinates[i].lng) * Math.PI / 180;
+
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1) * Math.cos(lat2) *
+                Math.sin(dLng / 2) * Math.sin(dLng / 2);
+
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const distance = R * c;
+
+            perimeter += distance;
+        }
+
+        return perimeter;
     },
 
     // Calculate centroid of polygon

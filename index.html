@@ -182,7 +182,17 @@
             <div style="flex: 0 0 35%; min-width: 320px;">
               <div class="card">
                 <div class="card-header">
-                  <h3 class="card-title">📍 Location & Specifications</h3>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">📍 Location & Specifications</h3>
+                    <div class="farm-actions">
+                      <button class="btn btn-sm btn-outline-primary me-2" onclick="app.editFarm()">
+                        <i class="fas fa-edit"></i> Edit
+                      </button>
+                      <button class="btn btn-sm btn-outline-danger" onclick="app.deleteFarm()">
+                        <i class="fas fa-trash"></i> Delete
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <div class="card-body">
                   <div class="info-grid">
