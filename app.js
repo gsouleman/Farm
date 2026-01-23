@@ -626,6 +626,15 @@ const app = {
 
         // Render initial UI
         this.renderDashboard();
+
+// Modal functions
+openModal(modalId) {
+    document.getElementById(modalId).classList.add('active');
+},
+
+closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+},
         this.renderFarmMap();
         this.renderTransactions();
         this.renderCrops();
