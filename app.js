@@ -2477,11 +2477,29 @@ const app = {
         // Initialize drawing state
         this.drawingMode = false;
         this.isDrawing = false;
+        this.drawingStartPoint = null;
         this.currentDrawing = [];
         this.drawnCoordinates = [];
         this.pendingSectionBoundaries = [];
+        this.shiftKeyPressed = false;
 
-        // Mouse down - start drawing
+        // Track shift key for square drawing
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Shift') {
+                this.shiftKeyPressed = true;
+            }
+            if (e.key === 'Escape' && this.drawingMode) {
+                this.cancelDrawing();
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'Shift') {
+                this.shiftKeyPressed = false;
+            }
+        });
+
+        // Mouse down - start rectangle
         canvas.addEventListener('mousedown', (e) => {
             if (!this.drawingMode) return;
 
@@ -2490,11 +2508,12 @@ const app = {
             const x = (e.clientX - rect.left) * (canvas.width / rect.width);
             const y = (e.clientY - rect.top) * (canvas.height / rect.height);
 
-            // Start new drawing path
-            this.currentDrawing = [{ x, y }];
+            // Store start point
+            this.drawingStartPoint = { x, y };
+            this.currentDrawing = [];
         });
 
-        // Mouse move - continue drawing
+        // Mouse move - show rectangle preview
         canvas.addEventListener('mousemove', (e) => {
             if (!this.drawingMode || !this.isDrawing) return;
 
@@ -2502,30 +2521,48 @@ const app = {
             const x = (e.clientX - rect.left) * (canvas.width / rect.width);
             const y = (e.clientY - rect.top) * (canvas.height / rect.height);
 
-            // Add point to current drawing (throttle for performance)
-            const lastPoint = this.currentDrawing[this.currentDrawing.length - 1];
-            const distance = Math.sqrt(Math.pow(x - lastPoint.x, 2) + Math.pow(y - lastPoint.y, 2));
+            // Calculate rectangle corners
+            let width = x - this.drawingStartPoint.x;
+            let height = y - this.drawingStartPoint.y;
 
-            if (distance > 5) { // Only add point if moved enough
-                this.currentDrawing.push({ x, y });
-                this.renderGraphicalMapWithDrawing();
+            // If shift is pressed, make it a square
+            if (this.shiftKeyPressed) {
+                const size = Math.max(Math.abs(width), Math.abs(height));
+                width = width >= 0 ? size : -size;
+                height = height >= 0 ? size : -size;
             }
+
+            // Create rectangle points (4 corners)
+            this.currentDrawing = [
+                { x: this.drawingStartPoint.x, y: this.drawingStartPoint.y },
+                { x: this.drawingStartPoint.x + width, y: this.drawingStartPoint.y },
+                { x: this.drawingStartPoint.x + width, y: this.drawingStartPoint.y + height },
+                { x: this.drawingStartPoint.x, y: this.drawingStartPoint.y + height }
+            ];
+
+            this.renderGraphicalMapWithDrawing();
         });
 
-        // Mouse up - finish drawing
+        // Mouse up - finish rectangle
         canvas.addEventListener('mouseup', (e) => {
             if (!this.drawingMode || !this.isDrawing) return;
 
             this.isDrawing = false;
 
-            // Close the shape by connecting to start
-            if (this.currentDrawing.length > 10) {
-                this.currentDrawing.push(this.currentDrawing[0]);
-                this.finishDrawing();
-            } else {
-                alert('Draw a larger area. Hold and drag the mouse to sketch your section.');
-                this.currentDrawing = [];
-                this.renderGraphicalMap();
+            // Check if rectangle is large enough (at least 20x20 pixels)
+            if (this.currentDrawing.length === 4) {
+                const width = Math.abs(this.currentDrawing[1].x - this.currentDrawing[0].x);
+                const height = Math.abs(this.currentDrawing[2].y - this.currentDrawing[1].y);
+
+                if (width > 20 && height > 20) {
+                    // Close the rectangle and finish
+                    this.currentDrawing.push(this.currentDrawing[0]); // Close the shape
+                    this.finishDrawing();
+                } else {
+                    alert('Draw a larger area. Click and drag to create a rectangle.');
+                    this.currentDrawing = [];
+                    this.renderGraphicalMap();
+                }
             }
         });
 
@@ -2533,13 +2570,8 @@ const app = {
         canvas.addEventListener('mouseleave', (e) => {
             if (this.isDrawing) {
                 this.isDrawing = false;
-            }
-        });
-
-        // Add keypress to cancel drawing (Escape)
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.drawingMode) {
-                this.cancelDrawing();
+                this.currentDrawing = [];
+                this.renderGraphicalMap();
             }
         });
     },
