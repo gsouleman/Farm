@@ -2767,6 +2767,11 @@ const app = {
         const centerLat = boundaries.reduce((sum, c) => sum + c.lat, 0) / boundaries.length;
         const centerLng = boundaries.reduce((sum, c) => sum + c.lng, 0) / boundaries.length;
 
+        // Format all 4 corner coordinates for display
+        const cornerCoords = boundaries.slice(0, 4).map((coord, i) =>
+            `Corner ${i + 1}: ${coord.lat.toFixed(6)}, ${coord.lng.toFixed(6)}`
+        ).join('\n');
+
         const section = {
             id: 'section-' + Date.now(),
             name: name,
@@ -2777,7 +2782,7 @@ const app = {
             area: area,
             percentage: (area / (this.farmData.area || 1)) * 100,
             color: color,
-            notes: `Drawn on ${new Date().toLocaleDateString()}\nCenter: ${centerLat.toFixed(6)}, ${centerLng.toFixed(6)}`
+            notes: `Drawn on ${new Date().toLocaleDateString()}\nCenter: ${centerLat.toFixed(6)}, ${centerLng.toFixed(6)}\n\n4 Corner Coordinates:\n${cornerCoords}`
         };
 
         // Add to farm data
