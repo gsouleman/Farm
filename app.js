@@ -662,7 +662,7 @@ loadData() {
         this.farms = JSON.parse(savedFarms);
     }
 
-    if (savedCurrentFarmId \u0026\u0026 this.farms.find(f => f.id === savedCurrentFarmId)) {
+    if (savedCurrentFarmId && this.farms.find(f => f.id === savedCurrentFarmId)) {
         this.currentFarmId = savedCurrentFarmId;
     } else if (this.farms.length > 0) {
         this.currentFarmId = this.farms[0].id;
