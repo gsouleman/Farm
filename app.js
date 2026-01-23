@@ -1414,7 +1414,7 @@ const app = {
                 <td>${coord.lng.toFixed(6)}</td>
                 <td>
                     <button class="btn btn-danger btn-sm" onclick="app.deleteCoordinatePoint(${index})">
-                        ðŸ—‘ï¸ ${this.t('coordEditor.delete')}
+                        Delete
                     </button>
                 </td>
             </tr>
