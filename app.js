@@ -3411,6 +3411,7 @@ const app = {
     },
 
     // Toggle between satellite and graphical map views
+    // Toggle between satellite and graphical map views
     toggleMapView(viewType) {
         const satelliteBtn = document.getElementById('satelliteViewBtn');
         const graphicalBtn = document.getElementById('graphicalViewBtn');
@@ -3419,7 +3420,10 @@ const app = {
 
         // If Google Maps is not available and user tries satellite, switch to graphical
         if (viewType === 'satellite' && !this.googleMap) {
-            alert('Google Maps API is not available. Please add your API key in index.html to use Satellite View.\n\nUsing Graphical View instead.');
+            this.showAlert(
+                'Google Maps API Unavailable',
+                'Please add your API key in index.html to use Satellite View.<br><br>Using Graphical View instead.'
+            );
             viewType = 'graphical';
         }
 
@@ -3441,6 +3445,17 @@ const app = {
             this.currentMapView = 'graphical';
             this.renderGraphicalMap();
         }
+    },
+
+    // Show a generic alert modal
+    showAlert(title, message) {
+        const titleEl = document.getElementById('alertTitle');
+        const msgEl = document.getElementById('alertMessage');
+
+        if (titleEl) titleEl.textContent = title;
+        if (msgEl) msgEl.innerHTML = message;
+
+        this.openModal('alertModal');
     },
 
     // Render graphical representation on canvas

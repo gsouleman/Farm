@@ -1007,6 +1007,24 @@ Example:
     </div>
   </div>
 
+  <!-- Alert Modal -->
+  <div id="alertModal" class="modal-overlay">
+    <div class="modal" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="alertTitle">Alert</h3>
+        <button class="modal-close" onclick="app.closeModal('alertModal')">&times;</button>
+      </div>
+      <div style="margin-bottom: 2rem;">
+        <p id="alertMessage" style="color: #666; font-size: 1rem; line-height: 1.5; text-align: center;">
+          Alert Message
+        </p>
+      </div>
+      <div class="flex" style="justify-content: center;">
+        <button class="btn btn-primary" onclick="app.closeModal('alertModal')">OK</button>
+      </div>
+    </div>
+  </div>
+
   <!-- API Client for Database Integration -->
   <script src="api-client.js"></script>
 
