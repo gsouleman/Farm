@@ -2763,16 +2763,21 @@ const app = {
         const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2'];
         const color = colors[(this.getCurrentFarm().sections?.length || 0) % colors.length];
 
+        // Calculate center point for reference coordinates
+        const centerLat = boundaries.reduce((sum, c) => sum + c.lat, 0) / boundaries.length;
+        const centerLng = boundaries.reduce((sum, c) => sum + c.lng, 0) / boundaries.length;
+
         const section = {
             id: 'section-' + Date.now(),
             name: name,
             type: type,
             cropType: cropType || null,
             boundaries: boundaries,
+            centerCoordinates: { lat: centerLat, lng: centerLng },
             area: area,
             percentage: (area / (this.farmData.area || 1)) * 100,
             color: color,
-            notes: `Drawn on ${new Date().toLocaleDateString()}`
+            notes: `Drawn on ${new Date().toLocaleDateString()}\nCenter: ${centerLat.toFixed(6)}, ${centerLng.toFixed(6)}`
         };
 
         // Add to farm data
@@ -2784,8 +2789,9 @@ const app = {
         this.saveData();
         this.renderFarmSectionsTable();
         this.renderGraphicalMap();
+        this.renderLandAllocationTable();
 
-        alert(`✅ Section "${name}" created!\nArea: ${area.toFixed(4)} hectares`);
+        alert(`✅ Section "${name}" created!\nArea: ${area.toFixed(4)} hectares\n\n📍 Center Coordinates:\nLat: ${centerLat.toFixed(6)}\nLng: ${centerLng.toFixed(6)}`);
     },
 
     // Cancel drawing
