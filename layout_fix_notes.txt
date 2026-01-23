@@ -1,0 +1,16 @@
+The HTML structure currently has:
+- Left column (flex: 0 0 35%) containing:
+  - Location & Specifications card
+  - Crop Allocation card (THIS SHOULDN'T BE HERE)
+-Right column: MISSING/EMPTY
+
+What needs to happen:
+Move the Crop Allocation card from inside the left column div to become the right column div.
+
+Current structure from HTML view (lines 248-323):
+- Line 251: Close Location & Specifications card
+- Line 252: Empty line
+- Line 253-321: Crop Allocation card (INSIDE left column - WRONG!)
+- Line 323: End Two Column Layout
+
+SOLUTION: Need to close the left column div after line 251, then start a new right column div containing the Crop Allocation card.

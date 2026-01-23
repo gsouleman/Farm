@@ -565,10 +565,10 @@ expenseCategories: [
 
             // Helper to get current farm
             getCurrentFarm() {
-    return this.farms.find(f => f.id === this.currentFarmId) || this.farms[0];
-},
-
-    // Helper to get farm data (for backward compatibility)
+    getCurrentFarm() {
+        if (this.farms.length === 0) return { name: '', area: 0, perimeter: 0, boundaries: [], sections: [], transactions: [], fruitTrees: [], cashCrops: [], customExpenseCategories: [], customIncomeCategories: [] };
+        return this.farms.find(f => f.id === this.currentFarmId) || this.farms[0];
+    },
     get farmData() {
     return this.getCurrentFarm();
 },
