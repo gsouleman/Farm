@@ -41,7 +41,7 @@
     <div class="container" style="display: flex; align-items: center; justify-content: space-between; gap: 2rem;">
       <!-- Far Left: Logo + Farm Name -->
       <div style="display: flex; align-items: center; gap: 0.5rem; color: white; font-weight: 600; font-size: 1.2rem;">
-        <span style="font-size: 2rem;">🌾</span>
+        <span id="farmNameDisplay">Select Farm </span>
         <span id="farmNameDisplay">Maloure Farm</span>
       </div>
 
@@ -60,7 +60,6 @@
             <select id="farmSelector" class="form-control" onchange="app.handleFarmDropdown(this.value)"
               style="height: 40px; padding: 0.5rem 2rem 0.5rem 1rem; border-radius: 4px; cursor: pointer; background: rgba(255,255,255,0.95); border: none; font-weight: 500;">
               <option value="">Select Farm ▼</option>
-              <option value="maloure-farm">Maloure Farm</option>
               <option value="create-new">➕ Create New Farm</option>
             </select>
           </li>
