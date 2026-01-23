@@ -2796,7 +2796,7 @@ const app = {
         this.renderGraphicalMap();
         this.renderLandAllocationTable();
 
-        alert(`âœ… Section "${name}" created!\nArea: ${area.toFixed(4)} hectares\n\nðŸ“ Center Coordinates:\nLat: ${centerLat.toFixed(6)}\nLng: ${centerLng.toFixed(6)}`);
+        alert`(`Section "${name}" created!`nArea: ${area.toFixed(4)} hectares`n`nCenter Coordinates:`nLat: ${centerLat.toFixed(6)}`nLng: ${centerLng.toFixed(6)}`n`n4 Corner Coordinates:`n${cornerCoords}`);
     },
 
     // Cancel drawing
