@@ -2016,34 +2016,6 @@ const app = {
             cashCrops: [],
             customExpenseCategories: [],
 
-    // Handle farm selector dropdown
-    handleFarmDropdown(value) {
-        if (value === 'create-new') {
-            this.openCreateFarmModal();
-            // Reset dropdown
-            document.getElementById('farmSelector').value = '';
-        } else if (value) {
-            this.selectFarm(value);
-        }
-    },
-
-    // Open create farm modal
-    openCreateFarmModal() {
-        const modal = document.getElementById('createFarmModal');
-        if (modal) {
-            modal.classList.add('active');
-            document.getElementById('farmForm').reset();
-        }
-    },
-
-    // Close modal
-    closeModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.classList.remove('active');
-        }
-    },
-            customIncomeCategories: [],
             sections: []
         };
 
