@@ -212,7 +212,14 @@
 
                   <!-- Land Allocation Table -->
                   <div style="margin-top: 1.5rem;">
-                    <h4 style="margin-bottom: 1rem;">Land Allocation</h4>
+                    <div
+                      style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                      <h4 style="margin: 0;">Land Allocation</h4>
+                      <button class="btn btn-sm btn-secondary" onclick="app.printLandAllocationTable()"
+                        title="Print Land Allocation">
+                        🖨️ Print
+                      </button>
+                    </div>
                     <div class="table-container">
                       <table class="table">
                         <thead>
@@ -294,7 +301,14 @@
 
                   <!-- Sections Table -->
                   <div id="sectionsTableContainer">
-                    <h4 style="margin-bottom: 1rem; color: var(--color-primary);">📐 Crop Allocation Sections</h4>
+                    <div
+                      style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                      <h4 style="margin: 0; color: var(--color-primary);">📐 Crop Allocation Sections</h4>
+                      <button class="btn btn-sm btn-secondary" onclick="app.printCropAllocationSections()"
+                        title="Print Crop Allocation Sections">
+                        🖨️ Print
+                      </button>
+                    </div>
                     <div class="table-container">
                       <table class="table">
                         <thead>
