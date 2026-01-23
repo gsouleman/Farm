@@ -3459,12 +3459,12 @@ const app = {
                     const centerX = scaleX(centerLng);
                     const centerY = scaleY(centerLat);
 
-                    // Draw coordinates label
+                    // Draw center coordinates label
                     const coordText = `${centerLat.toFixed(6)}, ${centerLng.toFixed(6)}`;
                     ctx.font = 'bold 11px Inter, sans-serif';
                     const coordWidth = ctx.measureText(coordText).width;
 
-                    // Background for coordinates
+                    // Background for center coordinates
                     ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
                     ctx.fillRect(centerX - coordWidth / 2 - 6, centerY - 8, coordWidth + 12, 16);
                     ctx.strokeStyle = section.color;
@@ -3476,6 +3476,42 @@ const app = {
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText(coordText, centerX, centerY);
+
+                    // Draw corner coordinates at each corner
+                    const corners = section.boundaries.slice(0, 4);
+                    ctx.font = 'bold 9px Inter, sans-serif';
+                    corners.forEach((corner, i) => {
+                        const cornerX = scaleX(corner.lng);
+                        const cornerY = scaleY(corner.lat);
+                        const cornerText = `${corner.lat.toFixed(6)}, ${corner.lng.toFixed(6)}`;
+                        const textWidth = ctx.measureText(cornerText).width;
+
+                        // Position label based on corner (to avoid overlap)
+                        let offsetX = 0, offsetY = 0;
+                        if (i === 0) { offsetX = -textWidth - 10; offsetY = -15; } // Top-left
+                        else if (i === 1) { offsetX = 10; offsetY = -15; } // Top-right  
+                        else if (i === 2) { offsetX = 10; offsetY = 15; } // Bottom-right
+                        else { offsetX = -textWidth - 10; offsetY = 15; } // Bottom-left
+
+                        // Background
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                        ctx.fillRect(cornerX + offsetX - 4, cornerY + offsetY - 7, textWidth + 8, 14);
+                        ctx.strokeStyle = section.color;
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(cornerX + offsetX - 4, cornerY + offsetY - 7, textWidth + 8, 14);
+
+                        // Text
+                        ctx.fillStyle = section.color;
+                        ctx.textAlign = 'left';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(cornerText, cornerX + offsetX, cornerY + offsetY);
+
+                        // Draw corner marker (small circle)
+                        ctx.fillStyle = section.color;
+                        ctx.beginPath();
+                        ctx.arc(cornerX, cornerY, 4, 0, 2 * Math.PI);
+                        ctx.fill();
+                    });
                 }
             }
         });
