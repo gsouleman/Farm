@@ -3090,9 +3090,7 @@ const app = {
         tbody.innerHTML = sections.map(section => `
             <tr>
                 <td><div style="width: 30px; height: 30px; background: ${section.color}; border-radius: 4px; border: 1px solid #ccc;"></div></td>
-                <td><strong>${section.type.replace('-', ' ').toUpperCase()}</strong></td>
                 <td><strong>${section.name}</strong></td>
-                <td>${section.type.replace('-', ' ')}</td>
                 <td>${section.cropType || '-'}</td>
                 <td>${section.area.toFixed(4)}</td>
                 <td>${section.percentage.toFixed(1)}%</td>
