@@ -678,8 +678,8 @@ loadData() {
     this.updateFarmSelector();
 },
 
-    localStorage.setItem('allFarms', JSON.stringify(this.farms));
-    localStorage.setItem('currentFarmId', this.currentFarmId);
+// Save data to localStorage
+saveData() {
 },
 
 // Calculate financial metrics
