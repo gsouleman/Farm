@@ -673,9 +673,6 @@ loadData() {
     if (farmNameEl) farmNameEl.textContent = this.getCurrentFarm().name;
 
     // Update farm selector if it exists
-    get farmData() {
-        return this.getCurrentFarm();
-    },
 // Save data to localStorage
 saveData() {
     localStorage.setItem('allFarms', JSON.stringify(this.farms));
