@@ -3521,6 +3521,48 @@ const app = {
             }
         });
 
+        // Add click event handler to canvas for toggling corner coordinates
+        canvas.onclick = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleFactorX = canvas.width / rect.width;
+            const scaleFactorY = canvas.height / rect.height;
+            const clickX = (e.clientX - rect.left) * scaleFactorX;
+            const clickY = (e.clientY - rect.top) * scaleFactorY;
+
+            const ctx = canvas.getContext('2d');
+
+            // Check if click is inside any section
+            let clickedSection = null;
+            sections.forEach(section => {
+                if (section.boundaries.length >= 3) {
+                    // Create path for this section
+                    ctx.beginPath();
+                    section.boundaries.forEach((coord, i) => {
+                        const x = scaleX(coord.lng);
+                        const y = scaleY(coord.lat);
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    });
+                    ctx.closePath();
+
+                    // Check if click is inside this path
+                    if (ctx.isPointInPath(clickX, clickY)) {
+                        clickedSection = section;
+                    }
+                }
+            });
+
+            // Toggle selection
+            if (clickedSection) {
+                if (this.selectedSectionId === clickedSection.id) {
+                    this.selectedSectionId = null; // Hide coordinates on second click
+                } else {
+                    this.selectedSectionId = clickedSection.id; // Show coordinates
+                }
+                this.renderGraphicalMap(); // Re-render to update display
+            }
+        };
+
         // Draw center point
         const centerX = scaleX(this.farmData.centerCoordinates.lng);
         const centerY = scaleY(this.farmData.centerCoordinates.lat);
