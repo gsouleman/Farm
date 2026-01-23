@@ -2383,31 +2383,64 @@ const app = {
 
         // Initialize drawing state
         this.drawingMode = false;
+        this.isDrawing = false;
         this.currentDrawing = [];
         this.drawnCoordinates = [];
         this.pendingSectionBoundaries = [];
 
-        // Add click event listener for drawing
-        canvas.addEventListener('click', (e) => {
+        // Mouse down - start drawing
+        canvas.addEventListener('mousedown', (e) => {
             if (!this.drawingMode) return;
+
+            this.isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+            // Start new drawing path
+            this.currentDrawing = [{ x, y }];
+        });
+
+        // Mouse move - continue drawing
+        canvas.addEventListener('mousemove', (e) => {
+            if (!this.drawingMode || !this.isDrawing) return;
 
             const rect = canvas.getBoundingClientRect();
             const x = (e.clientX - rect.left) * (canvas.width / rect.width);
             const y = (e.clientY - rect.top) * (canvas.height / rect.height);
 
-            // Add point to current drawing
-            this.currentDrawing.push({ x, y });
+            // Add point to current drawing (throttle for performance)
+            const lastPoint = this.currentDrawing[this.currentDrawing.length - 1];
+            const distance = Math.sqrt(Math.pow(x - lastPoint.x, 2) + Math.pow(y - lastPoint.y, 2));
 
-            // Redraw canvas with current points
-            this.renderGraphicalMapWithDrawing();
+            if (distance > 5) { // Only add point if moved enough
+                this.currentDrawing.push({ x, y });
+                this.renderGraphicalMapWithDrawing();
+            }
         });
 
-        // Add double-click to finish drawing
-        canvas.addEventListener('dblclick', (e) => {
-            if (!this.drawingMode || this.currentDrawing.length < 3) return;
+        // Mouse up - finish drawing
+        canvas.addEventListener('mouseup', (e) => {
+            if (!this.drawingMode || !this.isDrawing) return;
 
-            e.preventDefault();
-            this.finishDrawing();
+            this.isDrawing = false;
+
+            // Close the shape by connecting to start
+            if (this.currentDrawing.length > 10) {
+                this.currentDrawing.push(this.currentDrawing[0]);
+                this.finishDrawing();
+            } else {
+                alert('Draw a larger area. Hold and drag the mouse to sketch your section.');
+                this.currentDrawing = [];
+                this.renderGraphicalMap();
+            }
+        });
+
+        // Mouse leave - cancel current stroke if drawing
+        canvas.addEventListener('mouseleave', (e) => {
+            if (this.isDrawing) {
+                this.isDrawing = false;
+            }
         });
 
         // Add keypress to cancel drawing (Escape)
