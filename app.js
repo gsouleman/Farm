@@ -10,6 +10,7 @@ const translations = {
             farmInfo: "Farm Info",
             financial: "Financial",
             crops: "Crops",
+            employees: "Employees",
             reports: "Reports"
         },
         // Farm Info
@@ -2024,6 +2025,33 @@ const app = {
         return colors[status] || 'info';
     },
 
+    // Custom confirmation modal helper
+    showConfirmation(message, onConfirm) {
+        const modal = document.getElementById('confirmationModal');
+        const msgEl = document.getElementById('confirmationMessage');
+        const confirmBtn = document.getElementById('confirmActionBtn');
+
+        if (modal && msgEl && confirmBtn) {
+            msgEl.textContent = message;
+
+            // Remove previous event listeners by cloning
+            const newBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+
+            newBtn.onclick = () => {
+                onConfirm();
+                this.closeModal('confirmationModal');
+            };
+
+            modal.classList.add('active');
+        } else {
+            // Fallback if modal elements missing
+            if (confirm(message)) {
+                onConfirm();
+            }
+        }
+    },
+
     // Edit current farm
     editFarm() {
         const farm = this.getCurrentFarm();
@@ -2055,22 +2083,25 @@ const app = {
         const farm = this.getCurrentFarm();
         if (!farm) return;
 
-        if (confirm(`Are you sure you want to delete ${farm.name}? This action cannot be undone.`)) {
-            // Remove farm
-            this.farms = this.farms.filter(f => f.id !== farm.id);
+        this.showConfirmation(
+            `Are you sure you want to delete ${farm.name}? This action cannot be undone.`,
+            () => {
+                // Remove farm
+                this.farms = this.farms.filter(f => f.id !== farm.id);
 
-            // Switch to another farm or reset
-            if (this.farms.length > 0) {
-                this.selectFarm(this.farms[0].id);
-            } else {
-                this.currentFarmId = null;
-                localStorage.removeItem('currentFarmId');
-                location.reload(); // Reload to show empty state
+                // Switch to another farm or reset
+                if (this.farms.length > 0) {
+                    this.selectFarm(this.farms[0].id);
+                } else {
+                    this.currentFarmId = null;
+                    localStorage.removeItem('currentFarmId');
+                    location.reload(); // Reload to show empty state
+                }
+
+                this.saveData();
+                this.updateFarmSelector();
             }
-
-            this.saveData();
-            this.updateFarmSelector();
-        }
+        );
     },
 
     // Create new farm
@@ -2218,6 +2249,7 @@ const app = {
         this.renderFarmMap();
         this.renderTransactions();
         this.renderCrops();
+        this.renderEmployees(); // Render employees
         this.initializeCharts();
         this.updateCurrentMonth();
         this.updateFarmSelector();
@@ -2232,11 +2264,11 @@ const app = {
         if (!selector) return;
 
         // Build options: placeholder, farms, then create option
-        const options = ['<option value="">Select Farm â–¼</option>'];
+        const options = ['<option value="">Select Farm</option>'];
         options.push(...this.farms.map(farm =>
             `<option value="${farm.id}" ${farm.id === this.currentFarmId ? 'selected' : ''}>${farm.name}</option>`
         ));
-        options.push('<option value="create-new">âž• Create New Farm</option>');
+        options.push('<option value="create-new">Create New Farm</option>');
 
         selector.innerHTML = options.join('');
         selector.value = this.currentFarmId;
@@ -3858,7 +3890,7 @@ app.updateDashboardText = function () {
 
     // Update "Add Transaction" button
     const addTransactionBtn = section.querySelector('button[onclick*=\"openAddTransactionModal\"]');
-    if (addTransactionBtn) addTransactionBtn.innerHTML = `âž• ${this.t('dashboard.addTransaction')}`;
+    if (addTransactionBtn) addTransactionBtn.innerHTML = `➕ ${this.t('dashboard.addTransaction')}`;
 
     // Update table headers
     const tableHeaders = section.querySelectorAll('#recentTransactionsTable thead th');
@@ -3888,7 +3920,7 @@ app.updateFinancialText = function () {
     // Update buttons
     const addTransactionBtns = section.querySelectorAll('button[onclick*=\"openAddTransactionModal\"]');
     addTransactionBtns.forEach(btn => {
-        btn.innerHTML = `âž• ${this.t('financial.addTransaction')}`;
+        btn.innerHTML = `➕ ${this.t('financial.addTransaction')}`;
     });
 
     const exportBtn = section.querySelector('button[onclick*=\"exportTransactions\"]');
@@ -3920,10 +3952,10 @@ app.updateCropsText = function () {
 
     // Update "Add" buttons
     const addFruitBtn = section.querySelector('button[onclick*=\"openAddCropModal(\'fruit\')"]');
-    if (addFruitBtn) addFruitBtn.innerHTML = `âž• ${this.t('crops.addFruitTree')}`;
+    if (addFruitBtn) addFruitBtn.innerHTML = `➕ ${this.t('crops.addFruitTree')}`;
 
     const addCashBtn = section.querySelector('button[onclick*=\"openAddCropModal(\'cash\')"]');
-    if (addCashBtn) addCashBtn.innerHTML = `âž• ${this.t('crops.addCashCrop')}`;
+    if (addCashBtn) addCashBtn.innerHTML = `➕ ${this.t('crops.addCashCrop')}`;
 
     // Update fruit trees table headers
     const fruitHeaders = section.querySelectorAll('#fruitTreesBody').length > 0 ?
@@ -3962,9 +3994,9 @@ app.updateReportsText = function () {
 
     // Update report buttons
     const reportBtns = section.querySelectorAll('.btn-primary.btn-lg');
-    if (reportBtns[0]) reportBtns[0].innerHTML = `ðŸ“Š ${this.t('reports.financialReport')}`;
-    if (reportBtns[1]) reportBtns[1].innerHTML = `ðŸŒ¾ ${this.t('reports.operationsReport')}`;
-    if (reportBtns[2]) reportBtns[2].innerHTML = `ðŸ’¼ ${this.t('reports.investorPresentation')}`;
+    if (reportBtns[0]) reportBtns[0].innerHTML = `📊 ${this.t('reports.financialReport')}`;
+    if (reportBtns[1]) reportBtns[1].innerHTML = `📉 ${this.t('reports.operationsReport')}`;
+    if (reportBtns[2]) reportBtns[2].innerHTML = `💼 ${this.t('reports.investorPresentation')}`;
 
     // Update report preview section if visible
     const reportPreview = document.getElementById('reportPreview');
@@ -4000,6 +4032,122 @@ app.showTab = function (tabName) {
     if (activeLink) {
         activeLink.classList.add('active');
     }
+};
+
+// ===================================
+// Employee Management Logic
+// ===================================
+
+app.renderEmployees = function () {
+    const farm = this.getCurrentFarm();
+    const tbody = document.getElementById('employeesTableBody');
+    const emptyMsg = document.getElementById('noEmployeesMessage');
+
+    if (!farm || !farm.employees || farm.employees.length === 0) {
+        if (tbody) tbody.innerHTML = '';
+        if (emptyMsg) {
+            emptyMsg.classList.remove('hidden');
+            emptyMsg.classList.add('visible');
+        }
+        return;
+    }
+
+    if (emptyMsg) {
+        emptyMsg.classList.add('hidden');
+        emptyMsg.classList.remove('visible');
+    }
+
+    if (tbody) {
+        tbody.innerHTML = farm.employees.map(emp => `
+            <tr>
+                <td>${emp.name}</td>
+                <td><span class="badge badge-info">${emp.role}</span></td>
+                <td><span class="badge ${emp.status === 'Active' ? 'badge-success' : 'badge-danger'}">${emp.status}</span></td>
+                <td>${emp.phone || '-'}</td>
+                <td>${this.formatCurrency(emp.salary || 0)}</td>
+                <td>
+                    <button class="btn btn-outline btn-sm" onclick="app.openEditEmployeeModal('${emp.id}')">✏️ Edit</button>
+                    <button class="btn btn-danger btn-sm" onclick="app.deleteEmployee('${emp.id}')">🗑️ Delete</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+};
+
+app.openAddEmployeeModal = function () {
+    document.getElementById('employeeId').value = '';
+    document.getElementById('employeeForm').reset();
+    document.getElementById('employeeModalTitle').textContent = 'Add New Employee';
+    document.getElementById('employeeModal').classList.add('active');
+};
+
+app.openEditEmployeeModal = function (empId) {
+    const farm = this.getCurrentFarm();
+    const emp = farm.employees.find(e => e.id === empId);
+    if (!emp) return;
+
+    document.getElementById('employeeId').value = emp.id;
+    document.getElementById('empName').value = emp.name;
+    document.getElementById('empRole').value = emp.role;
+    document.getElementById('empStatus').value = emp.status;
+    document.getElementById('empPhone').value = emp.phone;
+    document.getElementById('empSalary').value = emp.salary;
+
+    document.getElementById('employeeModalTitle').textContent = 'Edit Employee';
+    document.getElementById('employeeModal').classList.add('active');
+};
+
+app.saveEmployee = function (event) {
+    event.preventDefault();
+    const farm = this.getCurrentFarm();
+    if (!farm) return;
+
+    if (!farm.employees) farm.employees = [];
+
+    const id = document.getElementById('employeeId').value;
+    const name = document.getElementById('empName').value;
+    const role = document.getElementById('empRole').value;
+    const status = document.getElementById('empStatus').value;
+    const phone = document.getElementById('empPhone').value;
+    const salary = parseFloat(document.getElementById('empSalary').value) || 0;
+
+    if (id) {
+        // Update existing
+        const index = farm.employees.findIndex(e => e.id === id);
+        if (index !== -1) {
+            farm.employees[index] = { ...farm.employees[index], name, role, status, phone, salary };
+        }
+    } else {
+        // Create new
+        farm.employees.push({
+            id: Date.now().toString(),
+            name,
+            role,
+            status,
+            phone,
+            salary,
+            dateAdded: new Date().toISOString()
+        });
+    }
+
+    this.saveData();
+    this.renderEmployees();
+    this.closeModal('employeeModal');
+};
+
+app.deleteEmployee = function (id) {
+    const farm = this.getCurrentFarm();
+    if (!farm) return;
+
+    const emp = farm.employees.find(e => e.id === id);
+    this.showConfirmation(
+        `Are you sure you want to delete ${emp ? emp.name : 'this employee'}?`,
+        () => {
+            farm.employees = farm.employees.filter(e => e.id !== id);
+            this.saveData();
+            this.renderEmployees();
+        }
+    );
 };
 
 // Initialize app when DOM is ready

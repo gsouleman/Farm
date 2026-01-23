@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description"
     content="Farm Management System for Maloure Farm - Track expenses, crops, and generate investor reports">
-  <title>Maloure Farm Management | Njimoun, Foumban</title>
+  <title>Farm Management</title>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -41,7 +41,7 @@
     <div class="container" style="display: flex; align-items: center; justify-content: space-between; gap: 2rem;">
       <!-- Far Left: Logo + Farm Name -->
       <div style="display: flex; align-items: center; gap: 0.5rem; color: white; font-weight: 600; font-size: 1.2rem;">
-        <span style="font-size: 2rem;"></span>
+        <span style="font-size: 2rem;">Farm Management</span>
       </div>
 
       <!-- Center: Navigation Tabs + Dropdown -->
@@ -52,13 +52,14 @@
           <li><a href="#farm-info" class="nav-link" onclick="app.showTab('farm-info')">Farm Info</a></li>
           <li><a href="#financial" class="nav-link" onclick="app.showTab('financial')">Financial</a></li>
           <li><a href="#crops" class="nav-link" onclick="app.showTab('crops')">Crops</a></li>
+          <li><a href="#employees" class="nav-link" onclick="app.showTab('employees')">Employees</a></li>
           <li><a href="#reports" class="nav-link" onclick="app.showTab('reports')">Reports</a></li>
 
           <!-- Dropdown Menu -->
           <li style="position: relative;">
             <select id="farmSelector" class="form-control" onchange="app.handleFarmDropdown(this.value)"
               style="height: 40px; padding: 0.5rem 2rem 0.5rem 1rem; border-radius: 4px; cursor: pointer; background: rgba(255,255,255,0.95); border: none; font-weight: 500;">
-              <option value="">Select Farm ▼</option>
+              <option value="">Select Farm</option>
               <option value="create-new">Create New Farm</option>
             </select>
           </li>
@@ -519,7 +520,103 @@
       </div>
     </section>
 
+    <!-- Employees Section -->
+    <section id="employees" class="section hidden">
+      <div class="container">
+        <div class="flex-between mb-4">
+          <h1>👥 Employee Management</h1>
+          <button class="btn btn-primary" onclick="app.openAddEmployeeModal()">
+            ➕ Add Employee
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Staff List</h3>
+          </div>
+          <div class="card-body">
+            <div class="table-container">
+              <table class="table" id="employeesTable">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Phone</th>
+                    <th>Salary (XAF)</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="employeesTableBody">
+                  <!-- Employee rows will be inserted here -->
+                </tbody>
+              </table>
+            </div>
+            <div id="noEmployeesMessage" class="text-center p-4 text-muted hidden">
+              No employees added yet. Click "Add Employee" to get started.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
+
+  <!-- Add/Edit Employee Modal -->
+  <div class="modal-overlay" id="employeeModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="employeeModalTitle">Add New Employee</h3>
+        <button class="modal-close" onclick="app.closeModal('employeeModal')">&times;</button>
+      </div>
+      <form id="employeeForm" onsubmit="app.saveEmployee(event)">
+        <input type="hidden" id="employeeId">
+
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="form-control" id="empName" required placeholder="e.g. John Doe">
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Role</label>
+            <select class="form-control" id="empRole" required>
+              <option value="Manager">Manager</option>
+              <option value="Field Worker">Field Worker</option>
+              <option value="Driver">Driver</option>
+              <option value="Security">Security</option>
+              <option value="Admin">Admin</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select class="form-control" id="empStatus" required>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input type="tel" class="form-control" id="empPhone" placeholder="+237...">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Monthly Salary (XAF)</label>
+            <input type="number" class="form-control" id="empSalary" min="0" step="1000" placeholder="0">
+          </div>
+        </div>
+
+        <div class="flex" style="justify-content: flex-end; gap: 1rem;">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('employeeModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">💾 Save Employee</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- Add Transaction Modal -->
   <div class="modal-overlay" id="addTransactionModal">
@@ -682,7 +779,7 @@ Example:
 
         <div class="flex" style="justify-content: flex-end; gap: 1rem;">
           <button type="button" class="btn btn-outline" onclick="app.closeModal('createFarmModal')">Cancel</button>
-          <button type="submit" class="btn btn-primary">Create Farm</button>
+          <button type="submit" class="btn btn-primary">➕ Create Farm</button>
         </div>
       </form>
     </div>
@@ -739,7 +836,7 @@ Example:
 
         <div class="flex" style="justify-content: flex-end; gap: 1rem;">
           <button type="button" class="btn btn-outline" onclick="app.closeModal('sectionModal')">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save Section</button>
+          <button type="submit" class="btn btn-primary">💾 Save Section</button>
         </div>
       </form>
     </div>
@@ -886,12 +983,29 @@ Example:
   <!-- Footer -->
   <footer class="section bg-primary" style="color: white; text-align: center; padding: 2rem 0;">
     <div class="container">
-      <p>&copy; 2026 Maloure Farm Management System | Njimoun, Foumban</p>
+      <p>&copy; 2026 Farm Management System</p>
       <p class="text-muted" style="margin-top: 0.5rem; font-size: 0.875rem;">
         Professional farm management for sustainable agriculture
       </p>
     </div>
   </footer>
+
+  <!-- Confirmation Modal -->
+  <div id="confirmationModal" class="modal-overlay">
+    <div class="modal" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Confirm Action</h3>
+        <button class="modal-close" onclick="app.closeModal('confirmationModal')">&times;</button>
+      </div>
+      <div style="margin-bottom: 2rem;">
+        <p id="confirmationMessage">Are you sure you want to proceed?</p>
+      </div>
+      <div class="flex" style="justify-content: flex-end; gap: 1rem;">
+        <button class="btn btn-secondary" onclick="app.closeModal('confirmationModal')">Cancel</button>
+        <button class="btn btn-danger" id="confirmActionBtn">⚠️ Confirm</button>
+      </div>
+    </div>
+  </div>
 
   <!-- API Client for Database Integration -->
   <script src="api-client.js"></script>
