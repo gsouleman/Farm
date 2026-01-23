@@ -625,8 +625,8 @@ const app = {
         document.getElementById('cropPlantedDate').value = today;
 
         // Render initial UI
-        this.renderDashboard();
-
+    // Initialize the application
+    init() {
 // Modal functions
 openModal(modalId) {
     document.getElementById(modalId).classList.add('active');
@@ -656,17 +656,17 @@ closeModal(modalId) {
         if (languageSelector) {
             languageSelector.value = this.currentLanguage;
         }
-        this.updateAllText();
-
-        console.log('âœ… Application initialized successfully!');
+        console.log(' Application initialized successfully!');
     },
 
-    // Load data from localStorage
-    // Load data from localStorage
-    loadData() {
-        const savedFarms = localStorage.getItem('allFarms');
-        const savedCurrentFarmId = localStorage.getItem('currentFarmId');
+    // Modal functions
+    openModal(modalId) {
+        document.getElementById(modalId).classList.add('active');
+    },
 
+    closeModal(modalId) {
+        document.getElementById(modalId).classList.remove('active');
+    },
         if (savedFarms) {
             this.farms = JSON.parse(savedFarms);
         }
