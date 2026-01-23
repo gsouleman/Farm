@@ -670,7 +670,7 @@ loadData() {
 
     // Update UI to show current farm name
     const farmNameEl = document.getElementById('farmNameDisplay');
-    if (farmNameEl \u0026\u0026 this.getCurrentFarm()) {
+    if (farmNameEl && this.getCurrentFarm()) {
         farmNameEl.textContent = this.getCurrentFarm().name;
     }
 
