@@ -3216,7 +3216,7 @@ const app = {
             <div class="modal-overlay" onclick="this.closest('.modal').remove()"></div>
             <div class="modal-content" style="max-width: 600px;">
                 <div class="modal-header">
-                    <h3 class="modal-title">âœï¸ Edit Section</h3>
+                    <h3 class="modal-title">Edit Section</h3>
                     <button class="btn-close" onclick="this.closest('.modal').remove()">âœ•</button>
                 </div>
                 <div class="modal-body">
