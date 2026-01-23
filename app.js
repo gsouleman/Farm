@@ -659,7 +659,6 @@ loadData() {
     const savedCurrentFarmId = localStorage.getItem('currentFarmId');
 
     if (savedFarms) {
-        if (savedFarms) {
             this.farms = JSON.parse(savedFarms);
     }
 
@@ -671,7 +670,7 @@ loadData() {
     }
 
     // Update UI to show current farm name
-    const farmNameEl = document.getElementById('farmNameDisplay');
+    if (farmNameEl && this.getCurrentFarm()) {
     if (farmNameEl) farmNameEl.textContent = this.getCurrentFarm().name;
 
     // Update farm selector if it exists
