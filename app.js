@@ -718,6 +718,18 @@ renderDashboard() {
         cashFlowTrendEl.textContent = '-- Neutral';
         cashFlowTrendEl.className = 'stat-card-trend';
     }
+
+    // Update farm area and perimeter
+    const farm = this.getCurrentFarm();
+    const totalAreaEl = document.getElementById('totalArea');
+    const areaPerimeterEl = document.getElementById('areaPerimeter');
+    
+    if (totalAreaEl) {
+        totalAreaEl.textContent = `${farm.area.toFixed(2)} ha`;
+    }
+    if (areaPerimeterEl) {
+        areaPerimeterEl.textContent = `${farm.perimeter.toFixed(2)} m perimeter`;
+    }
 },
 
 // Render farm map using Google Maps
