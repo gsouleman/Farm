@@ -669,10 +669,8 @@ const app = {
         }
 
         // Update UI to show current farm name
-        const farmNameEl = document.getElementById('farmNameDisplay');
-        if (farmNameEl && this.getCurrentFarm()) {
-            farmNameEl.textContent = this.getCurrentFarm().name;
-        }
+        // Update farm details in UI
+        this.renderFarmDetails();
 
         // Update farm selector if it exists
         this.updateFarmSelector();
@@ -729,6 +727,28 @@ const app = {
         }
         if (areaPerimeterEl) {
             areaPerimeterEl.textContent = `${farm.perimeter.toFixed(2)} m perimeter`;
+        }
+    },
+
+    // Render farm details in sidebar
+    renderFarmDetails() {
+        const farm = this.getCurrentFarm();
+        if (!farm) return;
+
+        const setText = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+        };
+
+        setText('farmNameDisplay', farm.name);
+        setText('farmLocationDisplay', farm.location || '-');
+        setText('farmAreaDisplay', (farm.area ? farm.area.toFixed(2) : '0.00') + ' hectares');
+        setText('farmPerimeterDisplay', (farm.perimeter ? farm.perimeter.toFixed(2) : '0.00') + ' meters');
+
+        if (farm.centerCoordinates && typeof farm.centerCoordinates.lat === 'number') {
+            setText('farmCoordinatesDisplay', `${farm.centerCoordinates.lat.toFixed(6)}, ${farm.centerCoordinates.lng.toFixed(6)}`);
+        } else {
+            setText('farmCoordinatesDisplay', '-');
         }
     },
 
@@ -2028,10 +2048,8 @@ const app = {
         this.saveData();
 
         // Update UI
-        const farmNameDisplay = document.getElementById('farmNameDisplay');
-        if (farmNameDisplay) {
-            farmNameDisplay.textContent = newFarm.name;
-        }
+        // Update UI
+        this.renderFarmDetails();
         this.renderDashboard();
         this.renderFarmMap();
         this.renderTransactions();
@@ -2073,7 +2091,8 @@ const app = {
         this.saveData();
 
         // Update UI
-        document.getElementById('farmNameDisplay').textContent = farm.name;
+        // Update UI
+        this.renderFarmDetails();
         this.renderDashboard();
         this.renderFarmMap();
         this.renderTransactions();
