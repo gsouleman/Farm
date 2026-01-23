@@ -3207,7 +3207,6 @@ const app = {
 
         if (!section) {
             alert('Section not found');
-                <h3 class="modal-title">Edit Section</h3>
         }
 
         // Create edit modal
