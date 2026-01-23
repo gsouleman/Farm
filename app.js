@@ -3859,4 +3859,3 @@ app.showTab = function (tabName) {
 document.addEventListener('DOMContentLoaded', () => {
     app.init();
 });
-}; // End app object
