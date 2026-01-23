@@ -753,6 +753,7 @@ const app = {
         this.renderTransactions();
         this.renderCrops();
         this.renderFarmSectionsTable(); // Ensure crop allocation table renders
+        this.renderLandAllocationTable(); // Ensure land allocation table renders
         this.updateCurrentMonth();
 
         // Initialize charts
@@ -2997,6 +2998,27 @@ const app = {
                     <button class="btn btn-sm btn-primary" onclick="app.editSection('${section.id}')" title="Edit section" style="margin-right: 0.5rem;">✏️</button>
                     <button class="btn btn-sm btn-danger" onclick="app.deleteSection('${section.id}')" title="Delete section">🗑️</button>
                 </td>
+            </tr>
+        `).join('');
+    },
+
+    // Render Land Allocation table (on the left card)
+    renderLandAllocationTable() {
+        const tbody = document.getElementById('landAllocationTable');
+        if (!tbody) return;
+
+        const sections = this.getCurrentFarm().sections || [];
+
+        if (sections.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #999;">No allocations yet</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = sections.map(section => `
+            <tr>
+                <td><strong>${section.name}</strong></td>
+                <td>${section.area.toFixed(2)}</td>
+                <td>${section.percentage.toFixed(1)}%</td>
             </tr>
         `).join('');
     },
