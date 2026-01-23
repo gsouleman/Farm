@@ -3300,29 +3300,30 @@ const app = {
                 ctx.fill();
                 ctx.stroke();
 
-                // Add section label at center
+                // Add coordinates label at center
                 if (section.boundaries.length > 2) {
-                    const centerLat = section.boundaries.reduce((sum, c) => sum + c.lat, 0) / section.boundaries.length;
-                    const centerLng = section.boundaries.reduce((sum, c) => sum + c.lng, 0) / section.boundaries.length;
+                    const centerLat = section.centerCoordinates?.lat || section.boundaries.reduce((sum, c) => sum + c.lat, 0) / section.boundaries.length;
+                    const centerLng = section.centerCoordinates?.lng || section.boundaries.reduce((sum, c) => sum + c.lng, 0) / section.boundaries.length;
                     const centerX = scaleX(centerLng);
                     const centerY = scaleY(centerLat);
 
-                    ctx.fillStyle = '#fff';
+                    // Draw coordinates label
+                    const coordText = `${centerLat.toFixed(6)}, ${centerLng.toFixed(6)}`;
+                    ctx.font = 'bold 11px Inter, sans-serif';
+                    const coordWidth = ctx.measureText(coordText).width;
+
+                    // Background for coordinates
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                    ctx.fillRect(centerX - coordWidth / 2 - 6, centerY - 8, coordWidth + 12, 16);
                     ctx.strokeStyle = section.color;
-                    ctx.lineWidth = 1;
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(centerX - coordWidth / 2 - 6, centerY - 8, coordWidth + 12, 16);
 
-                    // Draw label background
-                    const labelText = section.name;
-                    ctx.font = 'bold 14px Inter, sans-serif';
-                    const textWidth = ctx.measureText(labelText).width;
-                    ctx.fillRect(centerX - textWidth / 2 - 4, centerY - 10, textWidth + 8, 20);
-                    ctx.strokeRect(centerX - textWidth / 2 - 4, centerY - 10, textWidth + 8, 20);
-
-                    // Draw label text
+                    // Draw coordinate text
                     ctx.fillStyle = section.color;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.fillText(labelText, centerX, centerY);
+                    ctx.fillText(coordText, centerX, centerY);
                 }
             }
         });
@@ -3711,3 +3712,148 @@ app.showTab = function (tabName) {
 document.addEventListener('DOMContentLoaded', () => {
     app.init();
 });
+// Print functions for allocation tables
+
+printLandAllocationTable() {
+    const sections = this.getCurrentFarm().sections || [];
+    const farmName = this.getCurrentFarm().name;
+    const totalArea = this.getCurrentFarm().area;
+
+    if (sections.length === 0) {
+        alert('No allocations to print');
+        return;
+    }
+
+    const printWindow = window.open('', '', 'width=800,height=600');
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Land Allocation - ${farmName}</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; }
+                h1 { color: #333; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; }
+                .meta { color: #666; margin-bottom: 20px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                th { background: #4CAF50; color: white; padding: 12px; text-align: left; }
+                td { padding: 10px; border-bottom: 1px solid #ddd; }
+                tr:hover { background: #f5f5f5; }
+                .footer { margin-top: 30px; color: #999; font-size: 12px; text-align: center; }
+                @media print { button { display: none; } }
+            </style>
+        </head>
+        <body>
+            <h1>ðŸŒ¾ Land Allocation Report</h1>
+            <div class="meta">
+                <strong>Farm:</strong> ${farmName}<br>
+                <strong>Total Area:</strong> ${totalArea} hectares<br>
+                <strong>Generated:</strong> ${new Date().toLocaleString()}
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Zone/Section</th>
+                        <th>Area (HA)</th>
+                        <th>Percentage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${sections.map(s => `
+                        <tr>
+                            <td><strong>${s.name}</strong></td>
+                            <td>${s.area.toFixed(2)}</td>
+                            <td>${s.percentage.toFixed(1)}%</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            
+            <div class="footer">
+                Generated by Maloure Farm Management System
+            </div>
+            
+            <script>window.print(); window.onafterprint = function() { window.close(); }</script>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+},
+
+printCropAllocationSections() {
+    const sections = this.getCurrentFarm().sections || [];
+    const farmName = this.getCurrentFarm().name;
+
+    if (sections.length === 0) {
+        alert('No crop allocation sections to print');
+        return;
+    }
+
+    const printWindow = window.open('', '', 'width=900,height=700');
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Crop Allocation Sections - ${farmName}</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; }
+                h1 { color: #333; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; }
+                .meta { color: #666; margin-bottom: 20px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
+                th { background: #4CAF50; color: white; padding: 10px; text-align: left; }
+                td { padding: 8px; border-bottom: 1px solid #ddd; }
+                tr:hover { background: #f5f5f5; }
+                .color-box { width: 20px; height: 20px; border-radius: 3px; border: 1px solid #999; }
+                .footer { margin-top: 30px; color: #999; font-size: 12px; text-align: center; page-break-after: avoid; }
+                .coords { font-family: monospace; font-size: 11px; color: #666; }
+                @media print { button { display: none; } }
+            </style>
+        </head>
+        <body>
+            <h1>ðŸ“Š Crop Allocation Sections</h1>
+            <div class="meta">
+                <strong>Farm:</strong> ${farmName}<br>
+                <strong>Total Sections:</strong> ${sections.length}<br>
+                <strong>Generated:</strong> ${new Date().toLocaleString()}
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Color</th>
+                        <th>Section Name</th>
+                        <th>Type</th>
+                        <th>Crop</th>
+                        <th>Area (ha)</th>
+                        <th>%</th>
+                        <th>Coordinates (Lat, Lng)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${sections.map(s => {
+        const lat = s.centerCoordinates?.lat?.toFixed(6) || 'N/A';
+        const lng = s.centerCoordinates?.lng?.toFixed(6) || 'N/A';
+        return `
+                        <tr>
+                            <td><div class="color-box" style="background: ${s.color};"></div></td>
+                            <td><strong>${s.name}</strong></td>
+                            <td>${s.type.replace('-', ' ')}</td>
+                            <td>${s.cropType || '-'}</td>
+                            <td>${s.area.toFixed(4)}</td>
+                            <td>${s.percentage.toFixed(1)}%</td>
+                            <td class="coords">${lat}, ${lng}</td>
+                        </tr>
+                    `}).join('')}
+                </tbody>
+            </table>
+            
+            <div class="footer">
+                Generated by Maloure Farm Management System
+            </div>
+            
+            <script>window.print(); window.onafterprint = function() { window.close(); }</script>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+},
