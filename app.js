@@ -1603,8 +1603,32 @@ const app = {
 
     // Save coordinates and update maps
     saveCoordinates() {
+        // Allow clearing all coordinates for blank map
+        if (this.tempCoordinates.length === 0) {
+            // Clear boundaries and all crop allocations
+            this.farmData.boundaries = [];
+            this.farmData.sections = []; // Clear all crop allocation sections
+            this.farmData.centerCoordinates = { lat: 0, lng: 0 };
+
+            // Save to localStorage
+            this.saveData();
+
+            // Update views
+            this.updateMapViews();
+            this.updateFarmInfo();
+            this.renderFarmSectionsTable();
+            this.renderGraphicalMap();
+
+            // Close modal
+            this.closeModal('coordinateEditorModal');
+
+            alert('✓ All coordinates and crop allocations cleared!\n\nMap is now blank. Add new coordinates to define your farm boundaries.');
+            return;
+        }
+
+        // Validate minimum 3 points for a valid polygon
         if (this.tempCoordinates.length < 3) {
-            alert('At least 3 coordinate points are required to form a polygon.');
+            alert('At least 3 coordinate points are required to form a polygon.\n\nEither add more points or clear all to start fresh.');
             return;
         }
 
@@ -1627,6 +1651,9 @@ const app = {
 
         // Update Farm Info display
         this.updateFarmInfo();
+
+        // Re-render sections table
+        this.renderFarmSectionsTable();
 
         // Close modal
         this.closeModal('coordinateEditorModal');
