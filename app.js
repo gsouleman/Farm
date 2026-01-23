@@ -3001,8 +3001,8 @@ const app = {
                 <td>${section.area.toFixed(4)}</td>
                 <td>${section.percentage.toFixed(1)}%</td>
                 <td>
-                    <button class="btn btn-sm btn-primary" onclick="app.editSection('${section.id}')" title="Edit section" style="margin-right: 0.5rem;">âœï¸</button>
-                    <button class="btn btn-sm btn-danger" onclick="app.deleteSection('${section.id}')" title="Delete section">ðŸ—‘ï¸</button>
+                    <button class="btn btn-sm btn-primary" onclick="app.editSection('${section.id}')" title="Edit section" style="margin-right: 0.5rem;">Edit</button>
+                    <button class="btn btn-sm btn-danger" onclick="app.deleteSection('${section.id}')" title="Delete section">Delete</button>
                 </td>
             </tr>
         `).join('');
