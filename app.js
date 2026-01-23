@@ -653,28 +653,31 @@ init() {
 },
 
 // Load data from localStorage
+// Load data from localStorage
 loadData() {
     const savedFarms = localStorage.getItem('allFarms');
     const savedCurrentFarmId = localStorage.getItem('currentFarmId');
 
     if (savedFarms) {
-            this.farms = JSON.parse(savedFarms);
+        this.farms = JSON.parse(savedFarms);
     }
 
-    if (savedCurrentFarmId) {
-        // Verify the saved farm ID exists
-        if (this.farms.find(f => f.id === savedCurrentFarmId)) {
-            this.currentFarmId = savedCurrentFarmId;
-        }
+    if (savedCurrentFarmId \u0026\u0026 this.farms.find(f => f.id === savedCurrentFarmId)) {
+        this.currentFarmId = savedCurrentFarmId;
+    } else if (this.farms.length > 0) {
+        this.currentFarmId = this.farms[0].id;
     }
 
     // Update UI to show current farm name
+    const farmNameEl = document.getElementById('farmNameDisplay');
+    if (farmNameEl \u0026\u0026 this.getCurrentFarm()) {
         farmNameEl.textContent = this.getCurrentFarm().name;
     }
 
-    //Update farm selector if it exists
+    // Update farm selector if it exists
     this.updateFarmSelector();
 },
+
     localStorage.setItem('allFarms', JSON.stringify(this.farms));
     localStorage.setItem('currentFarmId', this.currentFarmId);
 },
