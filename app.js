@@ -2038,7 +2038,35 @@ const app = {
         this.updateFarmSelector();
 
         this.closeModal('createFarmModal');
-        alert(`Farm "${newFarm.name}" created successfully! You are now managing this farm.`);
+    },
+
+    // Handle farm selector dropdown
+    handleFarmDropdown(value) {
+        if (value === 'create-new') {
+            this.openCreateFarmModal();
+            document.getElementById('farmSelector').value = '';
+        } else if (value) {
+            this.selectFarm(value);
+        }
+    },
+
+    // Open create farm modal
+    openCreateFarmModal() {
+        const modal = document.getElementById('createFarmModal');
+        if (modal) {
+            modal.classList.add('active');
+            const form = document.getElementById('farmForm');
+            if (form) form.reset();
+        }
+    },
+
+    // Close modal
+    closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('active');
+        }
+    }
     },
 
     // Handle farm dropdown selection (includes create option)
