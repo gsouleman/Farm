@@ -2822,7 +2822,7 @@ const app = {
         // Turn off drawing mode
         this.drawingMode = false;
         const btn = document.getElementById('drawSectionBtn');
-        btn.textContent = 'ðŸ“ Crop Allocation';
+        btn.textContent = 'Crop Allocation';
         btn.classList.remove('btn-danger');
         btn.classList.add('btn-primary');
 
@@ -2894,7 +2894,7 @@ const app = {
         this.drawingMode = false;
         this.currentDrawing = [];
         const btn = document.getElementById('drawSectionBtn');
-        btn.textContent = 'ðŸ“ Crop Allocation';
+        btn.textContent = 'Crop Allocation';
         btn.classList.remove('btn-danger');
         btn.classList.add('btn-primary');
         this.renderGraphicalMap();
@@ -2907,7 +2907,7 @@ const app = {
         const btn = document.getElementById('drawSectionBtn');
 
         if (this.drawingMode) {
-            btn.textContent = 'ðŸ›‘ Cancel Drawing';
+            btn.textContent = 'Cancel Drawing';
             btn.classList.remove('btn-primary');
             btn.classList.add('btn-danger');
             this.currentDrawing = [];
@@ -2915,7 +2915,7 @@ const app = {
             // Switch to graphical view
             this.toggleMapView('graphical');
 
-            alert('ðŸŽ¨ Drawing Mode Active!\n\nâ€¢ Click points on the map to draw your section\nâ€¢ The area will calculate automatically\nâ€¢ Double-click to finish drawing\nâ€¢ Press ESC to cancel');
+            alert('Drawing Mode Active!\n\n• Click and drag to draw a rectangular section\n• Hold Shift for a square\n• The area will calculate automatically upon release\n• Press ESC to cancel');
         } else {
             this.cancelDrawing();
         }
@@ -3614,6 +3614,8 @@ const app = {
 
         // Add click event handler to canvas for toggling corner coordinates
         canvas.onclick = (e) => {
+            if (this.drawingMode) return; // Ignore clicks if drawing
+
             const rect = canvas.getBoundingClientRect();
             const scaleFactorX = canvas.width / rect.width;
             const scaleFactorY = canvas.height / rect.height;
@@ -3802,7 +3804,7 @@ app.updateFarmInfoText = function () {
 
     // Update map buttons
     const satelliteBtn = document.getElementById('satelliteViewBtn');
-    if (satelliteBtn) satelliteBtn.innerHTML = `ðŸ›°ï¸ ${this.t('farmInfo.satelliteView')}`;
+    if (satelliteBtn) satelliteBtn.innerHTML = `${this.t('farmInfo.satelliteView')}`;
 
     const graphicalBtn = document.getElementById('graphicalViewBtn');
     if (graphicalBtn) graphicalBtn.innerHTML = `ðŸ“Š ${this.t('farmInfo.graphicalView')}`;
@@ -3814,7 +3816,7 @@ app.updateFarmInfoText = function () {
     if (uploadBtn) uploadBtn.innerHTML = `ðŸ“¤ ${this.t('farmInfo.upload')}`;
 
     const allocBtn = document.getElementById('drawSectionBtn');
-    if (allocBtn) allocBtn.innerHTML = `ðŸ“ ${this.t('farmInfo.cropAllocation')}`;
+    if (allocBtn) allocBtn.innerHTML = `${this.t('farmInfo.cropAllocation')}`;
 };
 
 // Update Coordinate Editor modal text
