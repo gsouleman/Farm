@@ -752,6 +752,7 @@ const app = {
         this.renderFarmMap();
         this.renderTransactions();
         this.renderCrops();
+        this.renderFarmSectionsTable(); // Ensure crop allocation table renders
         this.updateCurrentMonth();
 
         // Initialize charts
@@ -1999,9 +2000,9 @@ const app = {
     // Setup smooth scroll navigation
     setupNavigation() {
         document.querySelectorAll('.navbar-nav a').forEach(link => {
-            link.addEventListener('click', function (e) {
+            link.addEventListener('click', (e) => {
                 e.preventDefault();
-                const targetId = this.getAttribute('href');
+                const targetId = link.getAttribute('href');
                 const targetSection = document.querySelector(targetId);
 
                 if (targetSection) {
@@ -2009,7 +2010,15 @@ const app = {
 
                     // Update active link
                     document.querySelectorAll('.navbar-nav a').forEach(l => l.classList.remove('active'));
-                    this.classList.add('active');
+                    link.classList.add('active');
+
+                    // Render sections table and map when viewing Farm Info
+                    if (targetId === '#farm-info') {
+                        setTimeout(() => {
+                            this.renderFarmSectionsTable();
+                            this.renderGraphicalMap();
+                        }, 100); // Small delay to ensure DOM is ready
+                    }
                 }
             });
         });
