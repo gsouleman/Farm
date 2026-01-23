@@ -3207,7 +3207,7 @@ const app = {
 
         if (!section) {
             alert('Section not found');
-            return;
+                <h3 class="modal-title">Edit Section</h3>
         }
 
         // Create edit modal
@@ -3256,7 +3256,7 @@ const app = {
                         <label class="form-label">Notes (optional)</label>
                         <textarea class="form-control" id="editSectionNotes" rows="3">${section.notes || ''}</textarea>
                     </div>
-                </div>
+                <button class="btn btn-primary" onclick="app.saveEditedSection('${sectionId}')">Save Changes</button>
                 <div class="modal-footer">
                     <button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancel</button>
                     <button class="btn btn-primary" onclick="app.saveEditedSection('${sectionId}')">ðŸ’¾ Save Changes</button>
