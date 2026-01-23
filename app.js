@@ -659,14 +659,8 @@ loadData() {
     const savedCurrentFarmId = localStorage.getItem('currentFarmId');
 
     if (savedFarms) {
-        const loadedFarms = JSON.parse(savedFarms);
-        // Ensure Maloure Farm always exists
-        const maloureFarm = loadedFarms.find(f => f.id === 'maloure-farm');
-        if (!maloureFarm) {
-            // Add Maloure Farm back if it was somehow removed
-            loadedFarms.unshift(this.farms[0]);
-        }
-        this.farms = loadedFarms;
+        if (savedFarms) {
+            this.farms = JSON.parse(savedFarms);
     }
 
     if (savedCurrentFarmId) {
