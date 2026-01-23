@@ -592,7 +592,64 @@ const app = {
             cashCrops: [],
             customExpenseCategories: [],
             customIncomeCategories: [],
-            sections: []  // Farm sections for crop allocation
+            sections: [  // Farm sections for crop allocation
+                {
+                    id: 'section-demo-1',
+                    name: 'Avocado Grove',
+                    type: 'fruit-trees',
+                    cropType: 'Avocado',
+                    boundaries: [
+                        { lat: 5.916982, lng: 11.043742 },
+                        { lat: 5.916782, lng: 11.043831 },
+                        { lat: 5.916511, lng: 11.044077 },
+                        { lat: 5.916022, lng: 11.044109 },
+                        { lat: 5.916022, lng: 11.043647 },
+                        { lat: 5.916284, lng: 11.043192 },
+                        { lat: 5.916574, lng: 11.042693 },
+                        { lat: 5.916920, lng: 11.043178 }
+                    ],
+                    area: 1.0,
+                    percentage: 36.4,
+                    color: '#4ECDC4',
+                    notes: 'Main avocado production area'
+                },
+                {
+                    id: 'section-demo-2',
+                    name: 'Cassava Field',
+                    type: 'cash-crops',
+                    cropType: 'Cassava',
+                    boundaries: [
+                        { lat: 5.916920, lng: 11.043178 },
+                        { lat: 5.917008, lng: 11.043039 },
+                        { lat: 5.917047, lng: 11.043509 },
+                        { lat: 5.917008, lng: 11.043421 },
+                        { lat: 5.916943, lng: 11.043474 },
+                        { lat: 5.916782, lng: 11.043831 },
+                        { lat: 5.916697, lng: 11.043867 }
+                    ],
+                    area: 1.5,
+                    percentage: 54.5,
+                    color: '#FF6B6B',
+                    notes: 'Primary cash crop cultivation'
+                },
+                {
+                    id: 'section-demo-3',
+                    name: 'Farm House Area',
+                    type: 'infrastructure',
+                    cropType: null,
+                    boundaries: [
+                        { lat: 5.915755, lng: 11.043455 },
+                        { lat: 5.915686, lng: 11.043546 },
+                        { lat: 5.915478, lng: 11.043159 },
+                        { lat: 5.915728, lng: 11.042593 },
+                        { lat: 5.915728, lng: 11.043421 }
+                    ],
+                    area: 0.15,
+                    percentage: 5.5,
+                    color: '#FFA07A',
+                    notes: 'Farm house and storage buildings'
+                }
+            ]
         }
     ],
 
