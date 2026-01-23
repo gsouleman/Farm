@@ -631,6 +631,7 @@ const app = {
         this.renderCrops();
         this.renderFarmSectionsTable(); // Ensure crop allocation table renders
         this.renderLandAllocationTable(); // Ensure land allocation table renders
+        this.renderLandAllocationTable(); // Ensure land allocation table renders
         this.updateCurrentMonth();
 
         // Initialize charts
@@ -678,6 +679,11 @@ const app = {
 
     // Save data to localStorage
     saveData() {
+        localStorage.setItem('allFarms', JSON.stringify(this.farms));
+        localStorage.setItem('currentFarmId', this.currentFarmId);
+
+        // Refresh land allocation table if visible
+        this.renderLandAllocationTable();
     },
 
     // Calculate financial metrics
@@ -750,6 +756,41 @@ const app = {
         } else {
             setText('farmCoordinatesDisplay', '-');
         }
+
+        // Render Land Allocation Table
+        this.renderLandAllocationTable();
+    },
+
+    // Render Land Allocation Table based on sections
+    renderLandAllocationTable() {
+        const tbody = document.getElementById('landAllocationBody');
+        if (!tbody) return;
+
+        const farm = this.getCurrentFarm();
+        if (!farm || !farm.sections || farm.sections.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No allocations defined yet. Use "Enter Allocations" to add sections.</td></tr>';
+            return;
+        }
+
+        const totalFarmArea = farm.area || 0;
+
+        // Generate rows
+        tbody.innerHTML = farm.sections.map(section => {
+            const area = section.area || 0;
+            const percentage = totalFarmArea > 0 ? ((area / totalFarmArea) * 100).toFixed(1) : '0.0';
+
+            return `
+                <tr>
+                    <td>
+                        <span style="display: inline-block; width: 10px; height: 10px; background-color: ${section.color || '#ccc'}; margin-right: 5px; border-radius: 50%;"></span>
+                        ${section.name || 'Unnamed Section'}
+                        ${section.cropType ? `<small class="text-muted d-block">${section.cropType}</small>` : ''}
+                    </td>
+                    <td>${area.toFixed(2)}</td>
+                    <td>${percentage}%</td>
+                </tr>
+            `;
+        }).join('');
     },
 
     // Render farm map using Google Maps
