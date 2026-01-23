@@ -1,4 +1,4 @@
-// ===================================
+﻿// ===================================
 // ===================================
 // Multi-Language Support
 // ===================================
@@ -205,8 +205,8 @@ const translations = {
         },
         // Farm Info
         farmInfo: {
-            title: "Aperçu de la ferme",
-            locationSpecs: "Emplacement et spécifications",
+            title: "AperÃ§u de la ferme",
+            locationSpecs: "Emplacement et spÃ©cifications",
             location: "Emplacement",
             province: "Province",
             city: "Ville",
@@ -214,13 +214,13 @@ const translations = {
             farmMap: "Carte de la ferme",
             satelliteView: "Vue satellite",
             graphicalView: "Vue graphique",
-            editCoordinates: "Modifier coordonnées",
-            upload: "Télécharger",
+            editCoordinates: "Modifier coordonnÃ©es",
+            upload: "TÃ©lÃ©charger",
             cropAllocation: "Allocation des cultures",
             loadingMap: "Chargement de la carte...",
             farmName: "Nom de la ferme",
-            perimeter: "Périmètre",
-            centerCoordinates: "Coordonnées du centre",
+            perimeter: "PÃ©rimÃ¨tre",
+            centerCoordinates: "CoordonnÃ©es du centre",
             landAllocation: "Allocation des terres",
             zone: "ZONE",
             areaHa: "SURFACE (HA)",
@@ -228,28 +228,28 @@ const translations = {
             fruitTrees: "Arbres fruitiers",
             cashCrops: "Cultures de rente",
             farmHouse: "Maison de ferme",
-            residential: "Résidentiel",
-            meters: "mètres",
+            residential: "RÃ©sidentiel",
+            meters: "mÃ¨tres",
             hectares: "hectares"
         },
         // Coordinate Editor
         coordEditor: {
-            title: "Modifier les coordonnées des limites de la ferme",
-            instruction: "Entrez les coordonnées des limites du champ. Au moins 3 points sont nécessaires pour former un polygone.",
+            title: "Modifier les coordonnÃ©es des limites de la ferme",
+            instruction: "Entrez les coordonnÃ©es des limites du champ. Au moins 3 points sont nÃ©cessaires pour former un polygone.",
             addNewPoint: "Ajouter un nouveau point",
             latitude: "Latitude",
             longitude: "Longitude",
-            latRange: "(-90 à 90)",
-            lngRange: "(-180 à 180)",
+            latRange: "(-90 Ã  90)",
+            lngRange: "(-180 Ã  180)",
             addPoint: "Ajouter point",
             bulkImport: "Importation en masse",
-            bulkInstructions: "Collez plusieurs coordonnées (une par ligne). Formats supportés:",
+            bulkInstructions: "Collez plusieurs coordonnÃ©es (une par ligne). Formats supportÃ©s:",
             formatExample1: "lat,lng",
             formatExample2: "lat lng",
             formatExample3: "lat, lng",
             exampleTitle: "Exemple:",
-            placeholder: "Collez les coordonnées ici (une par ligne)\nExemple:\n5.916982,11.043742\n5.916911,11.043793\n5.916782,11.043831",
-            importCoords: "Importer coordonnées",
+            placeholder: "Collez les coordonnÃ©es ici (une par ligne)\nExemple:\n5.916982,11.043742\n5.916911,11.043793\n5.916782,11.043831",
+            importCoords: "Importer coordonnÃ©es",
             clear: "Effacer",
             clearAll: "Tout effacer",
             currentPoints: "Points de limite actuels",
@@ -260,76 +260,76 @@ const translations = {
                 actions: "ACTIONS"
             },
             delete: "Supprimer",
-            noCoordinates: "Aucune coordonnée définie",
-            validationReady: "Prêt à sauvegarder",
+            noCoordinates: "Aucune coordonnÃ©e dÃ©finie",
+            validationReady: "PrÃªt Ã  sauvegarder",
             validationMin: "Au moins 3 points requis",
             cancel: "Annuler",
             saveChanges: "Enregistrer",
             // Messages
-            errorEmpty: "Veuillez coller les coordonnées dans la zone de texte",
+            errorEmpty: "Veuillez coller les coordonnÃ©es dans la zone de texte",
             errorInvalidFormat: "Format invalide",
             errorInvalidNumbers: "Nombres invalides",
-            errorLatRange: "La latitude doit être entre -90 et 90",
-            errorLngRange: "La longitude doit être entre -180 et 180",
-            successImport: "Importé",
-            coordinate: "coordonnée",
-            coordinates: "coordonnées",
-            skipped: "Ignoré",
+            errorLatRange: "La latitude doit Ãªtre entre -90 et 90",
+            errorLngRange: "La longitude doit Ãªtre entre -180 et 180",
+            successImport: "ImportÃ©",
+            coordinate: "coordonnÃ©e",
+            coordinates: "coordonnÃ©es",
+            skipped: "IgnorÃ©",
             invalidLine: "ligne invalide",
             invalidLines: "lignes invalides",
             andMore: "et",
             more: "de plus",
-            noValidCoords: "Aucune coordonnée valide trouvée. Veuillez vérifier votre format.",
-            confirmDelete: "Supprimer le point de coordonnée",
-            confirmClearAll: "Êtes-vous sûr de vouloir supprimer tous les",
-            cannotUndo: "Cette action ne peut pas être annulée jusqu'à ce que vous fermiez la fenêtre sans enregistrer.",
-            noCoordsToClear: "Aucune coordonnée à effacer.",
-            savedSuccess: "Coordonnées enregistrées avec succès!",
+            noValidCoords: "Aucune coordonnÃ©e valide trouvÃ©e. Veuillez vÃ©rifier votre format.",
+            confirmDelete: "Supprimer le point de coordonnÃ©e",
+            confirmClearAll: "ÃŠtes-vous sÃ»r de vouloir supprimer tous les",
+            cannotUndo: "Cette action ne peut pas Ãªtre annulÃ©e jusqu'Ã  ce que vous fermiez la fenÃªtre sans enregistrer.",
+            noCoordsToClear: "Aucune coordonnÃ©e Ã  effacer.",
+            savedSuccess: "CoordonnÃ©es enregistrÃ©es avec succÃ¨s!",
             boundaryPoints: "Points de limite:",
             newCenter: "Nouveau centre:",
-            errorLatLng: "Veuillez entrer des valeurs numériques valides pour la latitude et la longitude",
-            errorMinPoints: "Au moins 3 points de coordonnées sont nécessaires pour former un polygone."
+            errorLatLng: "Veuillez entrer des valeurs numÃ©riques valides pour la latitude et la longitude",
+            errorMinPoints: "Au moins 3 points de coordonnÃ©es sont nÃ©cessaires pour former un polygone."
         },
         // Dashboard
         dashboard: {
             title: "Tableau de bord de la ferme",
             totalArea: "Surface totale",
             totalRevenue: "Revenu total",
-            totalExpenses: "Dépenses totales",
-            netCashFlow: "Flux de trésorerie net",
+            totalExpenses: "DÃ©penses totales",
+            netCashFlow: "Flux de trÃ©sorerie net",
             trend: "Tendance",
             positive: "Positif",
-            negative: "Négatif",
+            negative: "NÃ©gatif",
             neutral: "Neutre",
-            recentTransactions: "Transactions récentes",
+            recentTransactions: "Transactions rÃ©centes",
             addTransaction: "Ajouter transaction",
             date: "Date",
             type: "Type",
             description: "Description",
-            category: "Catégorie",
+            category: "CatÃ©gorie",
             amount: "Montant",
-            noTransactions: "Aucune transaction enregistrée",
+            noTransactions: "Aucune transaction enregistrÃ©e",
             viewAll: "Voir tout",
-            cashFlowTrend: "Tendance du flux de trésorerie",
+            cashFlowTrend: "Tendance du flux de trÃ©sorerie",
             landUtilization: "Utilisation des terres",
-            perimeter: "périmètre"
+            perimeter: "pÃ©rimÃ¨tre"
         },
         // Financial
         financial: {
-            title: "Gestion financière",
+            title: "Gestion financiÃ¨re",
             addTransaction: "Ajouter transaction",
             transactionType: "Type de transaction",
             income: "Revenu",
-            expense: "Dépense",
+            expense: "DÃ©pense",
             description: "Description",
-            category: "Catégorie",
+            category: "CatÃ©gorie",
             amount: "Montant",
             date: "Date",
-            selectType: "Sélectionner le type...",
-            selectCategory: "Sélectionner la catégorie...",
-            descriptionPlaceholder: "Brève description",
+            selectType: "SÃ©lectionner le type...",
+            selectCategory: "SÃ©lectionner la catÃ©gorie...",
+            descriptionPlaceholder: "BrÃ¨ve description",
             amountPlaceholder: "Entrez le montant",
-            briefDescription: "Brève description",
+            briefDescription: "BrÃ¨ve description",
             addButton: "Ajouter transaction",
             transactionHistory: "Historique des transactions",
             allTransactions: "Toutes les transactions",
@@ -338,25 +338,25 @@ const translations = {
             edit: "Modifier",
             delete: "Supprimer",
             export: "Exporter",
-            noTransactions: "Aucune transaction enregistrée",
-            deleteConfirm: "Êtes-vous sûr de vouloir supprimer cette transaction?",
-            expenseBreakdown: "Répartition des dépenses",
+            noTransactions: "Aucune transaction enregistrÃ©e",
+            deleteConfirm: "ÃŠtes-vous sÃ»r de vouloir supprimer cette transaction?",
+            expenseBreakdown: "RÃ©partition des dÃ©penses",
             incomeSources: "Sources de revenus",
-            monthlySummary: "Résumé mensuel",
+            monthlySummary: "RÃ©sumÃ© mensuel",
             currentMonth: "Mois actuel",
             monthlyIncome: "Revenu:",
-            monthlyExpenses: "Dépenses:",
+            monthlyExpenses: "DÃ©penses:",
             monthlyNet: "Net:",
             // Categories
             cropSales: "Ventes de cultures",
-            livestockSales: "Ventes de bétail",
+            livestockSales: "Ventes de bÃ©tail",
             government: "Subventions gouvernementales",
             other: "Autres revenus",
             seeds: "Semences et engrais",
-            labor: "Main-d'œuvre",
-            equipment: "Équipement",
+            labor: "Main-d'Å“uvre",
+            equipment: "Ã‰quipement",
             utilities: "Services publics",
-            otherExpense: "Autres dépenses",
+            otherExpense: "Autres dÃ©penses",
             // Expense categories
             seedsSeedlings: "Semences et plants",
             fertilizers: "Engrais",
@@ -379,57 +379,57 @@ const translations = {
             addFruitTree: "Ajouter arbre fruitier",
             addCashCrop: "Ajouter culture de rente",
             cropName: "Nom de la culture",
-            variety: "Variété",
+            variety: "VariÃ©tÃ©",
             plantedDate: "Date de plantation",
-            expectedHarvest: "Récolte prévue",
-            harvestDate: "Date de récolte",
+            expectedHarvest: "RÃ©colte prÃ©vue",
+            harvestDate: "Date de rÃ©colte",
             status: "Statut",
             area: "Surface (hectares)",
             count: "Nombre",
             yield: "Rendement (kg)",
-            namePlaceholder: "ex: Maïs",
-            varietyPlaceholder: "ex: Variété hybride",
+            namePlaceholder: "ex: MaÃ¯s",
+            varietyPlaceholder: "ex: VariÃ©tÃ© hybride",
             areaPlaceholder: "Entrez la surface",
             addButton: "Ajouter culture",
             activeCrops: "Cultures actives",
             fruitTrees: "Arbres fruitiers",
             cashCrops: "Cultures de rente",
-            harvest: "Récolter",
+            harvest: "RÃ©colter",
             actions: "Actions",
-            noCrops: "Aucune culture plantée",
-            noFruitTrees: "Aucun arbre fruitier enregistré",
-            noCashCrops: "Aucune culture de rente enregistrée",
-            deleteConfirm: "Êtes-vous sûr de vouloir supprimer cette culture?",
-            selectType: "Sélectionner le type...",
+            noCrops: "Aucune culture plantÃ©e",
+            noFruitTrees: "Aucun arbre fruitier enregistrÃ©",
+            noCashCrops: "Aucune culture de rente enregistrÃ©e",
+            deleteConfirm: "ÃŠtes-vous sÃ»r de vouloir supprimer cette culture?",
+            selectType: "SÃ©lectionner le type...",
             // Status
-            planted: "Planté",
+            planted: "PlantÃ©",
             growing: "En croissance",
             flowering: "En floraison",
             fruiting: "En fructification",
-            ready: "Prêt à récolter",
-            readyToHarvest: "Prêt à récolter",
-            harvested: "Récolté"
+            ready: "PrÃªt Ã  rÃ©colter",
+            readyToHarvest: "PrÃªt Ã  rÃ©colter",
+            harvested: "RÃ©coltÃ©"
         },
         // Reports
         reports: {
             title: "Rapports d'investisseurs",
-            generateReport: "Générer un rapport",
-            generateProfessionalReports: "Générer des rapports professionnels",
+            generateReport: "GÃ©nÃ©rer un rapport",
+            generateProfessionalReports: "GÃ©nÃ©rer des rapports professionnels",
             reportType: "Type de rapport",
-            dateRange: "Période",
+            dateRange: "PÃ©riode",
             from: "De",
-            to: "À",
-            generate: "Générer",
+            to: "Ã€",
+            generate: "GÃ©nÃ©rer",
             financialReport: "Rapport financier",
-            operationsReport: "Rapport d'opérations",
-            investorPresentation: "Présentation investisseurs",
-            reportPreview: "Aperçu du rapport",
+            operationsReport: "Rapport d'opÃ©rations",
+            investorPresentation: "PrÃ©sentation investisseurs",
+            reportPreview: "AperÃ§u du rapport",
             print: "Imprimer",
             // Report types
-            financial: "Résumé financier",
+            financial: "RÃ©sumÃ© financier",
             crops: "Performance des cultures",
             inventory: "Rapport d'inventaire",
-            custom: "Rapport personnalisé"
+            custom: "Rapport personnalisÃ©"
         },
         // Common
         common: {
@@ -443,22 +443,22 @@ const translations = {
             yes: "Oui",
             no: "Non",
             confirm: "Confirmer",
-            success: "Succès",
+            success: "SuccÃ¨s",
             error: "Erreur",
             warning: "Attention",
-            createFarm: "Créer la ferme"
+            createFarm: "CrÃ©er la ferme"
         },
         // Modals
         modals: {
             addTransaction: "Ajouter une transaction",
             addCrop: "Ajouter une culture",
-            createNewFarm: "Créer une nouvelle ferme",
+            createNewFarm: "CrÃ©er une nouvelle ferme",
             configureFarmSection: "Configurer la section de ferme",
-            addCustomCategory: "Ajouter une catégorie personnalisée",
+            addCustomCategory: "Ajouter une catÃ©gorie personnalisÃ©e",
             // Transaction Modal
             transactionDate: "Date",
             transactionType: "Type",
-            transactionCategory: "Catégorie",
+            transactionCategory: "CatÃ©gorie",
             transactionDescription: "Description",
             transactionAmount: "Montant (XAF)",
             // Crop Modal
@@ -470,13 +470,13 @@ const translations = {
             // Farm Modal
             farmName: "Nom de la ferme",
             farmLocation: "Emplacement",
-            farmBoundaries: "Coordonnées des limites (Optionnel)",
-            farmBoundariesPlaceholder: "Collez les coordonnées au format: lat,lng (une par ligne)\nExemple:\n5.916982,11.043742\n5.916911,11.043793\n5.916782,11.043831",
-            farmBoundariesHelp: "Si fourni, la surface sera calculée automatiquement. Sinon, entrez manuellement ci-dessous.",
-            calculateArea: "Calculer la surface à partir des limites",
-            calculatedArea: "Surface calculée",
+            farmBoundaries: "CoordonnÃ©es des limites (Optionnel)",
+            farmBoundariesPlaceholder: "Collez les coordonnÃ©es au format: lat,lng (une par ligne)\nExemple:\n5.916982,11.043742\n5.916911,11.043793\n5.916782,11.043831",
+            farmBoundariesHelp: "Si fourni, la surface sera calculÃ©e automatiquement. Sinon, entrez manuellement ci-dessous.",
+            calculateArea: "Calculer la surface Ã  partir des limites",
+            calculatedArea: "Surface calculÃ©e",
             farmArea: "Surface totale (hectares)",
-            farmPerimeter: "Périmètre (mètres) - Optionnel",
+            farmPerimeter: "PÃ©rimÃ¨tre (mÃ¨tres) - Optionnel",
             centerLatitude: "Latitude du centre",
             centerLongitude: "Longitude du centre",
             // Section Modal
@@ -487,23 +487,23 @@ const translations = {
             sectionAreaHelp: "Entrez la surface en hectares",
             sectionColor: "Couleur de la section",
             sectionNotes: "Notes",
-            sectionNotesPlaceholder: "Notes supplémentaires sur cette section",
+            sectionNotesPlaceholder: "Notes supplÃ©mentaires sur cette section",
             saveSection: "Enregistrer la section",
             // Section Types
             fruitTreesType: "Arbres fruitiers",
             cashCropsType: "Cultures de rente",
             infrastructure: "Infrastructure",
-            fallowLand: "Terre en jachère",
+            fallowLand: "Terre en jachÃ¨re",
             otherType: "Autre",
             // Category Modal
-            categoryName: "Nom de la catégorie",
-            categoryNamePlaceholder: "Entrez le nom de la catégorie",
-            addCategory: "Ajouter catégorie"
+            categoryName: "Nom de la catÃ©gorie",
+            categoryNamePlaceholder: "Entrez le nom de la catÃ©gorie",
+            addCategory: "Ajouter catÃ©gorie"
         },
         // Sections/Crop Allocation
         sections: {
             cropAllocationSections: "Sections d'allocation des cultures",
-            noSections: "Aucune section définie. Cliquez sur \"Allocation des cultures\" pour commencer.",
+            noSections: "Aucune section dÃ©finie. Cliquez sur \"Allocation des cultures\" pour commencer.",
             color: "COULEUR",
             sectionName: "NOM DE LA SECTION",
             type: "TYPE",
@@ -512,12 +512,12 @@ const translations = {
             percentOfFarm: "% DE LA FERME",
             actions: "ACTIONS",
             deleteSection: "Supprimer cette section?",
-            sectionDeleted: "Section supprimée avec succès"
+            sectionDeleted: "Section supprimÃ©e avec succÃ¨s"
         },
         // Farm Selector
         farmSelector: {
-            selectFarm: "Sélectionner une ferme ▼",
-            createNew: "➕ Créer une nouvelle ferme"
+            selectFarm: "SÃ©lectionner une ferme â–¼",
+            createNew: "âž• CrÃ©er une nouvelle ferme"
         }
     }
 };
@@ -737,7 +737,7 @@ const app = {
 
     // Initialize the application
     init() {
-        console.log('🌾 Initializing Maloure Farm Management System...');
+        console.log('ðŸŒ¾ Initializing Maloure Farm Management System...');
 
         // Load data from localStorage
         this.loadData();
@@ -772,7 +772,7 @@ const app = {
         }
         this.updateAllText();
 
-        console.log('✅ Application initialized successfully!');
+        console.log('âœ… Application initialized successfully!');
     },
 
     // Load data from localStorage
@@ -839,10 +839,10 @@ const app = {
         // Update trends (simplified - calculate based on income/expense ratio)
         const cashFlowTrendEl = document.getElementById('cashFlowTrend');
         if (netCashFlow > 0) {
-            cashFlowTrendEl.textContent = '↑ Positive';
+            cashFlowTrendEl.textContent = 'â†‘ Positive';
             cashFlowTrendEl.className = 'stat-card-trend trend-up';
         } else if (netCashFlow < 0) {
-            cashFlowTrendEl.textContent = '↓ Negative';
+            cashFlowTrendEl.textContent = 'â†“ Negative';
             cashFlowTrendEl.className = 'stat-card-trend trend-down';
         } else {
             cashFlowTrendEl.textContent = '-- Neutral';
@@ -861,7 +861,7 @@ const app = {
             mapDiv.innerHTML = `
                 <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666;">
                     <div style="text-align: center; padding: 2rem;">
-                        <p style="font-size: 1.2rem; margin-bottom: 0.5rem; color: #cc0000;">⚠️ Google Maps API Key Required</p>
+                        <p style="font-size: 1.2rem; margin-bottom: 0.5rem; color: #cc0000;">âš ï¸ Google Maps API Key Required</p>
                         <p style="margin-bottom: 1rem;">To display the satellite map:</p>
                         <ol style="text-align: left; display: inline-block; margin-bottom: 1rem;">
                             <li>Get a free API key from Google Cloud</li>
@@ -1013,7 +1013,7 @@ const app = {
         <td>${t.description}</td>
         <td><strong>${this.formatCurrency(t.amount)}</strong></td>
         <td>
-          <button class="btn btn-danger btn-sm" onclick="app.deleteTransaction(${index})">🗑️</button>
+          <button class="btn btn-danger btn-sm" onclick="app.deleteTransaction(${index})">ðŸ—‘ï¸</button>
         </td>
       </tr>
     `).join('');
@@ -1034,7 +1034,7 @@ const app = {
           <td><span class="badge badge-${this.getStatusColor(crop.status)}">${crop.status}</span></td>
           <td>${crop.expectedHarvest || 'TBD'}</td>
           <td>
-            <button class="btn btn-danger btn-sm" onclick="app.deleteFruitTree(${index})">🗑️</button>
+            <button class="btn btn-danger btn-sm" onclick="app.deleteFruitTree(${index})">ðŸ—‘ï¸</button>
           </td>
         </tr>
       `).join('');
@@ -1054,7 +1054,7 @@ const app = {
           <td>${crop.harvestDate ? this.formatDate(crop.harvestDate) : 'TBD'}</td>
           <td>${crop.yield || 0} kg</td>
           <td>
-            <button class="btn btn-danger btn-sm" onclick="app.deleteCashCrop(${index})">🗑️</button>
+            <button class="btn btn-danger btn-sm" onclick="app.deleteCashCrop(${index})">ðŸ—‘ï¸</button>
           </td>
         </tr>
       `).join('');
@@ -1414,7 +1414,7 @@ const app = {
                 <td>${coord.lng.toFixed(6)}</td>
                 <td>
                     <button class="btn btn-danger btn-sm" onclick="app.deleteCoordinatePoint(${index})">
-                        🗑️ ${this.t('coordEditor.delete')}
+                        ðŸ—‘ï¸ ${this.t('coordEditor.delete')}
                     </button>
                 </td>
             </tr>
@@ -1436,19 +1436,19 @@ const app = {
         errorDiv.style.display = 'none';
 
         if (isNaN(lat) || isNaN(lng)) {
-            errorDiv.textContent = '⚠️ Please enter valid numeric values for both latitude and longitude';
+            errorDiv.textContent = 'âš ï¸ Please enter valid numeric values for both latitude and longitude';
             errorDiv.style.display = 'block';
             return;
         }
 
         if (lat < -90 || lat > 90) {
-            errorDiv.textContent = '⚠️ Latitude must be between -90 and 90';
+            errorDiv.textContent = 'âš ï¸ Latitude must be between -90 and 90';
             errorDiv.style.display = 'block';
             return;
         }
 
         if (lng < -180 || lng > 180) {
-            errorDiv.textContent = '⚠️ Longitude must be between -180 and 180';
+            errorDiv.textContent = 'âš ï¸ Longitude must be between -180 and 180';
             errorDiv.style.display = 'block';
             return;
         }
@@ -1476,7 +1476,7 @@ const app = {
 
         const input = textarea.value.trim();
         if (!input) {
-            errorDiv.textContent = '⚠️ Please paste coordinates in the textarea';
+            errorDiv.textContent = 'âš ï¸ Please paste coordinates in the textarea';
             errorDiv.style.display = 'block';
             return;
         }
@@ -1538,7 +1538,7 @@ const app = {
             this.renderCoordinatesTable();
 
             // Show success message
-            statusSpan.textContent = `✓ Imported ${imported.length} coordinate${imported.length > 1 ? 's' : ''}`;
+            statusSpan.textContent = `âœ“ Imported ${imported.length} coordinate${imported.length > 1 ? 's' : ''}`;
             statusSpan.style.display = 'inline';
 
             // Clear textarea
@@ -1555,7 +1555,7 @@ const app = {
 
         // If no coordinates were imported at all
         if (imported.length === 0) {
-            errorDiv.textContent = '⚠️ No valid coordinates found. Please check your format.';
+            errorDiv.textContent = 'âš ï¸ No valid coordinates found. Please check your format.';
             errorDiv.style.display = 'block';
         }
     },
@@ -1588,13 +1588,13 @@ const app = {
         const saveBtn = document.getElementById('saveCoordinatesBtn');
 
         if (this.tempCoordinates.length < 3) {
-            validationMsg.innerHTML = '⚠️ At least 3 points required';
+            validationMsg.innerHTML = 'âš ï¸ At least 3 points required';
             validationMsg.style.color = '#cc0000';
             saveBtn.disabled = true;
             saveBtn.style.opacity = '0.5';
             saveBtn.style.cursor = 'not-allowed';
         } else {
-            validationMsg.innerHTML = `✓ Ready to save (${this.tempCoordinates.length} points)`;
+            validationMsg.innerHTML = `âœ“ Ready to save (${this.tempCoordinates.length} points)`;
             validationMsg.style.color = '#4caf50';
             saveBtn.disabled = false;
             saveBtn.style.opacity = '1';
@@ -1623,7 +1623,7 @@ const app = {
             // Close modal
             this.closeModal('coordinateEditorModal');
 
-            alert('✓ All coordinates and crop allocations cleared!\n\nMap is now blank. Add new coordinates to define your farm boundaries.');
+            alert('âœ“ All coordinates and crop allocations cleared!\n\nMap is now blank. Add new coordinates to define your farm boundaries.');
             return;
         }
 
@@ -1660,7 +1660,7 @@ const app = {
         this.closeModal('coordinateEditorModal');
 
         // Show success message
-        alert(`✓ Coordinates saved successfully!\n\nBoundary points: ${this.tempCoordinates.length}\nNew center: ${centerLat.toFixed(6)}, ${centerLng.toFixed(6)}`);
+        alert(`âœ“ Coordinates saved successfully!\n\nBoundary points: ${this.tempCoordinates.length}\nNew center: ${centerLat.toFixed(6)}, ${centerLng.toFixed(6)}`);
     },
 
     // Update map views after coordinate changes
@@ -1946,7 +1946,7 @@ const app = {
         <h3 style="color: var(--color-primary);">Key Investment Highlights</h3>
         <div class="grid grid-2" style="margin-bottom: 2rem;">
           <div class="stat-card">
-            <div class="stat-card-icon">📍</div>
+            <div class="stat-card-icon">ðŸ“</div>
             <div class="stat-card-label">Prime Location</div>
             <div class="stat-card-value">${this.farmData.area} ha</div>
             <p class="text-muted" style="margin-top: 0.5rem; font-size: 0.9rem;">
@@ -1954,7 +1954,7 @@ const app = {
             </p>
           </div>
           <div class="stat-card">
-            <div class="stat-card-icon">💰</div>
+            <div class="stat-card-icon">ðŸ’°</div>
             <div class="stat-card-label">Financial Performance</div>
             <div class="stat-card-value">${this.formatCurrency(netCashFlow)}</div>
             <p class="text-muted" style="margin-top: 0.5rem; font-size: 0.9rem;">
@@ -1991,7 +1991,7 @@ const app = {
         <h3 style="color: var(--color-primary); margin-top: 2rem;">Why Invest?</h3>
         <div class="grid grid-2">
           <div>
-            <h4>✅ Strategic Advantages</h4>
+            <h4>âœ… Strategic Advantages</h4>
             <ul>
               <li>Prime agricultural land</li>
               <li>Established infrastructure</li>
@@ -2000,7 +2000,7 @@ const app = {
             </ul>
           </div>
           <div>
-            <h4>📈 Growth Potential</h4>
+            <h4>ðŸ“ˆ Growth Potential</h4>
             <ul>
               <li>Expanding market demand</li>
               <li>Scalable operations</li>
@@ -2207,11 +2207,11 @@ const app = {
         if (!selector) return;
 
         // Build options: placeholder, farms, then create option
-        const options = ['<option value="">Select Farm ▼</option>'];
+        const options = ['<option value="">Select Farm â–¼</option>'];
         options.push(...this.farms.map(farm =>
             `<option value="${farm.id}" ${farm.id === this.currentFarmId ? 'selected' : ''}>${farm.name}</option>`
         ));
-        options.push('<option value="create-new">➕ Create New Farm</option>');
+        options.push('<option value="create-new">âž• Create New Farm</option>');
 
         selector.innerHTML = options.join('');
         selector.value = this.currentFarmId;
@@ -2302,7 +2302,7 @@ const app = {
 
             // Show success message
             document.getElementById('calculatedAreaDisplay').textContent =
-                `✓ Calculated: ${areaInHectares.toFixed(4)} ha from ${coordinates.length} points`;
+                `âœ“ Calculated: ${areaInHectares.toFixed(4)} ha from ${coordinates.length} points`;
 
         } catch (error) {
             alert('Error parsing coordinates. Please ensure format is: lat,lng (one per line)');
@@ -2377,7 +2377,7 @@ const app = {
                 const boundariesInput = document.getElementById('newFarmBoundaries');
                 if (boundariesInput) {
                     boundariesInput.value = coordinates.map(c => `${c.lat},${c.lng}`).join('\n');
-                    alert(`✓ Extracted ${coordinates.length} coordinate points from file!`);
+                    alert(`âœ“ Extracted ${coordinates.length} coordinate points from file!`);
                 } else {
                     alert(`Extracted ${coordinates.length} coordinates:\n\n` +
                         coordinates.slice(0, 5).map(c => `${c.lat}, ${c.lng}`).join('\n') +
@@ -2733,7 +2733,7 @@ const app = {
         // Turn off drawing mode
         this.drawingMode = false;
         const btn = document.getElementById('drawSectionBtn');
-        btn.textContent = '📐 Crop Allocation';
+        btn.textContent = 'ðŸ“ Crop Allocation';
         btn.classList.remove('btn-danger');
         btn.classList.add('btn-primary');
 
@@ -2791,7 +2791,7 @@ const app = {
         this.renderGraphicalMap();
         this.renderLandAllocationTable();
 
-        alert(`✅ Section "${name}" created!\nArea: ${area.toFixed(4)} hectares\n\n📍 Center Coordinates:\nLat: ${centerLat.toFixed(6)}\nLng: ${centerLng.toFixed(6)}`);
+        alert(`âœ… Section "${name}" created!\nArea: ${area.toFixed(4)} hectares\n\nðŸ“ Center Coordinates:\nLat: ${centerLat.toFixed(6)}\nLng: ${centerLng.toFixed(6)}`);
     },
 
     // Cancel drawing
@@ -2799,7 +2799,7 @@ const app = {
         this.drawingMode = false;
         this.currentDrawing = [];
         const btn = document.getElementById('drawSectionBtn');
-        btn.textContent = '📐 Crop Allocation';
+        btn.textContent = 'ðŸ“ Crop Allocation';
         btn.classList.remove('btn-danger');
         btn.classList.add('btn-primary');
         this.renderGraphicalMap();
@@ -2812,7 +2812,7 @@ const app = {
         const btn = document.getElementById('drawSectionBtn');
 
         if (this.drawingMode) {
-            btn.textContent = '🛑 Cancel Drawing';
+            btn.textContent = 'ðŸ›‘ Cancel Drawing';
             btn.classList.remove('btn-primary');
             btn.classList.add('btn-danger');
             this.currentDrawing = [];
@@ -2820,7 +2820,7 @@ const app = {
             // Switch to graphical view
             this.toggleMapView('graphical');
 
-            alert('🎨 Drawing Mode Active!\n\n• Click points on the map to draw your section\n• The area will calculate automatically\n• Double-click to finish drawing\n• Press ESC to cancel');
+            alert('ðŸŽ¨ Drawing Mode Active!\n\nâ€¢ Click points on the map to draw your section\nâ€¢ The area will calculate automatically\nâ€¢ Double-click to finish drawing\nâ€¢ Press ESC to cancel');
         } else {
             this.cancelDrawing();
         }
@@ -2839,7 +2839,7 @@ const app = {
         // Turn off drawing mode
         this.drawingManager.setDrawingMode(null);
         const btn = document.getElementById('drawSectionBtn');
-        btn.textContent = '✏️ Draw New Section';
+        btn.textContent = 'âœï¸ Draw New Section';
         btn.classList.remove('btn-danger');
         btn.classList.add('btn-primary');
 
@@ -3001,8 +3001,8 @@ const app = {
                 <td>${section.area.toFixed(4)}</td>
                 <td>${section.percentage.toFixed(1)}%</td>
                 <td>
-                    <button class="btn btn-sm btn-primary" onclick="app.editSection('${section.id}')" title="Edit section" style="margin-right: 0.5rem;">✏️</button>
-                    <button class="btn btn-sm btn-danger" onclick="app.deleteSection('${section.id}')" title="Delete section">🗑️</button>
+                    <button class="btn btn-sm btn-primary" onclick="app.editSection('${section.id}')" title="Edit section" style="margin-right: 0.5rem;">âœï¸</button>
+                    <button class="btn btn-sm btn-danger" onclick="app.deleteSection('${section.id}')" title="Delete section">ðŸ—‘ï¸</button>
                 </td>
             </tr>
         `).join('');
@@ -3045,7 +3045,154 @@ const app = {
 
         this.saveData();
         this.renderFarmSectionsTable();
+        this.renderLandAllocationTable();
         alert('Section deleted successfully');
+    },
+
+    // Print Land Allocation table
+    printLandAllocationTable() {
+        const sections = this.getCurrentFarm().sections || [];
+        const farmName = this.getCurrentFarm().name;
+        const totalArea = this.getCurrentFarm().area;
+
+        if (sections.length === 0) {
+            alert('No allocations to print');
+            return;
+        }
+
+        const printWindow = window.open('', '', 'width=800,height=600');
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Land Allocation - ${farmName}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; }
+                    h1 { color: #333; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; }
+                    .meta { color: #666; margin-bottom: 20px; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                    th { background: #4CAF50; color: white; padding: 12px; text-align: left; }
+                    td { padding: 10px; border-bottom: 1px solid #ddd; }
+                    tr:hover { background: #f5f5f5; }
+                    .footer { margin-top: 30px; color: #999; font-size: 12px; text-align: center; }
+                    @media print { button { display: none; } }
+                </style>
+            </head>
+            <body>
+                <h1>🌾 Land Allocation Report</h1>
+                <div class="meta">
+                    <strong>Farm:</strong> ${farmName}<br>
+                    <strong>Total Area:</strong> ${totalArea} hectares<br>
+                    <strong>Generated:</strong> ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Zone/Section</th>
+                            <th>Area (HA)</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sections.map(s => `
+                            <tr>
+                                <td><strong>${s.name}</strong></td>
+                                <td>${s.area.toFixed(2)}</td>
+                                <td>${s.percentage.toFixed(1)}%</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                
+                <div class="footer">
+                    Generated by Maloure Farm Management System
+                </div>
+                
+                <script>window.print(); window.onafterprint = function() { window.close(); }</script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+    },
+
+    // Print Crop Allocation Sections table
+    printCropAllocationSections() {
+        const sections = this.getCurrentFarm().sections || [];
+        const farmName = this.getCurrentFarm().name;
+
+        if (sections.length === 0) {
+            alert('No crop allocation sections to print');
+            return;
+        }
+
+        const printWindow = window.open('', '', 'width=900,height=700');
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Crop Allocation Sections - ${farmName}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; }
+                    h1 { color: #333; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; }
+                    .meta { color: #666; margin-bottom: 20px; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
+                    th { background: #4CAF50; color: white; padding: 10px; text-align: left; }
+                    td { padding: 8px; border-bottom: 1px solid #ddd; }
+                    tr:hover { background: #f5f5f5; }
+                    .color-box { width: 18px; height: 18px; border-radius: 3px; border: 1px solid #999; display: inline-block; }
+                    .footer { margin-top: 30px; color: #999; font-size: 12px; text-align: center; }
+                    .coords { font-family: monospace; font-size: 10px; color: #666; }
+                    @media print { button { display: none; } }
+                </style>
+            </head>
+            <body>
+                <h1>📊 Crop Allocation Sections</h1>
+                <div class="meta">
+                    <strong>Farm:</strong> ${farmName}<br>
+                    <strong>Total Sections:</strong> ${sections.length}<br>
+                    <strong>Generated:</strong> ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Color</th>
+                            <th>Section Name</th>
+                            <th>Type</th>
+                            <th>Crop</th>
+                            <th>Area (ha)</th>
+                            <th>%</th>
+                            <th>GPS Coordinates</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sections.map(s => {
+            const lat = s.centerCoordinates?.lat?.toFixed(6) || 'N/A';
+            const lng = s.centerCoordinates?.lng?.toFixed(6) || 'N/A';
+            return `
+                            <tr>
+                                <td><div class="color-box" style="background: ${s.color};"></div></td>
+                                <td><strong>${s.name}</strong></td>
+                                <td>${s.type.replace('-', ' ')}</td>
+                                <td>${s.cropType || '-'}</td>
+                                <td>${s.area.toFixed(4)}</td>
+                                <td>${s.percentage.toFixed(1)}%</td>
+                                <td class="coords">${lat}, ${lng}</td>
+                            </tr>
+                        `}).join('')}
+                    </tbody>
+                </table>
+                
+                <div class="footer">
+                    Generated by Maloure Farm Management System
+                </div>
+                
+                <script>window.print(); window.onafterprint = function() { window.close(); }</script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
     },
 
     // Edit section
@@ -3065,8 +3212,8 @@ const app = {
             <div class="modal-overlay" onclick="this.closest('.modal').remove()"></div>
             <div class="modal-content" style="max-width: 600px;">
                 <div class="modal-header">
-                    <h3 class="modal-title">✏️ Edit Section</h3>
-                    <button class="btn-close" onclick="this.closest('.modal').remove()">✕</button>
+                    <h3 class="modal-title">âœï¸ Edit Section</h3>
+                    <button class="btn-close" onclick="this.closest('.modal').remove()">âœ•</button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
@@ -3107,7 +3254,7 @@ const app = {
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancel</button>
-                    <button class="btn btn-primary" onclick="app.saveEditedSection('${sectionId}')">💾 Save Changes</button>
+                    <button class="btn btn-primary" onclick="app.saveEditedSection('${sectionId}')">ðŸ’¾ Save Changes</button>
                 </div>
             </div>
         `;
@@ -3471,31 +3618,31 @@ app.updateFarmInfoText = function () {
     // Update card titles
     const locationCard = section.querySelector('.card-header');
     if (locationCard && locationCard.textContent.includes('Location') || locationCard.textContent.includes('Emplacement')) {
-        locationCard.innerHTML = `<h3 class="card-title">📍 ${this.t('farmInfo.locationSpecs')}</h3>`;
+        locationCard.innerHTML = `<h3 class="card-title">ðŸ“ ${this.t('farmInfo.locationSpecs')}</h3>`;
     }
 
     // Update map buttons
     const satelliteBtn = document.getElementById('satelliteViewBtn');
-    if (satelliteBtn) satelliteBtn.innerHTML = `🛰️ ${this.t('farmInfo.satelliteView')}`;
+    if (satelliteBtn) satelliteBtn.innerHTML = `ðŸ›°ï¸ ${this.t('farmInfo.satelliteView')}`;
 
     const graphicalBtn = document.getElementById('graphicalViewBtn');
-    if (graphicalBtn) graphicalBtn.innerHTML = `📊 ${this.t('farmInfo.graphicalView')}`;
+    if (graphicalBtn) graphicalBtn.innerHTML = `ðŸ“Š ${this.t('farmInfo.graphicalView')}`;
 
     const editCoordsBtn = section.querySelector('button[onclick*="openCoordinateEditorModal"]');
-    if (editCoordsBtn) editCoordsBtn.innerHTML = `✏️ ${this.t('farmInfo.editCoordinates')}`;
+    if (editCoordsBtn) editCoordsBtn.innerHTML = `âœï¸ ${this.t('farmInfo.editCoordinates')}`;
 
     const uploadBtn = section.querySelector('button[onclick*="coordinateUploadInput"]');
-    if (uploadBtn) uploadBtn.innerHTML = `📤 ${this.t('farmInfo.upload')}`;
+    if (uploadBtn) uploadBtn.innerHTML = `ðŸ“¤ ${this.t('farmInfo.upload')}`;
 
     const allocBtn = document.getElementById('drawSectionBtn');
-    if (allocBtn) allocBtn.innerHTML = `📐 ${this.t('farmInfo.cropAllocation')}`;
+    if (allocBtn) allocBtn.innerHTML = `ðŸ“ ${this.t('farmInfo.cropAllocation')}`;
 };
 
 // Update Coordinate Editor modal text
 app.updateCoordinateEditorText = function () {
     // Modal title
     const modalTitle = document.querySelector('#coordinateEditorModal .modal-title');
-    if (modalTitle) modalTitle.textContent = `✏️ ${this.t('coordEditor.title')}`;
+    if (modalTitle) modalTitle.textContent = `âœï¸ ${this.t('coordEditor.title')}`;
 
     // Instruction text
     const instruction = document.querySelector('#coordinateEditorModal .modal-body > p');
@@ -3504,13 +3651,13 @@ app.updateCoordinateEditorText = function () {
     // Add New Point section
     const addPointHeader = document.querySelector('#coordinateEditorModal .card-header h4');
     if (addPointHeader && addPointHeader.textContent.includes('Add') || addPointHeader.textContent.includes('Ajouter')) {
-        addPointHeader.textContent = `➕ ${this.t('coordEditor.addNewPoint')}`;
+        addPointHeader.textContent = `âž• ${this.t('coordEditor.addNewPoint')}`;
     }
 
     // Bulk Import section
     const bulkHeaders = document.querySelectorAll('#coordinateEditorModal .card-header h4');
     if (bulkHeaders[1]) {
-        bulkHeaders[1].textContent = `📋 ${this.t('coordEditor.bulkImport')}`;
+        bulkHeaders[1].textContent = `ðŸ“‹ ${this.t('coordEditor.bulkImport')}`;
     }
 
     // Table header
@@ -3522,19 +3669,19 @@ app.updateCoordinateEditorText = function () {
 
     // Buttons
     const addPointBtn = document.querySelector('button[onclick="app.addCoordinatePoint()"]');
-    if (addPointBtn) addPointBtn.innerHTML = `➕ ${this.t('coordEditor.addPoint')}`;
+    if (addPointBtn) addPointBtn.innerHTML = `âž• ${this.t('coordEditor.addPoint')}`;
 
     const importBtn = document.querySelector('button[onclick="app.importBulkCoordinates()"]');
-    if (importBtn) importBtn.innerHTML = `📥 ${this.t('coordEditor.importCoords')}`;
+    if (importBtn) importBtn.innerHTML = `ðŸ“¥ ${this.t('coordEditor.importCoords')}`;
 
     const clearAllBtn = document.querySelector('button[onclick="app.clearAllCoordinates()"]');
-    if (clearAllBtn) clearAllBtn.innerHTML = `🗑️ ${this.t('coordEditor.clearAll')}`;
+    if (clearAllBtn) clearAllBtn.innerHTML = `ðŸ—‘ï¸ ${this.t('coordEditor.clearAll')}`;
 
     const cancelBtn = document.querySelector('#coordinateEditorModal button[onclick*="closeModal"]');
     if (cancelBtn) cancelBtn.textContent = this.t('coordEditor.cancel');
 
     const saveBtn = document.getElementById('saveCoordinatesBtn');
-    if (saveBtn) saveBtn.innerHTML = `💾 ${this.t('coordEditor.saveChanges')}`;
+    if (saveBtn) saveBtn.innerHTML = `ðŸ’¾ ${this.t('coordEditor.saveChanges')}`;
 
     // Re-render the coordinates table to update delete buttons
     this.renderCoordinatesTable();
@@ -3564,7 +3711,7 @@ app.updateDashboardText = function () {
 
     // Update "Add Transaction" button
     const addTransactionBtn = section.querySelector('button[onclick*=\"openAddTransactionModal\"]');
-    if (addTransactionBtn) addTransactionBtn.innerHTML = `➕ ${this.t('dashboard.addTransaction')}`;
+    if (addTransactionBtn) addTransactionBtn.innerHTML = `âž• ${this.t('dashboard.addTransaction')}`;
 
     // Update table headers
     const tableHeaders = section.querySelectorAll('#recentTransactionsTable thead th');
@@ -3594,11 +3741,11 @@ app.updateFinancialText = function () {
     // Update buttons
     const addTransactionBtns = section.querySelectorAll('button[onclick*=\"openAddTransactionModal\"]');
     addTransactionBtns.forEach(btn => {
-        btn.innerHTML = `➕ ${this.t('financial.addTransaction')}`;
+        btn.innerHTML = `âž• ${this.t('financial.addTransaction')}`;
     });
 
     const exportBtn = section.querySelector('button[onclick*=\"exportTransactions\"]');
-    if (exportBtn) exportBtn.innerHTML = `📥 ${this.t('financial.export')}`;
+    if (exportBtn) exportBtn.innerHTML = `ðŸ“¥ ${this.t('financial.export')}`;
 
     // Update table headers
     const tableHeaders = section.querySelectorAll('#allTransactionsTable thead th');
@@ -3621,15 +3768,15 @@ app.updateCropsText = function () {
 
     // Update card titles
     const cardTitles = section.querySelectorAll('.card-title');
-    if (cardTitles[0]) cardTitles[0].textContent = `🍋 ${this.t('crops.fruitTrees')}`;
-    if (cardTitles[1]) cardTitles[1].textContent = `🌾 ${this.t('crops.cashCrops')}`;
+    if (cardTitles[0]) cardTitles[0].textContent = `ðŸ‹ ${this.t('crops.fruitTrees')}`;
+    if (cardTitles[1]) cardTitles[1].textContent = `ðŸŒ¾ ${this.t('crops.cashCrops')}`;
 
     // Update "Add" buttons
     const addFruitBtn = section.querySelector('button[onclick*=\"openAddCropModal(\'fruit\')"]');
-    if (addFruitBtn) addFruitBtn.innerHTML = `➕ ${this.t('crops.addFruitTree')}`;
+    if (addFruitBtn) addFruitBtn.innerHTML = `âž• ${this.t('crops.addFruitTree')}`;
 
     const addCashBtn = section.querySelector('button[onclick*=\"openAddCropModal(\'cash\')"]');
-    if (addCashBtn) addCashBtn.innerHTML = `➕ ${this.t('crops.addCashCrop')}`;
+    if (addCashBtn) addCashBtn.innerHTML = `âž• ${this.t('crops.addCashCrop')}`;
 
     // Update fruit trees table headers
     const fruitHeaders = section.querySelectorAll('#fruitTreesBody').length > 0 ?
@@ -3668,9 +3815,9 @@ app.updateReportsText = function () {
 
     // Update report buttons
     const reportBtns = section.querySelectorAll('.btn-primary.btn-lg');
-    if (reportBtns[0]) reportBtns[0].innerHTML = `📊 ${this.t('reports.financialReport')}`;
-    if (reportBtns[1]) reportBtns[1].innerHTML = `🌾 ${this.t('reports.operationsReport')}`;
-    if (reportBtns[2]) reportBtns[2].innerHTML = `💼 ${this.t('reports.investorPresentation')}`;
+    if (reportBtns[0]) reportBtns[0].innerHTML = `ðŸ“Š ${this.t('reports.financialReport')}`;
+    if (reportBtns[1]) reportBtns[1].innerHTML = `ðŸŒ¾ ${this.t('reports.operationsReport')}`;
+    if (reportBtns[2]) reportBtns[2].innerHTML = `ðŸ’¼ ${this.t('reports.investorPresentation')}`;
 
     // Update report preview section if visible
     const reportPreview = document.getElementById('reportPreview');
@@ -3679,7 +3826,7 @@ app.updateReportsText = function () {
         if (previewTitle) previewTitle.textContent = this.t('reports.reportPreview');
 
         const printBtn = reportPreview.querySelector('button[onclick*=\"print\"]');
-        if (printBtn) printBtn.innerHTML = `🖨️ ${this.t('reports.print')}`;
+        if (printBtn) printBtn.innerHTML = `ðŸ–¨ï¸ ${this.t('reports.print')}`;
     }
 };
 
@@ -3712,148 +3859,4 @@ app.showTab = function (tabName) {
 document.addEventListener('DOMContentLoaded', () => {
     app.init();
 });
-// Print functions for allocation tables
-
-printLandAllocationTable() {
-    const sections = this.getCurrentFarm().sections || [];
-    const farmName = this.getCurrentFarm().name;
-    const totalArea = this.getCurrentFarm().area;
-
-    if (sections.length === 0) {
-        alert('No allocations to print');
-        return;
-    }
-
-    const printWindow = window.open('', '', 'width=800,height=600');
-    printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Land Allocation - ${farmName}</title>
-            <style>
-                body { font-family: Arial, sans-serif; padding: 20px; }
-                h1 { color: #333; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; }
-                .meta { color: #666; margin-bottom: 20px; }
-                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                th { background: #4CAF50; color: white; padding: 12px; text-align: left; }
-                td { padding: 10px; border-bottom: 1px solid #ddd; }
-                tr:hover { background: #f5f5f5; }
-                .footer { margin-top: 30px; color: #999; font-size: 12px; text-align: center; }
-                @media print { button { display: none; } }
-            </style>
-        </head>
-        <body>
-            <h1>ðŸŒ¾ Land Allocation Report</h1>
-            <div class="meta">
-                <strong>Farm:</strong> ${farmName}<br>
-                <strong>Total Area:</strong> ${totalArea} hectares<br>
-                <strong>Generated:</strong> ${new Date().toLocaleString()}
-            </div>
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>Zone/Section</th>
-                        <th>Area (HA)</th>
-                        <th>Percentage</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${sections.map(s => `
-                        <tr>
-                            <td><strong>${s.name}</strong></td>
-                            <td>${s.area.toFixed(2)}</td>
-                            <td>${s.percentage.toFixed(1)}%</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-            
-            <div class="footer">
-                Generated by Maloure Farm Management System
-            </div>
-            
-            <script>window.print(); window.onafterprint = function() { window.close(); }</script>
-        </body>
-        </html>
-    `);
-    printWindow.document.close();
-},
-
-printCropAllocationSections() {
-    const sections = this.getCurrentFarm().sections || [];
-    const farmName = this.getCurrentFarm().name;
-
-    if (sections.length === 0) {
-        alert('No crop allocation sections to print');
-        return;
-    }
-
-    const printWindow = window.open('', '', 'width=900,height=700');
-    printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Crop Allocation Sections - ${farmName}</title>
-            <style>
-                body { font-family: Arial, sans-serif; padding: 20px; }
-                h1 { color: #333; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; }
-                .meta { color: #666; margin-bottom: 20px; }
-                table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
-                th { background: #4CAF50; color: white; padding: 10px; text-align: left; }
-                td { padding: 8px; border-bottom: 1px solid #ddd; }
-                tr:hover { background: #f5f5f5; }
-                .color-box { width: 20px; height: 20px; border-radius: 3px; border: 1px solid #999; }
-                .footer { margin-top: 30px; color: #999; font-size: 12px; text-align: center; page-break-after: avoid; }
-                .coords { font-family: monospace; font-size: 11px; color: #666; }
-                @media print { button { display: none; } }
-            </style>
-        </head>
-        <body>
-            <h1>ðŸ“Š Crop Allocation Sections</h1>
-            <div class="meta">
-                <strong>Farm:</strong> ${farmName}<br>
-                <strong>Total Sections:</strong> ${sections.length}<br>
-                <strong>Generated:</strong> ${new Date().toLocaleString()}
-            </div>
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>Color</th>
-                        <th>Section Name</th>
-                        <th>Type</th>
-                        <th>Crop</th>
-                        <th>Area (ha)</th>
-                        <th>%</th>
-                        <th>Coordinates (Lat, Lng)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${sections.map(s => {
-        const lat = s.centerCoordinates?.lat?.toFixed(6) || 'N/A';
-        const lng = s.centerCoordinates?.lng?.toFixed(6) || 'N/A';
-        return `
-                        <tr>
-                            <td><div class="color-box" style="background: ${s.color};"></div></td>
-                            <td><strong>${s.name}</strong></td>
-                            <td>${s.type.replace('-', ' ')}</td>
-                            <td>${s.cropType || '-'}</td>
-                            <td>${s.area.toFixed(4)}</td>
-                            <td>${s.percentage.toFixed(1)}%</td>
-                            <td class="coords">${lat}, ${lng}</td>
-                        </tr>
-                    `}).join('')}
-                </tbody>
-            </table>
-            
-            <div class="footer">
-                Generated by Maloure Farm Management System
-            </div>
-            
-            <script>window.print(); window.onafterprint = function() { window.close(); }</script>
-        </body>
-        </html>
-    `);
-    printWindow.document.close();
-},
+}; // End app object
