@@ -2793,6 +2793,7 @@ const app = {
 
         this.saveData();
         this.renderFarmSectionsTable();
+        this.renderLandAllocationTable();
         this.renderGraphicalMap();
         this.renderLandAllocationTable();
 
@@ -3311,6 +3312,7 @@ const app = {
 
         this.saveData();
         this.renderFarmSectionsTable();
+        this.renderLandAllocationTable();
         this.renderGraphicalMap(); // Update graphical view
 
         // Close modal
