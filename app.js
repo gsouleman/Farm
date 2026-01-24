@@ -102,7 +102,12 @@ const translations = {
             category: "Category",
             amount: "Amount",
             noTransactions: "No transactions recorded yet",
-            viewAll: "View All"
+            viewAll: "View All",
+            totalArea: "Total Area",
+            cashFlowTrend: "Cash Flow Trend",
+            landUtilization: "Land Utilization",
+            addTransaction: "Add Transaction",
+            type: "Type"
         },
         // Financial
         financial: {
