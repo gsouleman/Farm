@@ -289,14 +289,15 @@ const app = {
 
     // Check for forced password change
     checkPasswordStatus() {
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (user && user.mustChangePassword) {
-            this.openChangePasswordModal(true);
-        }
+        const user = api.getUser();
 
         // Setup admin UI if applicable
         if (user && user.role === 'admin') {
             this.setupAdminUI();
+        }
+
+        if (user && user.mustChangePassword) {
+            this.openChangePasswordModal(true);
         }
     },
 
