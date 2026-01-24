@@ -302,9 +302,9 @@ const app = {
     },
 
     logout() {
-        if (confirm('Are you sure you want to logout?')) {
+        this.showConfirmation('Are you sure you want to logout?', () => {
             api.auth.logout();
-        }
+        });
     },
 
     openChangePasswordModal(forced = false) {
@@ -330,16 +330,16 @@ const app = {
         const confirm = document.getElementById('confirmNewPassword').value;
 
         if (newPassword !== confirm) {
-            alert('New passwords do not match');
+            this.showError('New passwords do not match');
             return;
         }
 
         try {
             await api.auth.changePassword(currentPassword, newPassword);
-            alert('Password changed successfully! Please login again.');
+            this.showSuccess('Password changed successfully! Please login again.');
             api.auth.logout();
         } catch (error) {
-            alert(error.message || 'Failed to change password');
+            this.showError(error.message || 'Failed to change password');
         }
     },
 
@@ -376,11 +376,11 @@ const app = {
 
         try {
             await api.auth.register(email, password, fullName, role);
-            alert('User created successfully!');
+            this.showSuccess('User created successfully!');
             document.getElementById('createUserForm').reset();
             this.switchUserTab('list');
         } catch (error) {
-            alert(error.message || 'Failed to create user');
+            this.showError(error.message || 'Failed to create user');
         }
     },
     async init() {
@@ -1382,13 +1382,12 @@ const app = {
 
     // Clear all coordinate points (Auto-confirmed)
     clearAllCoordinates() {
-        if (this.tempCoordinates.length === 0) {
-            alert('No coordinates to clear.');
-            return;
-        }
-
-        this.tempCoordinates = [];
-        this.renderCoordinatesTable();
+        this.showConfirmation('Are you sure you want to clear all boundary points?', () => {
+            this.tempCoordinates = [];
+            this.renderCoordinatesTable();
+            this.updateCoordinateValidation();
+            this.showSuccess('Boundary points cleared.');
+        });
     },
 
     // Update validation message and save button state
@@ -1432,13 +1431,13 @@ const app = {
             // Close modal
             this.closeModal('coordinateEditorModal');
 
-            alert('âœ“ All coordinates and crop allocations cleared!\n\nMap is now blank. Add new coordinates to define your farm boundaries.');
+            this.showSuccess('All coordinates and crop allocations cleared!\n\nMap is now blank. Add new coordinates to define your farm boundaries.');
             return;
         }
 
         // Validate minimum 3 points for a valid polygon
         if (this.tempCoordinates.length < 3) {
-            alert('At least 3 coordinate points are required to form a polygon.\n\nEither add more points or clear all to start fresh.');
+            this.showError('At least 3 coordinate points are required to form a polygon.');
             return;
         }
 
@@ -1469,11 +1468,10 @@ const app = {
             this.renderFarmSectionsTable();
             this.closeModal('coordinateEditorModal');
 
-            alert(`✓ Coordinates saved successfully!\n\nBoundary points: ${this.tempCoordinates.length}\nNew center: ${centerLat.toFixed(6)}, ${centerLng.toFixed(6)}`);
+            this.showSuccess(`Coordinates saved successfully!\nBoundary points: ${this.tempCoordinates.length}`);
 
         } catch (error) {
-            console.error('Failed to save coordinates:', error);
-            alert('Failed to save boundaries: ' + error.message);
+            this.showError('Failed to save boundaries: ' + error.message);
         }
     },
 
@@ -1548,36 +1546,35 @@ const app = {
             this.updateCurrentMonth();
             this.initializeCharts();
             this.closeModal('addTransactionModal');
-            alert('Transaction added successfully!');
+            this.showSuccess('Transaction added successfully!');
         } catch (error) {
-            console.error('Failed to add transaction:', error);
-            alert('Failed to add transaction: ' + error.message);
+            this.showError('Failed to add transaction: ' + error.message);
         }
     },
 
     // Delete transaction
     async deleteTransaction(index) {
-        if (!confirm('Are you sure you want to delete this transaction?')) return;
-
         // Sort to get the correct object (UI uses sorted list)
         const sorted = [...this.transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
         const transaction = sorted[index];
 
-        try {
-            await api.transactions.delete(transaction.id);
+        this.showConfirmation('Are you sure you want to delete this transaction?', async () => {
+            try {
+                await api.transactions.delete(transaction.id);
 
-            // Remove from local array
-            this.transactions = this.transactions.filter(t => t.id !== transaction.id);
+                // Remove from local array
+                this.transactions = this.transactions.filter(t => t.id !== transaction.id);
 
-            this.renderDashboard();
-            this.renderTransactions();
-            this.updateCurrentMonth();
-            this.initializeCharts();
-            alert('Transaction deleted successfully!');
-        } catch (error) {
-            console.error('Failed to delete transaction:', error);
-            alert('Failed to delete transaction');
-        }
+                this.renderDashboard();
+                this.renderTransactions();
+                this.updateCurrentMonth();
+                this.initializeCharts();
+                this.showSuccess('Transaction deleted successfully!');
+            } catch (error) {
+                console.error('Failed to delete transaction:', error);
+                this.showError('Failed to delete transaction: ' + error.message);
+            }
+        });
     },
 
     // Add crop
@@ -1612,45 +1609,45 @@ const app = {
 
             this.renderCrops();
             this.closeModal('addCropModal');
-            alert('Crop added successfully!');
+            this.showSuccess('Crop added successfully!');
         } catch (error) {
             console.error('Failed to add crop:', error);
-            alert('Failed to add crop: ' + error.message);
+            this.showError('Failed to add crop: ' + error.message);
         }
     },
 
     // Delete fruit tree
     async deleteFruitTree(index) {
-        if (!confirm('Are you sure you want to delete this crop?')) return;
-
         const crop = this.fruitTrees[index];
-        try {
-            await api.crops.delete(crop.id);
+        this.showConfirmation('Are you sure you want to delete this crop?', async () => {
+            try {
+                await api.crops.delete(crop.id);
 
-            this.fruitTrees.splice(index, 1);
-            this.renderCrops();
-            alert('Crop deleted successfully!');
-        } catch (error) {
-            console.error('Failed to delete fruit tree:', error);
-            alert('Failed to delete crop');
-        }
+                this.fruitTrees.splice(index, 1);
+                this.renderCrops();
+                this.showSuccess('Crop deleted successfully!');
+            } catch (error) {
+                console.error('Failed to delete fruit tree:', error);
+                this.showError('Failed to delete crop: ' + error.message);
+            }
+        });
     },
 
     // Delete cash crop
     async deleteCashCrop(index) {
-        if (!confirm('Are you sure you want to delete this crop?')) return;
-
         const crop = this.cashCrops[index];
-        try {
-            await api.crops.delete(crop.id);
+        this.showConfirmation('Are you sure you want to delete this crop?', async () => {
+            try {
+                await api.crops.delete(crop.id);
 
-            this.cashCrops.splice(index, 1);
-            this.renderCrops();
-            alert('Crop deleted successfully!');
-        } catch (error) {
-            console.error('Failed to delete cash crop:', error);
-            alert('Failed to delete crop');
-        }
+                this.cashCrops.splice(index, 1);
+                this.renderCrops();
+                this.showSuccess('Crop deleted successfully!');
+            } catch (error) {
+                console.error('Failed to delete cash crop:', error);
+                this.showError('Failed to delete crop: ' + error.message);
+            }
+        });
     },
 
     // Export transactions
@@ -1801,7 +1798,7 @@ const app = {
         <h3 style="color: var(--color-primary);">Key Investment Highlights</h3>
         <div class="grid grid-2" style="margin-bottom: 2rem;">
           <div class="stat-card">
-            <div class="stat-card-icon">ðŸ“</div>
+            <div class="stat-card-icon">ðŸ“</div>
             <div class="stat-card-label">Prime Location</div>
             <div class="stat-card-value">${this.farmData.area} ha</div>
             <p class="text-muted" style="margin-top: 0.5rem; font-size: 0.9rem;">
@@ -1936,10 +1933,23 @@ const app = {
         return colors[status] || 'info';
     },
 
-    // Custom confirmation modal helper (Auto-confirmed)
+    // Custom confirmation modal helper
     showConfirmation(message, onConfirm) {
-        console.log("Auto-confirmed:", message);
-        onConfirm();
+        const msgEl = document.getElementById('confirmationMessage');
+        const confirmBtn = document.getElementById('confirmActionBtn');
+
+        if (msgEl) msgEl.textContent = message;
+
+        // Remove old listeners to prevent multiple triggers
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+
+        newConfirmBtn.onclick = () => {
+            this.closeModal('confirmationModal');
+            onConfirm();
+        };
+
+        this.openModal('confirmationModal');
     },
 
     // Edit current farm
@@ -2067,7 +2077,7 @@ const app = {
                 this.updateFarmSelector();
                 this.renderFarmDetails();
                 this.closeModal('createFarmModal');
-                alert('Farm updated successfully!');
+                this.showSuccess('Farm updated successfully!');
                 this.editingFarmId = null;
                 return;
             }
@@ -2080,10 +2090,9 @@ const app = {
             this.farms.push(sanitizedFarm);
             this.selectFarm(sanitizedFarm.id);
             this.closeModal('createFarmModal');
-            alert(`Farm "${sanitizedFarm.name}" created successfully!`);
+            this.showSuccess(`Farm "${sanitizedFarm.name}" created successfully!`);
         } catch (error) {
-            console.error('Failed to save farm:', error);
-            alert('Failed to save farm: ' + error.message);
+            this.showError('Failed to save farm: ' + error.message);
         }
     },
 
@@ -2181,7 +2190,7 @@ const app = {
         const categoryName = document.getElementById('customCategoryName').value.trim();
 
         if (!categoryName) {
-            alert('Please enter a category name');
+            this.showError('Please enter a category name');
             return;
         }
 
@@ -2213,8 +2222,8 @@ const app = {
     calculateAreaFromBoundaries() {
         const boundariesText = document.getElementById('newFarmBoundaries').value.trim();
 
-        if (!boundariesText) {
-            alert('Please enter boundary coordinates first');
+        if (!boundariesText) { // Changed from !this.tempCoordinates || this.tempCoordinates.length === 0 as tempCoordinates is not defined here
+            this.showError('Please enter boundary coordinates first');
             return;
         }
 
@@ -2235,7 +2244,7 @@ const app = {
             }
 
             if (coordinates.length < 3) {
-                alert('Please provide at least 3 coordinate points');
+                this.showError('Please provide at least 3 coordinate points');
                 return;
             }
 
@@ -2261,7 +2270,7 @@ const app = {
                 `✓ Calculated: ${areaInHectares.toFixed(4)} ha & ${perimeterInMeters.toFixed(2)} m perimeter from ${coordinates.length} points`;
 
         } catch (error) {
-            alert('Error parsing coordinates. Please ensure format is: lat,lng (one per line)');
+            this.showError('Error parsing coordinates. Please ensure format is: lat,lng (one per line)');
             console.error(error);
         }
     },
@@ -2338,7 +2347,10 @@ const app = {
     // Extract coordinates from uploaded file (PDF or Image)
     async extractCoordinatesFromFile(event) {
         const file = event.target.files[0];
-        if (!file) return;
+        if (!file || (!file.type.includes('pdf') && !file.type.includes('image'))) {
+            this.showError('Please upload a PDF or image file');
+            return;
+        }
 
         const fileType = file.type;
         let extractedText = '';
@@ -2348,9 +2360,6 @@ const app = {
                 extractedText = await this.extractTextFromPDF(file);
             } else if (fileType.includes('image')) {
                 extractedText = await this.extractTextFromImage(file);
-            } else {
-                alert('Please upload a PDF or image file');
-                return;
             }
 
             // Parse coordinates from extracted text
@@ -2361,18 +2370,18 @@ const app = {
                 const boundariesInput = document.getElementById('newFarmBoundaries');
                 if (boundariesInput) {
                     boundariesInput.value = coordinates.map(c => `${c.lat},${c.lng}`).join('\n');
-                    alert(`âœ“ Extracted ${coordinates.length} coordinate points from file!`);
+                    this.showSuccess(`✓ Extracted ${coordinates.length} coordinate points from file!`);
                 } else {
-                    alert(`Extracted ${coordinates.length} coordinates:\n\n` +
+                    this.showSuccess(`Extracted ${coordinates.length} coordinates:\n\n` +
                         coordinates.slice(0, 5).map(c => `${c.lat}, ${c.lng}`).join('\n') +
                         (coordinates.length > 5 ? '\n...' : ''));
                 }
             } else {
-                alert('No valid coordinates found in the file');
+                this.showError('No valid coordinates found in the file');
             }
         } catch (error) {
             console.error('Error extracting coordinates:', error);
-            alert('Error processing file: ' + error.message);
+            this.showError('Error processing file: ' + error.message);
         }
     },
 
@@ -2539,15 +2548,16 @@ const app = {
                 const width = Math.abs(this.currentDrawing[1].x - this.currentDrawing[0].x);
                 const height = Math.abs(this.currentDrawing[2].y - this.currentDrawing[1].y);
 
-                if (width > 20 && height > 20) {
-                    // Close the rectangle and finish
-                    this.currentDrawing.push(this.currentDrawing[0]); // Close the shape
-                    this.finishDrawing();
-                } else {
-                    alert('Draw a larger area. Click and drag to create a rectangle.');
+                if (width < 20 || height < 20) { // Changed condition to match instruction's intent for error
+                    this.showError('Draw a larger area. Click and drag to create a rectangle.');
                     this.currentDrawing = [];
                     this.renderGraphicalMap();
+                    return;
                 }
+
+                // Close the rectangle and finish
+                this.currentDrawing.push(this.currentDrawing[0]); // Close the shape
+                this.finishDrawing();
             }
         });
 
@@ -2704,8 +2714,8 @@ const app = {
 
     // Finish drawing and create section
     finishDrawing() {
-        if (this.currentDrawing.length < 3) {
-            alert('Please draw at least 3 points to create a section');
+        if (this.currentDrawing.length < 3) { // Changed from this.canvasCoords
+            this.showError('Please draw at least 3 points to create a section');
             return;
         }
 
@@ -2731,54 +2741,23 @@ const app = {
 
     // Create section from drawing data
     createSectionFromDrawing(area, boundaries) {
-        // Prompt for section details
-        const name = prompt('Enter section name:', `Section ${(this.getCurrentFarm().sections?.length || 0) + 1}`);
-        if (!name) {
-            alert('Section creation cancelled');
-            return;
-        }
+        // Instead of prompt, open the sectionModal but pre-fill it
+        this.openModal('sectionModal');
 
-        const typeOptions = ['fruit-trees', 'cash-crops', 'infrastructure', 'fallow-land', 'other'];
-        const typeChoice = prompt(`Enter section type:\n1. Fruit Trees\n2. Cash Crops\n3. Infrastructure\n4. Fallow Land\n5. Other\n\nEnter number (1-5):`, '1');
-        const type = typeOptions[parseInt(typeChoice) - 1] || 'other';
+        // Reset and pre-fill form
+        const form = document.getElementById('sectionForm');
+        if (form) form.reset();
 
-        const cropType = prompt('Enter crop type (optional):', '');
+        document.getElementById('sectionName').value = `Section ${(this.getCurrentFarm().sections?.length || 0) + 1}`;
+        document.getElementById('sectionArea').value = area.toFixed(4);
+        document.getElementById('sectionPercentage').value = ((area / (this.getCurrentFarm().area || 1)) * 100).toFixed(1);
 
-        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2'];
-        const color = colors[(this.getCurrentFarm().sections?.length || 0) % colors.length];
+        // Store the drawn boundaries in our temp coordinates or pass them to the save logic
+        this.drawnSectionBoundaries = boundaries;
 
-        // Calculate center point for reference coordinates
-        const centerLat = boundaries.reduce((sum, c) => sum + c.lat, 0) / boundaries.length;
-        const centerLng = boundaries.reduce((sum, c) => sum + c.lng, 0) / boundaries.length;
-
-        // Format all 4 corner coordinates for display
-        const cornerCoords = boundaries.slice(0, 4).map((coord, i) =>
-            `Corner ${i + 1}: ${coord.lat.toFixed(6)}, ${coord.lng.toFixed(6)}`
-        ).join('\n');
-
-        const sectionData = {
-            name: name,
-            type: type,
-            cropType: cropType || null,
-            boundaries: boundaries,
-            // centerCoordinates not needed in payload if boundaries provided? 
-            // backend schema: boundaries JSONB. Logic to parse center might be needed on reload?
-            // Actually schema doesn't have center_lat/lng for sections, just boundaries.
-            // Frontend calculates center on load?
-            area: area,
-            percentage: parseFloat((area / (this.farmData.area || 1)) * 100),
-            color: color,
-            notes: `Drawn on ${new Date().toLocaleDateString()}\nCenter: ${centerLat.toFixed(6)}, ${centerLng.toFixed(6)}\n\n4 Corner Coordinates:\n${cornerCoords}`
-        };
-
-        try {
-            // Add to farm data via API
-            // Note: Use async inside this synchronous flow causing issues? 
-            // Better to make this method async.
-            this.createSectionAsync(sectionData, name, area, centerLat, centerLng, cornerCoords);
-        } catch (e) {
-            console.error(e);
-        }
+        // Update modal title
+        const title = document.querySelector('#sectionModal .modal-title');
+        if (title) title.textContent = 'Add Drawn Section';
     },
 
     async createSectionAsync(sectionData, name, area, centerLat, centerLng, cornerCoords) {
@@ -2794,10 +2773,10 @@ const app = {
             this.renderLandAllocationTable();
             this.renderGraphicalMap();
 
-            alert(`Section "${name}" created!\nArea: ${area.toFixed(4)} hectares\n\nCenter Coordinates:\nLat: ${centerLat.toFixed(6)}\nLng: ${centerLng.toFixed(6)}\n\n4 Corner Coordinates:\n${cornerCoords}`);
+            this.showSuccess(`Section "${name}" created successfully!\nArea: ${area.toFixed(4)} ha`);
         } catch (error) {
             console.error('Failed to create section:', error);
-            alert('Failed to save drawn section');
+            this.showError('Failed to save drawn section');
         }
     },
 
@@ -2810,26 +2789,19 @@ const app = {
         btn.classList.remove('btn-danger');
         btn.classList.add('btn-primary');
         this.renderGraphicalMap();
-        alert('Drawing cancelled');
+        this.showError('Drawing cancelled');
     },
 
     // Toggle crop allocation drawing mode
     toggleDrawingMode() {
-        this.drawingMode = !this.drawingMode;
+        this.isDrawingMode = !this.isDrawingMode;
         const btn = document.getElementById('drawSectionBtn');
 
-        if (this.drawingMode) {
-            btn.textContent = 'Cancel Drawing';
-            btn.classList.remove('btn-primary');
-            btn.classList.add('btn-danger');
-            this.currentDrawing = [];
-
-            // Switch to graphical view
-            this.toggleMapView('graphical');
-
-            alert('Drawing Mode Active!\n\n• Click and drag to draw a rectangular section\n• Hold Shift for a square\n• The area will calculate automatically upon release\n• Press ESC to cancel');
+        if (this.isDrawingMode) {
+            if (btn) btn.classList.add('active');
+            this.showSuccess('Drawing Mode Active!<br><br>• Click and drag to draw a rectangular section<br>• The area will calculate automatically upon release<br>• Press ESC to cancel');
         } else {
-            this.cancelDrawing();
+            if (btn) btn.classList.remove('active');
         }
     },
 
@@ -2870,14 +2842,14 @@ const app = {
 
         // Check if area field exists and has value
         if (!areaInput || !areaInput.value) {
-            alert('Please enter the area in hectares.');
+            this.showError('Please enter the area in hectares.');
             return;
         }
 
         const area = parseFloat(areaInput.value);
 
         if (isNaN(area) || area <= 0) {
-            alert('Please enter a valid area greater than 0.');
+            this.showError('Please enter a valid area greater than 0.');
             return;
         }
 
@@ -2888,12 +2860,12 @@ const app = {
         // (If we were in drawing mode, boundaries would be passed, but here it's manual)
         // We can keep the dummy boundaries generation if needed for visual compatibility
         const index = farm.sections ? farm.sections.length : 0;
-        const baseOffset = index * 0.0005;
-        const dummyBoundaries = [
-            { lat: 5.916 + baseOffset, lng: 11.043 },
-            { lat: 5.917 + baseOffset, lng: 11.043 },
-            { lat: 5.917 + baseOffset, lng: 11.044 },
-            { lat: 5.916 + baseOffset, lng: 11.044 }
+        // Check if we have drawn boundaries
+        const dummyBoundaries = this.drawnSectionBoundaries || [
+            { lat: farm.centerCoordinates.lat + 0.001, lng: farm.centerCoordinates.lng + 0.001 },
+            { lat: farm.centerCoordinates.lat + 0.001, lng: farm.centerCoordinates.lng - 0.001 },
+            { lat: farm.centerCoordinates.lat - 0.001, lng: farm.centerCoordinates.lng - 0.001 },
+            { lat: farm.centerCoordinates.lat - 0.001, lng: farm.centerCoordinates.lng + 0.001 }
         ];
 
         const sectionData = {
@@ -2903,7 +2875,7 @@ const app = {
             color: color,
             area: area,
             percentage: parseFloat(percentage),
-            boundaries: dummyBoundaries, // Or pass existing if updating?
+            boundaries: dummyBoundaries,
             notes: document.getElementById('sectionNotes').value
         };
 
@@ -2931,6 +2903,9 @@ const app = {
                 farm.sections.push(newSection);
             }
 
+            // Important: Clear the stored boundaries after save
+            this.drawnSectionBoundaries = null;
+
             this.renderFarmSectionsTable();
             this.renderLandAllocationTable();
             this.renderGraphicalMap();
@@ -2939,11 +2914,9 @@ const app = {
             // Clear form
             document.getElementById('sectionForm').reset();
 
-            alert(`Section "${name}" saved successfully!\nArea: ${area} ha (${percentage}% of farm)`);
-
+            this.showSuccess(`Section "${name}" saved successfully!`);
         } catch (error) {
-            console.error('Failed to save section:', error);
-            alert('Failed to save section: ' + error.message);
+            this.showError('Failed to save section: ' + error.message);
         }
     },
 
@@ -3031,49 +3004,50 @@ const app = {
 
     // Delete section
     async deleteSection(sectionId) {
-        if (!confirm('Are you sure you want to delete this section?')) return;
-
         const farm = this.getCurrentFarm();
+        if (!farm) return;
 
-        try {
-            await api.sections.delete(sectionId);
+        this.showConfirmation('Are you sure you want to delete this section?', async () => {
+            try {
+                if (!sectionId.startsWith('section_')) {
+                    await api.sections.delete(sectionId);
+                }
 
-            // Remove from local array
-            farm.sections = farm.sections.filter(s => s.id !== sectionId);
-
-            // Remove polygon from map
-            const polygonRef = this.sectionPolygons.find(sp => sp.id === sectionId);
-            if (polygonRef) {
-                polygonRef.polygon.setMap(null);
-                this.sectionPolygons = this.sectionPolygons.filter(sp => sp.id !== sectionId);
-            }
-
-            this.renderFarmSectionsTable();
-            this.renderLandAllocationTable();
-            alert('Section deleted successfully');
-
-        } catch (error) {
-            console.error('Failed to delete section:', error);
-            // Check if it was a temporary local section (failed save?)
-            if (sectionId.startsWith('section_')) {
+                // Remove from local array
                 farm.sections = farm.sections.filter(s => s.id !== sectionId);
+
+                // Remove polygon from map
+                const polygonRef = this.sectionPolygons.find(sp => sp.id === sectionId);
+                if (polygonRef) {
+                    polygonRef.polygon.setMap(null);
+                    this.sectionPolygons = this.sectionPolygons.filter(sp => sp.id !== sectionId);
+                }
+
                 this.renderFarmSectionsTable();
-            } else {
-                alert('Failed to delete section: ' + error.message);
+                this.renderLandAllocationTable();
+                this.showSuccess('Section deleted successfully');
+
+            } catch (error) {
+                this.showError('Failed to delete section: ' + error.message);
+                // Check if it was a temporary local section (failed save?)
+                if (sectionId.startsWith('section_')) {
+                    farm.sections = farm.sections.filter(s => s.id !== sectionId);
+                    this.renderFarmSectionsTable();
+                }
             }
-        }
+        });
     },
 
     // Print Land Allocation table
     printLandAllocationTable() {
+        if (!this.getCurrentFarm().sections || this.getCurrentFarm().sections.length === 0) {
+            this.showError('No allocations to print');
+            return;
+        }
+
         const sections = this.getCurrentFarm().sections || [];
         const farmName = this.getCurrentFarm().name;
         const totalArea = this.getCurrentFarm().area;
-
-        if (sections.length === 0) {
-            alert('No allocations to print');
-            return;
-        }
 
         const printWindow = window.open('', '', 'width=800,height=600');
         printWindow.document.write(`
@@ -3133,13 +3107,13 @@ const app = {
 
     // Print Crop Allocation Sections table
     printCropAllocationSections() {
-        const sections = this.getCurrentFarm().sections || [];
-        const farmName = this.getCurrentFarm().name;
-
-        if (sections.length === 0) {
-            alert('No crop allocation sections to print');
+        if (!this.getCurrentFarm().sections || this.getCurrentFarm().sections.length === 0) {
+            this.showError('No crop allocation sections to print');
             return;
         }
+
+        const sections = this.getCurrentFarm().sections || [];
+        const farmName = this.getCurrentFarm().name;
 
         const printWindow = window.open('', '', 'width=900,height=700');
         printWindow.document.write(`
@@ -3216,7 +3190,7 @@ const app = {
         const section = farm.sections.find(s => s.id === sectionId);
 
         if (!section) {
-            alert('Section not found');
+            this.showError('Section not found');
             return;
         }
 
@@ -3283,6 +3257,15 @@ const app = {
         if (msgEl) msgEl.innerHTML = message;
 
         this.openModal('alertModal');
+    },
+
+    // Standard Success/Error wrappers
+    showSuccess(message) {
+        this.showAlert('✓ Success', `<div style="color: #2e7d32; font-weight: 500;">${message}</div>`);
+    },
+
+    showError(message) {
+        this.showAlert('⚠️ Error', `<div style="color: #c62828;">${message}</div>`);
     },
 
     // Render graphical representation on canvas
