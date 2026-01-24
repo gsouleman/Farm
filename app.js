@@ -300,6 +300,12 @@ const app = {
         }
     },
 
+    logout() {
+        if (confirm('Are you sure you want to logout?')) {
+            api.auth.logout();
+        }
+    },
+
     openChangePasswordModal(forced = false) {
         const modal = document.getElementById('changePasswordModal');
         const alert = document.getElementById('passwordChangeAlert');
