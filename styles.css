@@ -250,10 +250,24 @@ a:hover {
   gap: var(--spacing-md);
 }
 
-.navbar-nav a,
-.nav-btn-logout {
+.navbar-nav a {
   color: var(--color-white);
   font-weight: 500;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+}
+
+.nav-btn-logout {
+  color: var(--color-white);
+  font-weight: 700;
+  /* Bolder */
+  font-size: 1.1rem;
+  /* Larger than Admin */
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-md);
   transition: all var(--transition-fast);
@@ -999,11 +1013,12 @@ select.form-control {
   background: #f5f5f5;
   color: #616161;
 }
+
 /* Map Dimension Labels */
 .map-dimension-label {
-    background-color: rgba(0, 0, 0, 0.7);
-    padding: 2px 4px;
-    border-radius: 4px;
-    font-family: 'Inter', sans-serif;
-    text-shadow: 0px 0px 2px black;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: 'Inter', sans-serif;
+  text-shadow: 0px 0px 2px black;
 }
