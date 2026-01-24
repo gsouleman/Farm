@@ -602,7 +602,8 @@ Object.assign(app, {
             this.renderDashboard();
             this.renderTransactions();
             this.renderCrops();
-            this.renderFarmMap(); // Re-render map with new boundaries
+            this.renderFarmMap(); // Re-render satellite map
+            this.renderGraphicalMap(); // Ensure graphical map is also updated/rendered
 
             // Re-render employees if table exists (it's in the employees tab)
             this.renderEmployees();
@@ -699,7 +700,7 @@ Object.assign(app, {
         const areaPerimeterEl = document.getElementById('areaPerimeter');
 
         if (totalAreaEl) {
-            totalAreaEl.textContent = `${(parseFloat(farm.area) || 0).toFixed(2)} ha`;
+            totalAreaEl.textContent = `${(parseFloat(farm.area) || 0).toFixed(4)} ha`;
         }
         if (areaPerimeterEl) {
             areaPerimeterEl.textContent = `${(parseFloat(farm.perimeter) || 0).toFixed(2)} m perimeter`;
@@ -720,7 +721,7 @@ Object.assign(app, {
         setText('farmLocationDisplay', farm.location || '-');
         const area = parseFloat(farm.area) || 0;
         const perimeter = parseFloat(farm.perimeter) || 0;
-        setText('farmAreaDisplay', area.toFixed(2) + ' hectares');
+        setText('farmAreaDisplay', area.toFixed(4) + ' hectares');
         setText('farmPerimeterDisplay', perimeter.toFixed(2) + ' meters');
 
         if (farm.centerCoordinates && typeof farm.centerCoordinates.lat === 'number') {
@@ -3225,7 +3226,7 @@ Object.assign(app, {
                         ${sections.map(s => `
                             <tr>
                                 <td><strong>${s.name}</strong></td>
-                                <td>${s.area.toFixed(2)}</td>
+                                <td>${s.area.toFixed(4)}</td>
                                 <td>${s.percentage ? s.percentage.toFixed(1) : '0.0'}%</td>
                             </tr>
                         `).join('')}
@@ -3644,7 +3645,7 @@ Object.assign(app, {
 
         ctx.font = '14px Inter, sans-serif';
         ctx.textAlign = 'left';
-        ctx.fillText(`Area: ${this.farmData.area} ha`, padding, padding - 30);
+        ctx.fillText(`Area: ${parseFloat(this.farmData.area).toFixed(4)} ha`, padding, padding - 30);
         ctx.textAlign = 'right';
         ctx.fillText(`Sections: ${sections.length}`, width - padding, padding - 30);
 
