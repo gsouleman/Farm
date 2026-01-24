@@ -41,29 +41,7 @@ Object.assign(app, {
         });
     },
 
-    // Toggle drawing mode - UPDATED
-    toggleDrawingMode() {
-        this.drawingMode = !this.drawingMode;
-        const btn = document.getElementById('drawSectionBtn');
-
-        if (this.drawingMode) {
-            btn.textContent = '🛑 Cancel Drawing';
-            btn.classList.remove('btn-primary');
-            btn.classList.add('btn-danger');
-            this.currentDrawing = [];
-
-            // Switch to graphical view
-            this.toggleMapView('graphical');
-
-            alert('Click points on the map to draw your crop section. Double-click to finish, right-click to cancel.');
-        } else {
-            btn.textContent = '📐 Crop Allocation';
-            btn.classList.remove('btn-danger');
-            btn.classList.add('btn-primary');
-            this.currentDrawing = [];
-            this.renderGraphicalMap();
-        }
-    },
+    // Toggle drawing mode is now handled in app.js master toggle
 
     // Render map with current drawing
     renderGraphicalMapWithDrawing() {
@@ -172,7 +150,7 @@ Object.assign(app, {
     // Finish drawing and open section modal with calculated area
     finishDrawing() {
         if (this.currentDrawing.length < 3) {
-            alert('Please draw at least 3 points to create a section');
+            this.showError('Please draw at least 3 points to create a section');
             return;
         }
 

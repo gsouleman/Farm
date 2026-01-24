@@ -1133,9 +1133,10 @@ Example:
   <!-- Alert Modal -->
   <div id="alertModal" class="modal-overlay">
     <div class="modal" style="max-width: 450px;">
-      <div class="modal-header">
+      <div class="modal-header" id="alertHeader">
         <h3 class="modal-title" id="alertTitle">Alert</h3>
-        <button class="modal-close" onclick="app.closeModal('alertModal')"><i class="fas fa-times"></i></button>
+        <button class="modal-close" id="alertCloseBtn" onclick="app.closeModal('alertModal')"><i
+            class="fas fa-times"></i></button>
       </div>
       <div style="margin-bottom: 2rem;">
         <p id="alertMessage" style="color: #666; font-size: 1rem; line-height: 1.5; text-align: center;">
@@ -1150,6 +1151,11 @@ Example:
 
   <!-- API Client for Database Integration -->
   <script src="api-client.js"></script>
+
+  <!-- Helper Modules -->
+  <script src="canvas_drawing_functions.js"></script>
+  <script src="land_allocation_functions.js"></script>
+  <script src="print_functions.js"></script>
 
   <!-- Application Script -->
   <script src="app.js"></script>

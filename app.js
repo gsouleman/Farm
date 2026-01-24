@@ -2909,14 +2909,37 @@ const app = {
 
     // Toggle crop allocation drawing mode
     toggleDrawingMode() {
+        // This is the master toggle. It will delegate to canvas or google maps.
         this.isDrawingMode = !this.isDrawingMode;
+
+        // Ensure consistency with the other property name used in canvas functions
+        this.drawingMode = this.isDrawingMode;
+
         const btn = document.getElementById('drawSectionBtn');
 
         if (this.isDrawingMode) {
-            if (btn) btn.classList.add('active');
-            this.showSuccess('Drawing Mode Active!<br><br>• Click and drag to draw a rectangular section<br>• The area will calculate automatically upon release<br>• Press ESC to cancel');
+            if (btn) {
+                btn.textContent = '🛑 Cancel Allocation';
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-danger');
+                btn.classList.add('active');
+            }
+
+            this.currentDrawing = [];
+
+            // Switch to graphical view for drawing (it's more reliable for now)
+            this.toggleMapView('graphical');
+
+            this.showInfo('Drawing Mode Active!<br><br>• Click on the map to add points<br>• Double-click to finish the section<br>• Right-click or ESC to cancel');
         } else {
-            if (btn) btn.classList.remove('active');
+            if (btn) {
+                btn.textContent = '📐 Crop Allocation';
+                btn.classList.remove('btn-danger');
+                btn.classList.remove('active');
+                btn.classList.add('btn-primary');
+            }
+            this.currentDrawing = [];
+            this.renderGraphicalMap();
         }
     },
 
@@ -3364,14 +3387,38 @@ const app = {
     },
 
     // Show a generic alert modal
-    showAlert(title, message) {
+    showAlert(title, message, options = {}) {
         const titleEl = document.getElementById('alertTitle');
         const msgEl = document.getElementById('alertMessage');
+        const headerEl = document.getElementById('alertHeader');
+        const closeBtn = document.getElementById('alertCloseBtn');
 
-        if (titleEl) titleEl.textContent = title;
+        // Reset visibility
+        if (headerEl) headerEl.style.display = 'flex';
+        if (closeBtn) closeBtn.style.display = 'flex';
+
+        if (titleEl) {
+            if (title) {
+                titleEl.textContent = title;
+                titleEl.style.display = 'block';
+            } else {
+                // If no title, hide the entire header for a cleaner look
+                if (headerEl) headerEl.style.display = 'none';
+            }
+        }
+
+        if (options.hideClose && closeBtn) {
+            closeBtn.style.display = 'none';
+        }
+
         if (msgEl) msgEl.innerHTML = message;
 
         this.openModal('alertModal');
+    },
+
+    // Show professional info instructions (no title, no X)
+    showInfo(message) {
+        this.showAlert(null, `<div style="padding: 1rem 0; font-size: 1.1rem;">${message}</div>`, { hideClose: true });
     },
 
     // Standard Success/Error wrappers
@@ -4096,4 +4143,11 @@ app.deleteEmployee = function (id) {
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     app.init();
+
+    // Global keyboard listener for ESC to cancel drawing
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && app.isDrawingMode) {
+            app.toggleDrawingMode();
+        }
+    });
 });
