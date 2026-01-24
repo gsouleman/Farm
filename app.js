@@ -775,7 +775,7 @@ const app = {
 
         const totalFarmArea = farm.area || 0;
 
-        // Generate rows
+        // Generate rows matching the sections data (Name, Area, Percentage)
         tbody.innerHTML = farm.sections.map(section => {
             const area = section.area || 0;
             const percentage = totalFarmArea > 0 ? ((area / totalFarmArea) * 100).toFixed(1) : '0.0';
@@ -784,10 +784,9 @@ const app = {
                 <tr>
                     <td>
                         <span style="display: inline-block; width: 10px; height: 10px; background-color: ${section.color || '#ccc'}; margin-right: 5px; border-radius: 50%;"></span>
-                        ${section.name || 'Unnamed Section'}
-                        ${section.cropType ? `<small class="text-muted d-block">${section.cropType}</small>` : ''}
+                        <strong>${section.name || 'Unnamed'}</strong>
                     </td>
-                    <td>${area.toFixed(2)}</td>
+                    <td>${area.toFixed(4)}</td>
                     <td>${percentage}%</td>
                 </tr>
             `;
@@ -1504,26 +1503,21 @@ const app = {
         }
     },
 
-    // Delete a coordinate point
+    // Delete a coordinate point (Auto-confirmed)
     deleteCoordinatePoint(index) {
-        if (confirm(`Delete coordinate point #${index + 1}?`)) {
-            this.tempCoordinates.splice(index, 1);
-            this.renderCoordinatesTable();
-        }
+        this.tempCoordinates.splice(index, 1);
+        this.renderCoordinatesTable();
     },
 
-    // Clear all coordinate points
+    // Clear all coordinate points (Auto-confirmed)
     clearAllCoordinates() {
         if (this.tempCoordinates.length === 0) {
             alert('No coordinates to clear.');
             return;
         }
 
-        const count = this.tempCoordinates.length;
-        if (confirm(`Are you sure you want to delete all ${count} coordinate${count > 1 ? 's' : ''}?\n\nThis action cannot be undone until you close the modal without saving.`)) {
-            this.tempCoordinates = [];
-            this.renderCoordinatesTable();
-        }
+        this.tempCoordinates = [];
+        this.renderCoordinatesTable();
     },
 
     // Update validation message and save button state
@@ -1680,21 +1674,19 @@ const app = {
         this.closeModal('addTransactionModal');
     },
 
-    // Delete transaction
+    // Delete transaction (Auto-confirmed)
     deleteTransaction(index) {
-        if (confirm('Are you sure you want to delete this transaction?')) {
-            // Sort to get the correct index
-            const sorted = [...this.transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
-            const transaction = sorted[index];
-            const originalIndex = this.transactions.indexOf(transaction);
+        // Sort to get the correct index
+        const sorted = [...this.transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+        const transaction = sorted[index];
+        const originalIndex = this.transactions.indexOf(transaction);
 
-            this.transactions.splice(originalIndex, 1);
-            this.saveData();
-            this.renderDashboard();
-            this.renderTransactions();
-            this.updateCurrentMonth();
-            this.initializeCharts();
-        }
+        this.transactions.splice(originalIndex, 1);
+        this.saveData();
+        this.renderDashboard();
+        this.renderTransactions();
+        this.updateCurrentMonth();
+        this.initializeCharts();
     },
 
     // Add crop
@@ -1724,22 +1716,18 @@ const app = {
         this.closeModal('addCropModal');
     },
 
-    // Delete fruit tree
+    // Delete fruit tree (Auto-confirmed)
     deleteFruitTree(index) {
-        if (confirm('Are you sure you want to delete this fruit tree entry?')) {
-            this.fruitTrees.splice(index, 1);
-            this.saveData();
-            this.renderCrops();
-        }
+        this.fruitTrees.splice(index, 1);
+        this.saveData();
+        this.renderCrops();
     },
 
-    // Delete cash crop
+    // Delete cash crop (Auto-confirmed)
     deleteCashCrop(index) {
-        if (confirm('Are you sure you want to delete this cash crop entry?')) {
-            this.cashCrops.splice(index, 1);
-            this.saveData();
-            this.renderCrops();
-        }
+        this.cashCrops.splice(index, 1);
+        this.saveData();
+        this.renderCrops();
     },
 
     // Export transactions
@@ -2025,31 +2013,10 @@ const app = {
         return colors[status] || 'info';
     },
 
-    // Custom confirmation modal helper
+    // Custom confirmation modal helper (Auto-confirmed)
     showConfirmation(message, onConfirm) {
-        const modal = document.getElementById('confirmationModal');
-        const msgEl = document.getElementById('confirmationMessage');
-        const confirmBtn = document.getElementById('confirmActionBtn');
-
-        if (modal && msgEl && confirmBtn) {
-            msgEl.textContent = message;
-
-            // Remove previous event listeners by cloning
-            const newBtn = confirmBtn.cloneNode(true);
-            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
-
-            newBtn.onclick = () => {
-                onConfirm();
-                this.closeModal('confirmationModal');
-            };
-
-            modal.classList.add('active');
-        } else {
-            // Fallback if modal elements missing
-            if (confirm(message)) {
-                onConfirm();
-            }
-        }
+        console.log("Auto-confirmed:", message);
+        onConfirm();
     },
 
     // Edit current farm
@@ -3125,8 +3092,7 @@ const app = {
 
     // Delete section
     deleteSection(sectionId) {
-        if (!confirm('Delete this section?')) return;
-
+        // Auto-confirmed
         const farm = this.getCurrentFarm();
         farm.sections = farm.sections.filter(s => s.id !== sectionId);
 
