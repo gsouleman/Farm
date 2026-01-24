@@ -1,6 +1,7 @@
 // API Configuration
 const API_CONFIG = {
-    baseURL: 'https://farm-backend-uq2z.onrender.com', // Production backend URL
+    baseURL: 'http://localhost:3000', // Local backend URL
+    // baseURL: 'https://farm-backend-uq2z.onrender.com', // Production backend URL
     endpoints: {
         auth: {
             register: '/api/auth/register',
