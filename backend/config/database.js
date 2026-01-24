@@ -1,5 +1,12 @@
 const { Pool } = require('pg');
 
+console.log('DB Config: Checking DATABASE_URL...');
+if (!process.env.DATABASE_URL) {
+    console.error('❌ DATABASE_URL is undefined!');
+} else {
+    console.log('✅ DATABASE_URL is defined (starts with: ' + process.env.DATABASE_URL.substring(0, 15) + '...)');
+}
+
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL
 });
