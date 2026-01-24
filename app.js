@@ -3398,7 +3398,8 @@ app.updateAllText = function () {
     if (navLinks[1]) navLinks[1].textContent = this.t('nav.farmInfo');
     if (navLinks[2]) navLinks[2].textContent = this.t('nav.financial');
     if (navLinks[3]) navLinks[3].textContent = this.t('nav.crops');
-    if (navLinks[4]) navLinks[4].textContent = this.t('nav.reports');
+    if (navLinks[4]) navLinks[4].textContent = this.t('nav.employees');
+    if (navLinks[5]) navLinks[5].textContent = this.t('nav.reports');
 
     // Update current section based on active tab
     const activeLink = document.querySelector('.nav-link.active');
@@ -3412,6 +3413,8 @@ app.updateAllText = function () {
             this.updateFinancialText();
         } else if (href === '#crops') {
             this.updateCropsText();
+        } else if (href === '#employees') {
+            this.renderEmployees(); // Ensure data is rendered
         } else if (href === '#reports') {
             this.updateReportsText();
         }
@@ -3664,6 +3667,12 @@ app.showTab = function (tabName) {
     const section = document.getElementById(tabName);
     if (section) {
         section.style.display = 'block';
+        section.classList.remove('hidden'); // Remove hidden class if present
+
+        // Trigger specific renders if needed
+        if (tabName === 'employees') {
+            this.renderEmployees();
+        }
     }
 
     // Add active class to clicked link
