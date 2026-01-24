@@ -540,9 +540,11 @@
                   <tr>
                     <th>Name</th>
                     <th>Role</th>
+                    <th>Type</th>
                     <th>Status</th>
                     <th>Phone</th>
-                    <th>Salary (XAF)</th>
+                    <th>Pay Basis</th>
+                    <th>Pay Rate (XAF)</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -576,7 +578,7 @@
           <input type="text" class="form-control" id="empName" required placeholder="e.g. John Doe">
         </div>
 
-        <div class="grid-2">
+        <div class="grid-3">
           <div class="form-group">
             <label class="form-label">Role</label>
             <select class="form-control" id="empRole" required>
@@ -589,6 +591,15 @@
           </div>
 
           <div class="form-group">
+            <label class="form-label">Type</label>
+            <select class="form-control" id="empType" required>
+              <option value="Full-time">Full-time</option>
+              <option value="Part-time">Part-time</option>
+              <option value="Casual">Casual/Labourer</option>
+            </select>
+          </div>
+
+          <div class="form-group">
             <label class="form-label">Status</label>
             <select class="form-control" id="empStatus" required>
               <option value="Active">Active</option>
@@ -597,14 +608,24 @@
           </div>
         </div>
 
-        <div class="grid-2">
+        <div class="grid-3">
           <div class="form-group">
             <label class="form-label">Phone</label>
             <input type="tel" class="form-control" id="empPhone" placeholder="+237...">
           </div>
 
           <div class="form-group">
-            <label class="form-label">Monthly Salary (XAF)</label>
+            <label class="form-label">Pay Frequency</label>
+            <select class="form-control" id="empPayFrequency" required>
+              <option value="Monthly">Monthly</option>
+              <option value="Weekly">Weekly</option>
+              <option value="Daily">Daily</option>
+              <option value="Hourly">Hourly</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Pay Rate (XAF)</label>
             <input type="number" class="form-control" id="empSalary" min="0" step="1000" placeholder="0">
           </div>
         </div>

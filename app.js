@@ -4077,8 +4077,10 @@ app.renderEmployees = function () {
             <tr>
                 <td>${emp.name}</td>
                 <td><span class="badge badge-info">${emp.role}</span></td>
+                <td><span class="badge badge-secondary">${emp.type || 'Full-time'}</span></td>
                 <td><span class="badge ${emp.status === 'Active' ? 'badge-success' : 'badge-danger'}">${emp.status}</span></td>
                 <td>${emp.phone || '-'}</td>
+                <td>${emp.payFrequency || 'Monthly'}</td>
                 <td>${this.formatCurrency(emp.salary || 0)}</td>
                 <td>
                     <button class="btn btn-outline btn-sm" onclick="app.openEditEmployeeModal('${emp.id}')">✏️ Edit</button>
@@ -4104,8 +4106,10 @@ app.openEditEmployeeModal = function (empId) {
     document.getElementById('employeeId').value = emp.id;
     document.getElementById('empName').value = emp.name;
     document.getElementById('empRole').value = emp.role;
+    document.getElementById('empType').value = emp.type || 'Full-time';
     document.getElementById('empStatus').value = emp.status;
     document.getElementById('empPhone').value = emp.phone;
+    document.getElementById('empPayFrequency').value = emp.payFrequency || 'Monthly';
     document.getElementById('empSalary').value = emp.salary;
 
     document.getElementById('employeeModalTitle').textContent = 'Edit Employee';
@@ -4122,15 +4126,17 @@ app.saveEmployee = function (event) {
     const id = document.getElementById('employeeId').value;
     const name = document.getElementById('empName').value;
     const role = document.getElementById('empRole').value;
+    const type = document.getElementById('empType').value;
     const status = document.getElementById('empStatus').value;
     const phone = document.getElementById('empPhone').value;
+    const payFrequency = document.getElementById('empPayFrequency').value;
     const salary = parseFloat(document.getElementById('empSalary').value) || 0;
 
     if (id) {
         // Update existing
         const index = farm.employees.findIndex(e => e.id === id);
         if (index !== -1) {
-            farm.employees[index] = { ...farm.employees[index], name, role, status, phone, salary };
+            farm.employees[index] = { ...farm.employees[index], name, role, type, status, phone, payFrequency, salary };
         }
     } else {
         // Create new
@@ -4138,8 +4144,10 @@ app.saveEmployee = function (event) {
             id: Date.now().toString(),
             name,
             role,
+            type,
             status,
             phone,
+            payFrequency,
             salary,
             dateAdded: new Date().toISOString()
         });
