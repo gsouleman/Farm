@@ -597,6 +597,9 @@ Object.assign(app, {
             }));
             farm.employees = employees;
 
+            // Set current farm data for globally accessible this.farmData
+            this.farmData = farm;
+
             // Update UI
             this.renderFarmDetails();
             this.renderDashboard();
@@ -1040,7 +1043,7 @@ Object.assign(app, {
     // Land utilization chart
     initLandUtilizationChart() {
         const ctx = document.getElementById('landUtilizationChart');
-        if (!ctx) return;
+        if (!ctx || !this.farmData || !this.farmData.zones) return;
 
         if (this.charts.landUtilization) {
             this.charts.landUtilization.destroy();
@@ -2224,7 +2227,13 @@ Object.assign(app, {
                 lat: parseFloat(farm.center_lat || farm.centerCoordinates?.lat || 0),
                 lng: parseFloat(farm.center_lng || farm.centerCoordinates?.lng || 0)
             },
-            boundaries: typeof farm.boundaries === 'string' ? JSON.parse(farm.boundaries) : (farm.boundaries || [])
+            boundaries: typeof farm.boundaries === 'string' ? JSON.parse(farm.boundaries) : (farm.boundaries || []),
+            zones: typeof farm.zones === 'string' ? JSON.parse(farm.zones) : (farm.zones || {
+                fruitTrees: { area: 0, percentage: 0 },
+                cashCrops: { area: 0, percentage: 0 },
+                farmHouse: { area: 0, percentage: 0 },
+                residential: { area: 0, percentage: 0 }
+            })
         };
     },
 
