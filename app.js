@@ -3599,6 +3599,45 @@ Object.assign(app, {
                 ctx.fill();
                 ctx.stroke();
 
+                // Draw edge dimensions (Length/Width)
+                if (google.maps.geometry && section.boundaries.length > 2) {
+                    ctx.font = 'bold 10px Inter, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+
+                    section.boundaries.forEach((coord, i) => {
+                        const nextCoord = section.boundaries[(i + 1) % section.boundaries.length];
+
+                        // Calculate real-world distance
+                        const distance = google.maps.geometry.spherical.computeDistanceBetween(coord, nextCoord);
+
+                        if (distance > 5) { // Only show label if > 5m
+                            // Calculate midpoint for label position
+                            const midLng = (coord.lng + nextCoord.lng) / 2;
+                            const midLat = (coord.lat + nextCoord.lat) / 2;
+
+                            const labelX = scaleX(midLng);
+                            const labelY = scaleY(midLat);
+                            const labelText = `${distance.toFixed(1)}m`;
+
+                            // Draw label background
+                            const textMetrics = ctx.measureText(labelText);
+                            const padding = 2;
+                            const bgWidth = textMetrics.width + (padding * 2);
+                            const bgHeight = 14;
+
+                            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                            ctx.beginPath();
+                            ctx.roundRect(labelX - bgWidth / 2, labelY - bgHeight / 2, bgWidth, bgHeight, 3);
+                            ctx.fill();
+
+                            // Draw label text
+                            ctx.fillStyle = 'white';
+                            ctx.fillText(labelText, labelX, labelY);
+                        }
+                    });
+                }
+
                 // Add coordinates label at center
                 if (section.boundaries.length > 2) {
                     const centerLat = section.centerCoordinates?.lat || section.boundaries.reduce((sum, c) => sum + c.lat, 0) / section.boundaries.length;
