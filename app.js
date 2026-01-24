@@ -2107,7 +2107,7 @@ Object.assign(app, {
 
                 // Switch to another farm or reset
                 if (this.farms.length > 0) {
-                    this.selectFarm(this.farms[0].id);
+                    this.switchFarm(this.farms[0].id);
                 } else {
                     this.currentFarmId = null;
                     localStorage.removeItem('currentFarmId');
@@ -2204,7 +2204,7 @@ Object.assign(app, {
 
             // Add to local array
             this.farms.push(sanitizedFarm);
-            this.selectFarm(sanitizedFarm.id);
+            this.switchFarm(sanitizedFarm.id);
             this.closeModal('createFarmModal');
             this.showSuccess(`Farm "${sanitizedFarm.name}" created successfully!`);
         } catch (error) {
