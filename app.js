@@ -933,13 +933,13 @@ const app = {
 
     // Modal management
     openAddTransactionModal() {
-        document.getElementById('addTransactionModal').classList.add('active');
         document.getElementById('transactionForm').reset();
         document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
+        this.openModal('addTransactionModal');
     },
 
     openAddCropModal(type) {
-        document.getElementById('addCropModal').classList.add('active');
+        this.openModal('addCropModal');
         document.getElementById('cropForm').reset();
         document.getElementById('cropCategory').value = type;
 
@@ -980,8 +980,23 @@ const app = {
         document.getElementById('cropPlantedDate').value = new Date().toISOString().split('T')[0];
     },
 
+    openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('active');
+            // Ensure display: flex for the overlay to center content
+            if (modal.classList.contains('modal-overlay')) {
+                modal.style.display = 'flex';
+            }
+        }
+    },
+
     closeModal(modalId) {
-        document.getElementById(modalId).classList.remove('active');
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('active');
+            modal.style.display = 'none';
+        }
     },
 
     // ===================================
@@ -997,7 +1012,7 @@ const app = {
         this.tempCoordinates = JSON.parse(JSON.stringify(this.farmData.boundaries || []));
 
         // Open modal
-        document.getElementById('coordinateEditorModal').classList.add('active');
+        this.openModal('coordinateEditorModal');
 
         // Render coordinates table
         this.renderCoordinatesTable();
@@ -2574,7 +2589,8 @@ const app = {
         btn.classList.add('btn-primary');
 
         // Show section configuration modal
-        document.getElementById('sectionModal').classList.add('active');
+        // Show section configuration modal
+        this.openModal('sectionModal');
         document.getElementById('sectionForm').reset();
     },
 
@@ -2694,9 +2710,8 @@ const app = {
                 </div>
             `;
 
-            const infoWindow = new google.maps.InfoWindow({ content: infoContent });
-
             polygon.addListener('click', () => {
+                const infoWindow = new google.maps.InfoWindow({ content: infoContent });
                 infoWindow.setPosition(section.boundaries[0]);
                 infoWindow.open(this.map);
             });
@@ -2912,116 +2927,24 @@ const app = {
 
         if (!section) {
             alert('Section not found');
-        }
-
-        // Create edit modal
-        const modal = document.createElement('div');
-        modal.className = 'modal active';
-        modal.innerHTML = `
-            <div class="modal-overlay" onclick="this.closest('.modal').remove()"></div>
-            <div class="modal-content" style="max-width: 600px;">
-                <div class="modal-header">
-                    <h3 class="modal-title">Edit Section</h3>
-                    <button class="btn-close" onclick="this.closest('.modal').remove()">âœ•</button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label class="form-label">Section Name</label>
-                        <input type="text" class="form-control" id="editSectionName" value="${section.name}" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Section Type</label>
-                        <select class="form-select" id="editSectionType">
-                            <option value="fruit-trees" ${section.type === 'fruit-trees' ? 'selected' : ''}>Fruit Trees</option>
-                            <option value="cash-crops" ${section.type === 'cash-crops' ? 'selected' : ''}>Cash Crops</option>
-                            <option value="infrastructure" ${section.type === 'infrastructure' ? 'selected' : ''}>Infrastructure</option>
-                            <option value="fallow-land" ${section.type === 'fallow-land' ? 'selected' : ''}>Fallow Land</option>
-                            <option value="other" ${section.type === 'other' ? 'selected' : ''}>Other</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Crop Type (if applicable)</label>
-                        <input type="text" class="form-control" id="editSectionCrop" value="${section.cropType || ''}" placeholder="e.g., Avocado, Cassava">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Area (hectares)</label>
-                        <input type="number" step="0.0001" class="form-control" id="editSectionArea" value="${section.area}" required min="0">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Color</label>
-                        <input type="color" class="form-control" id="editSectionColor" value="${section.color}" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Notes (optional)</label>
-                        <textarea class="form-control" id="editSectionNotes" rows="3">${section.notes || ''}</textarea>
-                    </div>
-                <button class="btn btn-primary" onclick="app.saveEditedSection('${sectionId}')">Save Changes</button>
-                <div class="modal-footer">
-                    <button class="btn btn-outline" onclick="this.closest('.modal').remove()">Cancel</button>
-                    <button class="btn btn-primary" onclick="app.saveEditedSection('${sectionId}')">ðŸ’¾ Save Changes</button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modal);
-    },
-
-    // Save edited section
-    saveEditedSection(sectionId) {
-        const name = document.getElementById('editSectionName').value.trim();
-        const type = document.getElementById('editSectionType').value;
-        const cropType = document.getElementById('editSectionCrop').value.trim();
-        const area = parseFloat(document.getElementById('editSectionArea').value);
-        const color = document.getElementById('editSectionColor').value;
-        const notes = document.getElementById('editSectionNotes').value.trim();
-
-        if (!name || !area || area <= 0) {
-            alert('Please fill in all required fields');
             return;
         }
 
-        const farm = this.getCurrentFarm();
-        const section = farm.sections.find(s => s.id === sectionId);
+        // Fill the static modal from index.html
+        document.getElementById('sectionId').value = section.id;
+        document.getElementById('sectionName').value = section.name;
+        document.getElementById('sectionType').value = section.type;
+        document.getElementById('sectionCrop').value = section.cropType || section.crop || '';
+        document.getElementById('sectionArea').value = section.area;
+        document.getElementById('sectionColor').value = section.color;
+        document.getElementById('sectionNotes').value = section.notes || '';
 
-        if (!section) {
-            alert('Section not found');
-            return;
-        }
+        // Update modal title
+        const modalTitle = document.querySelector('#sectionModal .modal-title');
+        if (modalTitle) modalTitle.textContent = 'Edit Farm Section';
 
-        // Update section properties
-        section.name = name;
-        section.type = type;
-        section.cropType = cropType || null;
-        section.area = area;
-        section.color = color;
-        section.notes = notes || null;
-
-        // Recalculate percentage
-        const totalArea = this.farmData.area || 1;
-        section.percentage = (area / totalArea) * 100;
-
-        // Update polygon color if it exists
-        const polygonRef = this.sectionPolygons.find(sp => sp.id === sectionId);
-        if (polygonRef) {
-            polygonRef.polygon.setOptions({
-                strokeColor: color,
-                fillColor: color
-            });
-        }
-
-        this.saveData();
-        this.renderFarmSectionsTable();
-        this.renderLandAllocationTable();
-        this.renderGraphicalMap(); // Update graphical view
-
-        // Close modal
-        document.querySelector('.modal.active').remove();
-
-        alert('Section updated successfully');
+        // Open modal
+        this.openModal('sectionModal');
     },
 
     // Toggle between satellite and graphical map views
@@ -3704,7 +3627,7 @@ app.openAddEmployeeModal = function () {
     document.getElementById('employeeId').value = '';
     document.getElementById('employeeForm').reset();
     document.getElementById('employeeModalTitle').textContent = 'Add New Employee';
-    document.getElementById('employeeModal').classList.add('active');
+    this.openModal('employeeModal');
 };
 
 app.openEditEmployeeModal = function (empId) {
@@ -3722,7 +3645,7 @@ app.openEditEmployeeModal = function (empId) {
     document.getElementById('empSalary').value = emp.salary;
 
     document.getElementById('employeeModalTitle').textContent = 'Edit Employee';
-    document.getElementById('employeeModal').classList.add('active');
+    this.openModal('employeeModal');
 };
 
 app.saveEmployee = function (event) {
