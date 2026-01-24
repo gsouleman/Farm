@@ -3079,7 +3079,12 @@ Object.assign(app, {
 
         // Clear existing section polygons
         if (this.sectionPolygons) {
-            this.sectionPolygons.forEach(sp => sp.polygon.setMap(null));
+            this.sectionPolygons.forEach(sp => {
+                sp.polygon.setMap(null);
+                if (sp.labels) {
+                    sp.labels.forEach(label => label.setMap(null));
+                }
+            });
         }
         this.sectionPolygons = [];
 
@@ -3118,8 +3123,43 @@ Object.assign(app, {
 
             this.sectionPolygons.push({
                 id: section.id,
-                polygon: polygon
+                polygon: polygon,
+                labels: [] // Store labels to clear them later
             });
+
+            // Add edge dimensions (Length/Width)
+            if (google.maps.geometry) {
+                const path = polygon.getPath();
+                const labels = this.sectionPolygons[this.sectionPolygons.length - 1].labels;
+
+                for (let i = 0; i < path.getLength(); i++) {
+                    const p1 = path.getAt(i);
+                    const p2 = path.getAt((i + 1) % path.getLength());
+
+                    const distance = google.maps.geometry.spherical.computeDistanceBetween(p1, p2);
+                    const midPoint = google.maps.geometry.spherical.interpolate(p1, p2, 0.5);
+
+                    if (distance > 5) { // Only show label if segment > 5m
+                        const labelMarker = new google.maps.Marker({
+                            position: midPoint,
+                            map: this.map,
+                            icon: {
+                                path: google.maps.SymbolPath.CIRCLE,
+                                scale: 0 // Invisible icon
+                            },
+                            label: {
+                                text: `${distance.toFixed(1)}m`,
+                                color: 'white',
+                                fontSize: '11px',
+                                fontWeight: 'bold',
+                                className: 'map-dimension-label' // We can style this background in CSS
+                            },
+                            zIndex: 3
+                        });
+                        labels.push(labelMarker);
+                    }
+                }
+            }
         });
 
         // Update table
