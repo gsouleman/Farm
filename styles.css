@@ -250,7 +250,8 @@ a:hover {
   gap: var(--spacing-md);
 }
 
-.navbar-nav a {
+.navbar-nav a,
+.nav-btn-logout {
   color: var(--color-white);
   font-weight: 500;
   padding: var(--spacing-xs) var(--spacing-sm);
@@ -260,10 +261,14 @@ a:hover {
   display: inline-flex;
   align-items: center;
   height: 40px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
 }
 
 .navbar-nav a:hover,
-.navbar-nav a.active {
+.navbar-nav a.active,
+.nav-btn-logout:hover {
   background: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
 }

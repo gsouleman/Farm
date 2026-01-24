@@ -1548,7 +1548,7 @@ const app = {
             this.updateCurrentMonth();
             this.initializeCharts();
             this.closeModal('addTransactionModal');
-
+            alert('Transaction added successfully!');
         } catch (error) {
             console.error('Failed to add transaction:', error);
             alert('Failed to add transaction: ' + error.message);
@@ -1573,7 +1573,7 @@ const app = {
             this.renderTransactions();
             this.updateCurrentMonth();
             this.initializeCharts();
-
+            alert('Transaction deleted successfully!');
         } catch (error) {
             console.error('Failed to delete transaction:', error);
             alert('Failed to delete transaction');
@@ -1612,7 +1612,7 @@ const app = {
 
             this.renderCrops();
             this.closeModal('addCropModal');
-
+            alert('Crop added successfully!');
         } catch (error) {
             console.error('Failed to add crop:', error);
             alert('Failed to add crop: ' + error.message);
@@ -1629,7 +1629,7 @@ const app = {
 
             this.fruitTrees.splice(index, 1);
             this.renderCrops();
-
+            alert('Crop deleted successfully!');
         } catch (error) {
             console.error('Failed to delete fruit tree:', error);
             alert('Failed to delete crop');
@@ -1646,7 +1646,7 @@ const app = {
 
             this.cashCrops.splice(index, 1);
             this.renderCrops();
-
+            alert('Crop deleted successfully!');
         } catch (error) {
             console.error('Failed to delete cash crop:', error);
             alert('Failed to delete crop');
@@ -2939,7 +2939,7 @@ const app = {
             // Clear form
             document.getElementById('sectionForm').reset();
 
-            alert(`Section "${name}" saved!\nArea: ${area} ha (${percentage}% of farm)`);
+            alert(`Section "${name}" saved successfully!\nArea: ${area} ha (${percentage}% of farm)`);
 
         } catch (error) {
             console.error('Failed to save section:', error);
