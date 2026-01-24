@@ -3844,7 +3844,7 @@ app.updateFarmInfoText = function () {
     // Update card titles
     const locationCard = section.querySelector('.card-header');
     if (locationCard && locationCard.textContent.includes('Location') || locationCard.textContent.includes('Emplacement')) {
-        locationCard.innerHTML = `<h3 class="card-title">ðŸ“ ${this.t('farmInfo.locationSpecs')}</h3>`;
+        locationCard.innerHTML = `<h3 class="card-title">${this.t('farmInfo.locationSpecs')}</h3>`;
     }
 
     // Update map buttons
@@ -3852,13 +3852,13 @@ app.updateFarmInfoText = function () {
     if (satelliteBtn) satelliteBtn.innerHTML = `${this.t('farmInfo.satelliteView')}`;
 
     const graphicalBtn = document.getElementById('graphicalViewBtn');
-    if (graphicalBtn) graphicalBtn.innerHTML = `ðŸ“Š ${this.t('farmInfo.graphicalView')}`;
+    if (graphicalBtn) graphicalBtn.innerHTML = `${this.t('farmInfo.graphicalView')}`;
 
     const editCoordsBtn = section.querySelector('button[onclick*="openCoordinateEditorModal"]');
-    if (editCoordsBtn) editCoordsBtn.innerHTML = `âœï¸ ${this.t('farmInfo.editCoordinates')}`;
+    if (editCoordsBtn) editCoordsBtn.innerHTML = `${this.t('farmInfo.editCoordinates')}`;
 
     const uploadBtn = section.querySelector('button[onclick*="coordinateUploadInput"]');
-    if (uploadBtn) uploadBtn.innerHTML = `ðŸ“¤ ${this.t('farmInfo.upload')}`;
+    if (uploadBtn) uploadBtn.innerHTML = `${this.t('farmInfo.upload')}`;
 
     const allocBtn = document.getElementById('drawSectionBtn');
     if (allocBtn) allocBtn.innerHTML = `${this.t('farmInfo.cropAllocation')}`;
