@@ -128,16 +128,16 @@
               </div>
               <form id="changePasswordForm">
                 <div class="form-group">
-                  <label class="form-label">Current Password</label>
+                  <label class="form-label" for="currentPassword">Current Password</label>
                   <input type="password" class="form-control" id="currentPassword" required>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">New Password</label>
+                  <label class="form-label" for="newPassword">New Password</label>
                   <input type="password" class="form-control" id="newPassword" required minlength="6">
                   <small class="text-muted">Minimum 6 characters</small>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Confirm New Password</label>
+                  <label class="form-label" for="confirmNewPassword">Confirm New Password</label>
                   <input type="password" class="form-control" id="confirmNewPassword" required>
                 </div>
               </form>
@@ -183,19 +183,19 @@
               <div id="createUserTab" style="display: none;">
                 <form id="createUserForm">
                   <div class="form-group">
-                    <label class="form-label">Full Name</label>
+                    <label class="form-label" for="newUserFullName">Full Name</label>
                     <input type="text" class="form-control" id="newUserFullName" required>
                   </div>
                   <div class="form-group">
-                    <label class="form-label">Email</label>
+                    <label class="form-label" for="newUserEmail">Email</label>
                     <input type="email" class="form-control" id="newUserEmail" required>
                   </div>
                   <div class="form-group">
-                    <label class="form-label">Password</label>
+                    <label class="form-label" for="newUserPassword">Password</label>
                     <input type="password" class="form-control" id="newUserPassword" required minlength="6">
                   </div>
                   <div class="form-group">
-                    <label class="form-label">Role</label>
+                    <label class="form-label" for="newUserRole">Role</label>
                     <select class="form-control" id="newUserRole">
                       <option value="user">User</option>
                       <option value="admin">Admin</option>
@@ -655,13 +655,13 @@
         <input type="hidden" id="employeeId">
 
         <div class="form-group">
-          <label class="form-label">Full Name</label>
+          <label class="form-label" for="empName">Full Name</label>
           <input type="text" class="form-control" id="empName" required placeholder="e.g. John Doe">
         </div>
 
         <div class="grid-3">
           <div class="form-group">
-            <label class="form-label">Role</label>
+            <label class="form-label" for="empRole">Role</label>
             <select class="form-control" id="empRole" required>
               <option value="Manager">Manager</option>
               <option value="Field Worker">Field Worker</option>
@@ -672,7 +672,7 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">Type</label>
+            <label class="form-label" for="empType">Type</label>
             <select class="form-control" id="empType" required>
               <option value="Full-time">Full-time</option>
               <option value="Part-time">Part-time</option>
@@ -681,7 +681,7 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">Status</label>
+            <label class="form-label" for="empStatus">Status</label>
             <select class="form-control" id="empStatus" required>
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>
@@ -691,12 +691,12 @@
 
         <div class="grid-3">
           <div class="form-group">
-            <label class="form-label">Phone</label>
+            <label class="form-label" for="empPhone">Phone</label>
             <input type="tel" class="form-control" id="empPhone" placeholder="+237...">
           </div>
 
           <div class="form-group">
-            <label class="form-label">Pay Frequency</label>
+            <label class="form-label" for="empPayFrequency">Pay Frequency</label>
             <select class="form-control" id="empPayFrequency" required>
               <option value="Monthly">Monthly</option>
               <option value="Weekly">Weekly</option>
@@ -706,7 +706,7 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">Pay Rate (XAF)</label>
+            <label class="form-label" for="empSalary">Pay Rate (XAF)</label>
             <input type="number" class="form-control" id="empSalary" min="0" step="1000" placeholder="0">
           </div>
         </div>
@@ -728,12 +728,12 @@
       </div>
       <form id="transactionForm" onsubmit="app.addTransaction(event)">
         <div class="form-group">
-          <label class="form-label">Date</label>
+          <label class="form-label" for="transactionDate">Date</label>
           <input type="date" class="form-control" id="transactionDate" required>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Type</label>
+          <label class="form-label" for="transactionType">Type</label>
           <select class="form-control" id="transactionType" required onchange="app.updateCategoryOptions()">
             <option value="">Select type...</option>
             <option value="income">Income</option>
@@ -742,19 +742,19 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Category</label>
+          <label class="form-label" for="transactionCategory">Category</label>
           <select class="form-control" id="transactionCategory" required>
             <option value="">Select type first...</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Description</label>
+          <label class="form-label" for="transactionDescription">Description</label>
           <input type="text" class="form-control" id="transactionDescription" required placeholder="Brief description">
         </div>
 
         <div class="form-group">
-          <label class="form-label">Amount (XAF)</label>
+          <label class="form-label" for="transactionAmount">Amount (XAF)</label>
           <input type="number" class="form-control" id="transactionAmount" required min="0" step="0.01">
         </div>
 
@@ -777,29 +777,29 @@
         <input type="hidden" id="cropCategory">
 
         <div class="form-group">
-          <label class="form-label">Type</label>
+          <label class="form-label" for="cropType">Type</label>
           <select class="form-control" id="cropType" required>
             <option value="">Select type...</option>
           </select>
         </div>
 
         <div class="form-group" id="cropCountGroup">
-          <label class="form-label">Count</label>
+          <label class="form-label" for="cropCount">Count</label>
           <input type="number" class="form-control" id="cropCount" min="1">
         </div>
 
         <div class="form-group" id="cropAreaGroup">
-          <label class="form-label">Area (hectares)</label>
+          <label class="form-label" for="cropArea">Area (hectares)</label>
           <input type="number" class="form-control" id="cropArea" min="0.01" step="0.01">
         </div>
 
         <div class="form-group">
-          <label class="form-label">Planted Date</label>
+          <label class="form-label" for="cropPlantedDate">Planted Date</label>
           <input type="date" class="form-control" id="cropPlantedDate" required>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Status</label>
+          <label class="form-label" for="cropStatus">Status</label>
           <select class="form-control" id="cropStatus" required>
             <option value="planted">Planted</option>
             <option value="growing">Growing</option>
@@ -827,18 +827,18 @@
       </div>
       <form id="farmForm" onsubmit="app.createNewFarm(event)">
         <div class="form-group">
-          <label class="form-label">Farm Name</label>
+          <label class="form-label" for="newFarmName">Farm Name</label>
           <input type="text" class="form-control" id="newFarmName" required placeholder="e.g., Maloure Farm">
         </div>
 
         <div class="form-group">
-          <label class="form-label">Location</label>
+          <label class="form-label" for="newFarmLocation">Location</label>
           <input type="text" class="form-control" id="newFarmLocation" required
             placeholder="e.g., Maloure Village, Njimoun, Foumban">
         </div>
 
         <div class="form-group">
-          <label class="form-label">Boundary Coordinates (Optional)</label>
+          <label class="form-label" for="newFarmBoundaries">Boundary Coordinates (Optional)</label>
           <textarea class="form-control" id="newFarmBoundaries" rows="5" placeholder="Paste coordinates in format: lat,lng (one per line)
 Example:
 5.916982,11.043742
@@ -855,25 +855,25 @@ Example:
         </div>
 
         <div class="form-group">
-          <label class="form-label">Total Area (hectares)</label>
+          <label class="form-label" for="newFarmArea">Total Area (hectares)</label>
           <input type="number" class="form-control" id="newFarmArea" required min="0.01" step="0.01"
             placeholder="e.g., 2.75">
         </div>
 
         <div class="form-group">
-          <label class="form-label">Perimeter (meters) - Optional</label>
+          <label class="form-label" for="newFarmPerimeter">Perimeter (meters) - Optional</label>
           <input type="number" class="form-control" id="newFarmPerimeter" min="0" step="0.01"
             placeholder="e.g., 680.16">
         </div>
 
         <div class="form-group">
-          <label class="form-label">Center Latitude</label>
+          <label class="form-label" for="newFarmLat">Center Latitude</label>
           <input type="number" class="form-control" id="newFarmLat" required step="0.000001"
             placeholder="e.g., 5.916982">
         </div>
 
         <div class="form-group">
-          <label class="form-label">Center Longitude</label>
+          <label class="form-label" for="newFarmLng">Center Longitude</label>
           <input type="number" class="form-control" id="newFarmLng" required step="0.000001"
             placeholder="e.g., 11.043742">
         </div>
@@ -895,12 +895,12 @@ Example:
       </div>
       <form id="sectionForm" onsubmit="app.saveFarmSection(event)">
         <div class="form-group">
-          <label class="form-label">Section Name</label>
+          <label class="form-label" for="sectionName">Section Name</label>
           <input type="text" class="form-control" id="sectionName" required placeholder="e.g., Apple Orchard">
         </div>
 
         <div class="form-group">
-          <label class="form-label">Section Type</label>
+          <label class="form-label" for="sectionType">Section Type</label>
           <select class="form-control" id="sectionType" required>
             <option value="">Select type...</option>
             <option value="fruit-trees">Fruit Trees</option>
@@ -914,23 +914,24 @@ Example:
         <input type="hidden" id="sectionId">
 
         <div class="form-group">
-          <label class="form-label">Crop Type (if applicable)</label>
+          <label class="form-label" for="sectionCrop">Crop Type (if applicable)</label>
           <input type="text" class="form-control" id="sectionCrop" placeholder="e.g., Avocado, Cassava">
         </div>
 
         <div class="form-group">
-          <label class="form-label">Area (hectares)</label>
+          <label class="form-label" for="sectionArea">Area (hectares)</label>
           <input type="number" class="form-control" id="sectionArea" step="0.01" min="0.01" required
             placeholder="e.g., 1.5">
           <small style="color: #666; font-size: 0.85rem;">Enter the surface area in hectares</small>
         </div>
 
-        <div class="form-label">Section Color</label>
+        <div class="form-group">
+          <label class="form-label" for="sectionColor">Section Color</label>
           <input type="color" class="form-control" id="sectionColor" value="#4CAF50">
         </div>
 
         <div class="form-group">
-          <label class="form-label">Notes</label>
+          <label class="form-label" for="sectionNotes">Notes</label>
           <textarea class="form-control" id="sectionNotes" rows="3"
             placeholder="Additional notes about this section"></textarea>
         </div>
@@ -952,7 +953,7 @@ Example:
       </div>
       <form id="customCategoryForm" onsubmit="app.addCustomCategory(event)">
         <div class="form-group">
-          <label class="form-label">Category Name</label>
+          <label class="form-label" for="customCategoryName">Category Name</label>
           <input type="text" class="form-control" id="customCategoryName" required placeholder="Enter category name">
         </div>
 
@@ -984,12 +985,12 @@ Example:
           <div class="card-body">
             <div style="display: flex; gap: 1rem; align-items: flex-end;">
               <div class="form-group" style="flex: 1; margin: 0;">
-                <label class="form-label">Latitude (-90 to 90)</label>
+                <label class="form-label" for="newPointLat">Latitude (-90 to 90)</label>
                 <input type="number" class="form-control" id="newPointLat" step="0.000001" placeholder="e.g., 5.916982"
                   min="-90" max="90">
               </div>
               <div class="form-group" style="flex: 1; margin: 0;">
-                <label class="form-label">Longitude (-180 to 180)</label>
+                <label class="form-label" for="newPointLng">Longitude (-180 to 180)</label>
                 <input type="number" class="form-control" id="newPointLng" step="0.000001" placeholder="e.g., 11.043742"
                   min="-180" max="180">
               </div>
@@ -1008,7 +1009,7 @@ Example:
           </div>
           <div class="card-body">
             <p style="margin-bottom: 0.5rem; font-size: 0.9rem; color: #666;">
-              Paste multiple coordinates (one per line). Supported formats:
+              <label for="bulkCoordinatesInput">Paste multiple coordinates (one per line). Supported formats:</label>
             </p>
             <ul style="margin: 0.5rem 0; padding-left: 1.5rem; font-size: 0.85rem; color: #666;">
               <li><code>lat,lng</code> - Example: <code>5.916982,11.043742</code></li>
