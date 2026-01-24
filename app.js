@@ -201,7 +201,7 @@ const translations = {
 // JavaScript Application Logic
 // ===================================
 
-const app = {
+Object.assign(app, {
     // Language Management
     currentLanguage: 'en',
 
@@ -2998,8 +2998,8 @@ const app = {
         // (If we were in drawing mode, boundaries would be passed, but here it's manual)
         // We can keep the dummy boundaries generation if needed for visual compatibility
         const index = farm.sections ? farm.sections.length : 0;
-        // Check if we have drawn boundaries
-        const dummyBoundaries = this.drawnSectionBoundaries || [
+        // Use drawn boundaries if they exist (harmonized with canvas_drawing_functions.js)
+        const finalBoundaries = this.drawnSectionBoundaries || this.pendingSectionBoundaries || [
             { lat: farm.centerCoordinates.lat + 0.001, lng: farm.centerCoordinates.lng + 0.001 },
             { lat: farm.centerCoordinates.lat + 0.001, lng: farm.centerCoordinates.lng - 0.001 },
             { lat: farm.centerCoordinates.lat - 0.001, lng: farm.centerCoordinates.lng - 0.001 },
@@ -3013,7 +3013,7 @@ const app = {
             color: color,
             area: area,
             percentage: parseFloat(percentage),
-            boundaries: dummyBoundaries,
+            boundaries: finalBoundaries,
             notes: document.getElementById('sectionNotes').value
         };
 
@@ -3509,6 +3509,20 @@ const app = {
 
         // Draw sections if they exist
         const sections = this.getCurrentFarm().sections || [];
+
+        ctx.save(); // Save state before clipping
+
+        // Define clipping region (the farm boundary)
+        ctx.beginPath();
+        this.farmData.boundaries.forEach((coord, i) => {
+            const x = scaleX(coord.lng);
+            const y = scaleY(coord.lat);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+        ctx.closePath();
+        ctx.clip(); // IMPORTANT: Clip everything to the farm boundary
+
         sections.forEach(section => {
             if (section.boundaries && section.boundaries.length > 0) {
                 ctx.beginPath();
@@ -3548,56 +3562,33 @@ const app = {
                             const cornerX = scaleX(corner.lng);
                             const cornerY = scaleY(corner.lat);
                             const cornerText = `${corner.lat.toFixed(6)}, ${corner.lng.toFixed(6)}`;
+
+                            // Background box
                             const textWidth = ctx.measureText(cornerText).width;
-
-                            // Position label based on corner (to avoid overlap)
-                            let offsetX = 0, offsetY = 0;
-                            if (i === 0) { offsetX = -textWidth - 10; offsetY = -15; } // Top-left
-                            else if (i === 1) { offsetX = 10; offsetY = -15; } // Top-right  
-                            else if (i === 2) { offsetX = 10; offsetY = 15; } // Bottom-right
-                            else { offsetX = -textWidth - 10; offsetY = 15; } // Bottom-left
-
-                            // Background
                             ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-                            ctx.fillRect(cornerX + offsetX - 4, cornerY + offsetY - 7, textWidth + 8, 14);
-                            ctx.strokeStyle = section.color;
-                            ctx.lineWidth = 1;
-                            ctx.strokeRect(cornerX + offsetX - 4, cornerY + offsetY - 7, textWidth + 8, 14);
+                            ctx.fillRect(cornerX - textWidth / 2 - 2, cornerY - 18, textWidth + 4, 14);
 
-                            // Text
                             ctx.fillStyle = section.color;
-                            ctx.textAlign = 'left';
-                            ctx.textBaseline = 'middle';
-                            ctx.fillText(cornerText, cornerX + offsetX, cornerY + offsetY);
+                            ctx.textAlign = 'center';
+                            ctx.fillText(cornerText, cornerX, cornerY - 8);
 
-                            // Draw corner marker (small circle)
-                            ctx.fillStyle = section.color;
+                            // Marker
                             ctx.beginPath();
-                            ctx.arc(cornerX, cornerY, 4, 0, 2 * Math.PI);
+                            ctx.arc(cornerX, cornerY, 3, 0, 2 * Math.PI);
                             ctx.fill();
                         });
                     }
 
-                    // Always show center coordinates label
-                    const coordText = `${centerLat.toFixed(6)}, ${centerLng.toFixed(6)}`;
+                    // Always show center section name
                     ctx.font = 'bold 11px Inter, sans-serif';
-                    const coordWidth = ctx.measureText(coordText).width;
-
-                    // Background for center coordinates
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-                    ctx.fillRect(centerX - coordWidth / 2 - 6, centerY - 8, coordWidth + 12, 16);
-                    ctx.strokeStyle = section.color;
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(centerX - coordWidth / 2 - 6, centerY - 8, coordWidth + 12, 16);
-
-                    // Draw coordinate text
-                    ctx.fillStyle = section.color;
+                    ctx.fillStyle = '#333';
                     ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(coordText, centerX, centerY);
+                    ctx.fillText(section.name, centerX, centerY + 15);
                 }
             }
         });
+
+        ctx.restore(); // Restore state after drawing sections (removes clipping)
 
         // Add click event handler to canvas for toggling corner coordinates
         canvas.onclick = (e) => {
@@ -3609,13 +3600,10 @@ const app = {
             const clickX = (e.clientX - rect.left) * scaleFactorX;
             const clickY = (e.clientY - rect.top) * scaleFactorY;
 
-            const ctx = canvas.getContext('2d');
-
             // Check if click is inside any section
             let clickedSection = null;
             sections.forEach(section => {
                 if (section.boundaries.length >= 3) {
-                    // Create path for this section
                     ctx.beginPath();
                     section.boundaries.forEach((coord, i) => {
                         const x = scaleX(coord.lng);
@@ -3624,26 +3612,19 @@ const app = {
                         else ctx.lineTo(x, y);
                     });
                     ctx.closePath();
-
-                    // Check if click is inside this path
                     if (ctx.isPointInPath(clickX, clickY)) {
                         clickedSection = section;
                     }
                 }
             });
 
-            // Toggle selection
             if (clickedSection) {
-                if (this.selectedSectionId === clickedSection.id) {
-                    this.selectedSectionId = null; // Hide coordinates on second click
-                } else {
-                    this.selectedSectionId = clickedSection.id; // Show coordinates
-                }
-                this.renderGraphicalMap(); // Re-render to update display
+                this.selectedSectionId = (this.selectedSectionId === clickedSection.id) ? null : clickedSection.id;
+                this.renderGraphicalMap();
             }
         };
 
-        // Draw center point
+        // Draw farm center point
         const centerX = scaleX(this.farmData.centerCoordinates.lng);
         const centerY = scaleY(this.farmData.centerCoordinates.lat);
 
@@ -3685,21 +3666,17 @@ const app = {
 
             legendY += 25;
             ctx.font = '11px Inter, sans-serif';
-
             sections.forEach((section, i) => {
-                // Color box
                 ctx.fillStyle = section.color;
                 ctx.fillRect(legendX + 10, legendY + i * 20, 15, 15);
                 ctx.strokeStyle = '#666';
                 ctx.strokeRect(legendX + 10, legendY + i * 20, 15, 15);
-
-                // Label
                 ctx.fillStyle = '#333';
                 ctx.fillText(section.name.substring(0, 12), legendX + 30, legendY + i * 20 + 11);
             });
         }
-    }
-};
+    },
+});
 
 // ===================================
 // Language Management Functions
