@@ -57,8 +57,8 @@ router.post('/register', [
             }
         });
     } catch (error) {
-        console.error('Register error:', error);
-        res.status(500).json({ error: { message: 'Registration failed' } });
+        console.error('Register error FULL:', error);
+        res.status(500).json({ error: { message: 'Registration failed: ' + error.message, stack: error.stack } });
     }
 });
 

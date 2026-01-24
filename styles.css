@@ -650,6 +650,11 @@ select.form-control {
   position: relative;
 }
 
+.modal-xl {
+  max-width: 1200px;
+  /* Increased for tables */
+}
+
 .modal-header {
   display: flex;
   align-items: center;
@@ -665,16 +670,26 @@ select.form-control {
 }
 
 .modal-close {
-  background: none;
+  background: rgba(0, 0, 0, 0.05);
+  /* Professional background */
   border: none;
-  font-size: var(--font-size-2xl);
+  font-size: 1.1rem;
   cursor: pointer;
   color: var(--color-gray-600);
-  transition: color var(--transition-fast);
+  transition: all var(--transition-fast);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
 }
 
 .modal-close:hover {
-  color: var(--color-danger);
+  background: var(--color-danger);
+  color: white;
+  transform: rotate(90deg);
 }
 
 /* ===== Animations ===== */

@@ -154,10 +154,11 @@
 
         <!-- User Management Modal (Admin Only) -->
         <div class="modal-overlay" id="userManagementModal">
-          <div class="modal" style="max-width: 800px; width: 90%;">
+          <div class="modal modal-xl">
             <div class="modal-header">
               <h3 class="modal-title">User Management</h3>
-              <button class="close-modal" onclick="app.closeModal('userManagementModal')">&times;</button>
+              <button class="modal-close" onclick="app.closeModal('userManagementModal')"><i
+                  class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
               <div class="tabs-container">
@@ -666,7 +667,7 @@
     <div class="modal">
       <div class="modal-header">
         <h3 class="modal-title" id="employeeModalTitle">Add New Employee</h3>
-        <button class="modal-close" onclick="app.closeModal('employeeModal')">&times;</button>
+        <button class="modal-close" onclick="app.closeModal('employeeModal')"><i class="fas fa-times"></i></button>
       </div>
       <form id="employeeForm" onsubmit="app.saveEmployee(event)">
         <input type="hidden" id="employeeId">
@@ -741,7 +742,8 @@
     <div class="modal">
       <div class="modal-header">
         <h3 class="modal-title">Add Transaction</h3>
-        <button class="modal-close" onclick="app.closeModal('addTransactionModal')">&times;</button>
+        <button class="modal-close" onclick="app.closeModal('addTransactionModal')"><i
+            class="fas fa-times"></i></button>
       </div>
       <form id="transactionForm" onsubmit="app.addTransaction(event)">
         <div class="form-group">
@@ -788,7 +790,7 @@
     <div class="modal">
       <div class="modal-header">
         <h3 class="modal-title" id="cropModalTitle">Add Crop</h3>
-        <button class="modal-close" onclick="app.closeModal('addCropModal')">&times;</button>
+        <button class="modal-close" onclick="app.closeModal('addCropModal')"><i class="fas fa-times"></i></button>
       </div>
       <form id="cropForm" onsubmit="app.addCrop(event)">
         <input type="hidden" id="cropCategory">
@@ -837,10 +839,10 @@
 
   <!-- Create New Farm Modal -->
   <div class="modal-overlay" id="createFarmModal">
-    <div class="modal" style="max-width: 800px;">
+    <div class="modal modal-xl">
       <div class="modal-header">
         <h3 class="modal-title">Create New Farm</h3>
-        <button class="modal-close" onclick="app.closeModal('createFarmModal')">&times;</button>
+        <button class="modal-close" onclick="app.closeModal('createFarmModal')"><i class="fas fa-times"></i></button>
       </div>
       <form id="farmForm" onsubmit="app.createNewFarm(event)">
         <div class="form-group">
@@ -908,7 +910,7 @@ Example:
     <div class="modal">
       <div class="modal-header">
         <h3 class="modal-title">Configure Farm Section</h3>
-        <button class="modal-close" onclick="app.closeModal('sectionModal')">&times;</button>
+        <button class="modal-close" onclick="app.closeModal('sectionModal')"><i class="fas fa-times"></i></button>
       </div>
       <form id="sectionForm" onsubmit="app.saveFarmSection(event)">
         <div class="form-group">
@@ -966,7 +968,8 @@ Example:
     <div class="modal">
       <div class="modal-header">
         <h3 class="modal-title">Add Custom Category</h3>
-        <button class="modal-close" onclick="app.closeModal('customCategoryModal')">&times;</button>
+        <button class="modal-close" onclick="app.closeModal('customCategoryModal')"><i
+            class="fas fa-times"></i></button>
       </div>
       <form id="customCategoryForm" onsubmit="app.addCustomCategory(event)">
         <div class="form-group">
@@ -984,10 +987,11 @@ Example:
 
   <!-- Coordinate Editor Modal -->
   <div class="modal-overlay" id="coordinateEditorModal">
-    <div class="modal" style="max-width: 900px;">
+    <div class="modal modal-xl">
       <div class="modal-header">
         <h3 class="modal-title">✏️ Edit Farm Boundary Coordinates</h3>
-        <button class="modal-close" onclick="app.closeModal('coordinateEditorModal')">&times;</button>
+        <button class="modal-close" onclick="app.closeModal('coordinateEditorModal')"><i
+            class="fas fa-times"></i></button>
       </div>
       <div class="modal-body">
         <p style="margin-bottom: 1rem; color: #666;">
@@ -1111,10 +1115,10 @@ Example:
 
   <!-- Confirmation Modal -->
   <div id="confirmationModal" class="modal-overlay">
-    <div class="modal" style="max-width: 400px;">
+    <div class="modal" style="max-width: 450px;">
       <div class="modal-header">
         <h3 class="modal-title">Confirm Action</h3>
-        <button class="modal-close" onclick="app.closeModal('confirmationModal')">&times;</button>
+        <button class="modal-close" onclick="app.closeModal('confirmationModal')"><i class="fas fa-times"></i></button>
       </div>
       <div style="margin-bottom: 2rem;">
         <p id="confirmationMessage">Are you sure you want to proceed?</p>
@@ -1128,10 +1132,10 @@ Example:
 
   <!-- Alert Modal -->
   <div id="alertModal" class="modal-overlay">
-    <div class="modal" style="max-width: 400px;">
+    <div class="modal" style="max-width: 450px;">
       <div class="modal-header">
         <h3 class="modal-title" id="alertTitle">Alert</h3>
-        <button class="modal-close" onclick="app.closeModal('alertModal')">&times;</button>
+        <button class="modal-close" onclick="app.closeModal('alertModal')"><i class="fas fa-times"></i></button>
       </div>
       <div style="margin-bottom: 2rem;">
         <p id="alertMessage" style="color: #666; font-size: 1rem; line-height: 1.5; text-align: center;">
