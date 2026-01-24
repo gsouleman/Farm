@@ -115,8 +115,8 @@ router.post('/login', [
             token
         });
     } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ error: { message: 'Login failed' } });
+        console.error('Login error FULL:', error);
+        res.status(500).json({ error: { message: 'Login failed: ' + error.message } });
     }
 });
 
