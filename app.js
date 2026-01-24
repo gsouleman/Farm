@@ -3167,7 +3167,7 @@ Object.assign(app, {
                 }
 
                 // Remove from local array
-                farm.sections = farm.sections.filter(s => s.id !== sectionId);
+                farm.sections = farm.sections.filter(s => s.id != sectionId);
 
                 // Remove polygon from map
                 const polygonRef = this.sectionPolygons.find(sp => sp.id === sectionId);
@@ -3340,7 +3340,7 @@ Object.assign(app, {
     // Edit section
     editSection(sectionId) {
         const farm = this.getCurrentFarm();
-        const section = farm.sections.find(s => s.id === sectionId);
+        const section = farm.sections.find(s => s.id == sectionId);
 
         if (!section) {
             this.showError('Section not found');
