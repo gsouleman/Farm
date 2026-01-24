@@ -433,7 +433,7 @@ const app = {
 
         try {
             const farms = await api.farms.getAll();
-            this.farms = farms;
+            this.farms = farms.map(f => this.sanitizeFarmData(f));
 
             if (this.farms.length > 0) {
                 // Restore current farm from local storage preference or default to first
@@ -475,7 +475,11 @@ const app = {
             farm.fruitTrees = crops.filter(c => c.category === 'fruit');
             farm.cashCrops = crops.filter(c => c.category === 'cash');
 
-            farm.sections = sections;
+            farm.sections = sections.map(s => ({
+                ...s,
+                area: parseFloat(s.area) || 0,
+                percentage: parseFloat(s.percentage) || 0
+            }));
             farm.employees = employees;
 
             // Update UI
@@ -580,10 +584,10 @@ const app = {
         const areaPerimeterEl = document.getElementById('areaPerimeter');
 
         if (totalAreaEl) {
-            totalAreaEl.textContent = `${farm.area.toFixed(2)} ha`;
+            totalAreaEl.textContent = `${(parseFloat(farm.area) || 0).toFixed(2)} ha`;
         }
         if (areaPerimeterEl) {
-            areaPerimeterEl.textContent = `${farm.perimeter.toFixed(2)} m perimeter`;
+            areaPerimeterEl.textContent = `${(parseFloat(farm.perimeter) || 0).toFixed(2)} m perimeter`;
         }
     },
 
@@ -599,8 +603,10 @@ const app = {
 
         setText('farmNameDisplay', farm.name);
         setText('farmLocationDisplay', farm.location || '-');
-        setText('farmAreaDisplay', (farm.area ? farm.area.toFixed(2) : '0.00') + ' hectares');
-        setText('farmPerimeterDisplay', (farm.perimeter ? farm.perimeter.toFixed(2) : '0.00') + ' meters');
+        const area = parseFloat(farm.area) || 0;
+        const perimeter = parseFloat(farm.perimeter) || 0;
+        setText('farmAreaDisplay', area.toFixed(2) + ' hectares');
+        setText('farmPerimeterDisplay', perimeter.toFixed(2) + ' meters');
 
         if (farm.centerCoordinates && typeof farm.centerCoordinates.lat === 'number') {
             setText('farmCoordinatesDisplay', `${farm.centerCoordinates.lat.toFixed(6)}, ${farm.centerCoordinates.lng.toFixed(6)}`);
@@ -627,7 +633,7 @@ const app = {
 
         // Generate rows matching the sections data (Name, Area, Percentage)
         tbody.innerHTML = farm.sections.map(section => {
-            const area = section.area || 0;
+            const area = parseFloat(section.area) || 0;
             const percentage = totalFarmArea > 0 ? ((area / totalFarmArea) * 100).toFixed(1) : '0.0';
 
             return `
@@ -2030,11 +2036,6 @@ const app = {
             lng: parseFloat(document.getElementById('newFarmLng').value)
         };
 
-        // Prepare payload (field names must match backend valid keys - backend maps to columns)
-        // Backend expects: name, location, area, perimeter, centerLat, centerLng, boundaries, zones
-        // Note: My backend uses snake_case for DB columns but req.body parsing might expect camelCase or simply match.
-        // Let's check farms.js: const { name, location, area, perimeter, centerLat, centerLng, boundaries, zones } = req.body;
-
         const farmData = {
             name: name,
             location: location,
@@ -2043,7 +2044,6 @@ const app = {
             centerLat: centerCoordinates.lat,
             centerLng: centerCoordinates.lng,
             boundaries: boundaries.length > 0 ? boundaries : null,
-            // Initialize zones if new
             zones: {
                 fruitTrees: { area: 0, percentage: 0 },
                 cashCrops: { area: 0, percentage: 0 },
@@ -2054,33 +2054,14 @@ const app = {
 
         try {
             if (this.editingFarmId) {
-                // Update existing farm
-                // Fetch current farm to preserve zones if not modified here? 
-                // Currently zones are only modified by saveFarmSection or here init.
-                // If checking backend update route: it allows partial updates of zones.
-                // But here we might overwrite zones if we send default.
-                // We should probably NOT send zones on update unless we are explicitly resetting them?
-                // For now, let's keep zones out of update unless we want to reset.
-                // But the form doesn't edit zones.
-
                 delete farmData.zones;
-
                 const updatedFarm = await api.farms.update(this.editingFarmId, farmData);
+                const sanitizedFarm = this.sanitizeFarmData(updatedFarm);
 
                 // Update local array
                 const index = this.farms.findIndex(f => f.id === this.editingFarmId);
                 if (index !== -1) {
-                    // Update farm properties but keep local enriched data (transactions, crops, etc.)
-                    // Actually, safer to just update properties.
-                    Object.assign(this.farms[index], updatedFarm);
-                    // Ensure centerCoordinates is formatted as object if backend returns lat/lng fields
-                    this.farms[index].centerCoordinates = {
-                        lat: parseFloat(updatedFarm.center_lat),
-                        lng: parseFloat(updatedFarm.center_lng)
-                    };
-                    // Ensure boundaries is parsed
-                    if (typeof updatedFarm.boundaries === 'string') this.farms[index].boundaries = JSON.parse(updatedFarm.boundaries);
-                    else this.farms[index].boundaries = updatedFarm.boundaries || [];
+                    this.farms[index] = { ...this.farms[index], ...sanitizedFarm };
                 }
 
                 this.updateFarmSelector();
@@ -2093,52 +2074,33 @@ const app = {
 
             // Create new farm
             const newFarm = await api.farms.create(farmData);
+            const sanitizedFarm = this.sanitizeFarmData(newFarm);
 
-            // Backend returns snake_case columns usually?
-            // farms.js: RETURNING * -> id, user_id, name, location, area, perimeter, center_lat, center_lng, etc.
-            // I need to map backend response to frontend object structure expected by app
-
-            const mappedFarm = {
-                ...newFarm,
-                centerCoordinates: {
-                    lat: parseFloat(newFarm.center_lat),
-                    lng: parseFloat(newFarm.center_lng)
-                },
-                boundaries: newFarm.boundaries || [],
-                zones: newFarm.zones || farmData.zones,
-                transactions: [],
-                fruitTrees: [],
-                cashCrops: [],
-                sections: [], // backend uses sections table, not farm.sections array for storage? Wait.
-                // Frontend seems to use farm.sections for crop allocation graphical map.
-                // Backend has separate `sections` table. 
-                // So localized `sections` array should be empty initially.
-                employees: []
-            };
-
-            this.farms.push(mappedFarm);
-
-            // Switch to the new farm
-            this.currentFarmId = newFarm.id;
-
-            // We should load details (even if empty) to set up state?
-            // await this.loadFarmDetails(this.currentFarmId); // optional since it's new
-
-            // Update UI
-            this.renderFarmDetails();
-            this.renderDashboard();
-            this.renderFarmMap();
-            this.renderTransactions();
-            this.renderCrops();
-            this.initializeCharts();
-            this.updateFarmSelector();
-
+            // Add to local array
+            this.farms.push(sanitizedFarm);
+            this.selectFarm(sanitizedFarm.id);
             this.closeModal('createFarmModal');
-            alert(`Farm "${mappedFarm.name}" created successfully! You are now managing this farm.`);
+            alert(`Farm "${sanitizedFarm.name}" created successfully!`);
         } catch (error) {
             console.error('Failed to save farm:', error);
             alert('Failed to save farm: ' + error.message);
         }
+    },
+
+    // Sanitize farm data from API
+    sanitizeFarmData(farm) {
+        if (!farm) return null;
+
+        return {
+            ...farm,
+            area: parseFloat(farm.area) || 0,
+            perimeter: parseFloat(farm.perimeter) || 0,
+            centerCoordinates: {
+                lat: parseFloat(farm.center_lat || farm.centerCoordinates?.lat || 0),
+                lng: parseFloat(farm.center_lng || farm.centerCoordinates?.lng || 0)
+            },
+            boundaries: typeof farm.boundaries === 'string' ? JSON.parse(farm.boundaries) : (farm.boundaries || [])
+        };
     },
 
     // Handle farm dropdown selection (includes create option)
@@ -3017,7 +2979,7 @@ const app = {
                     <h4 style="margin: 0 0 0.5rem 0; color: ${section.color};">${section.name}</h4>
                     <p style="margin: 0.25rem 0;"><strong>Type:</strong> ${section.type.replace('-', ' ')}</p>
                     ${section.cropType ? `<p style="margin: 0.25rem 0;"><strong>Crop:</strong> ${section.cropType}</p>` : ''}
-                    <p style="margin: 0.25rem 0;"><strong>Area:</strong> ${section.area.toFixed(4)} ha (${section.percentage.toFixed(1)}%)</p>
+                    <p style="margin: 0.25rem 0;"><strong>Area:</strong> ${(parseFloat(section.area) || 0).toFixed(4)} ha (${(parseFloat(section.percentage) || 0).toFixed(1)}%)</p>
                     ${section.notes ? `<p style="margin: 0.25rem 0;"><strong>Notes:</strong> ${section.notes}</p>` : ''}
                 </div>
             `;
@@ -3055,8 +3017,8 @@ const app = {
                 <td><div style="width: 30px; height: 30px; background: ${section.color}; border-radius: 4px; border: 1px solid #ccc;"></div></td>
                 <td><strong>${section.name}</strong></td>
                 <td>${section.cropType || '-'}</td>
-                <td>${section.area.toFixed(4)}</td>
-                <td>${section.percentage.toFixed(1)}%</td>
+                <td>${(parseFloat(section.area) || 0).toFixed(4)}</td>
+                <td>${(parseFloat(section.percentage) || 0).toFixed(1)}%</td>
                 <td>
                     <button class="btn btn-sm btn-primary" onclick="app.editSection('${section.id}')" title="Edit section" style="margin-right: 0.5rem;">Edit</button>
                     <button class="btn btn-sm btn-danger" onclick="app.deleteSection('${section.id}')" title="Delete section">Delete</button>
