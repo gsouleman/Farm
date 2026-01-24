@@ -352,36 +352,151 @@ const app = {
         }
     },
 
-    openUserManagement() {
+    async openUserManagement() {
         this.openModal('userManagementModal');
-        // Load users (mock for now because we didn't implement GET /users for admin yet, 
-        // but we can assume we only want to CREATE users for this task request "All users account are created by administrator"
-        // Listing is nice but creation is critical.)
+        await this.loadUsers();
+    },
+
+    async loadUsers() {
+        try {
+            const users = await api.auth.getUsers();
+            this.renderUsersTable(users);
+        } catch (error) {
+            console.error('Failed to load users:', error);
+            this.showError('Could not load users list');
+        }
+    },
+
+    renderUsersTable(users) {
+        const tbody = document.getElementById('usersTableBody');
+        if (!tbody) return;
+
+        if (users.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999; padding: 2rem;">No users found</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = users.map(user => `
+            <tr>
+                <td style="font-weight: 500;">${user.fullName || 'N/A'}</td>
+                <td>${user.email}</td>
+                <td>
+                    <span class="user-badge user-badge-${user.role}">${user.role}</span>
+                </td>
+                <td style="font-size: 0.85rem; color: #666;">
+                    ${new Date(user.createdAt).toLocaleDateString()}
+                    ${user.mustChangePassword ? '<br><small style="color: #e65100;">(Pending Reset)</small>' : ''}
+                </td>
+                <td style="text-align: center;">
+                    <div style="display: flex; justify-content: center; gap: 0.25rem;">
+                        <button class="action-btn action-btn-edit" onclick="app.editUser('${user.id}')" title="Edit User">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn action-btn-delete" onclick="app.deleteUser('${user.id}', '${user.email}')" title="Delete User">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
     },
 
     switchUserTab(tab) {
-        document.getElementById('userListTab').style.display = tab === 'list' ? 'block' : 'none';
-        document.getElementById('createUserTab').style.display = tab === 'create' ? 'block' : 'none';
+        // Reset tabs
+        document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
 
-        document.querySelectorAll('#userManagementModal .tab').forEach(t => t.classList.remove('active'));
-        if (tab === 'list') document.querySelector('.tab:first-child').classList.add('active');
-        else document.querySelector('.tab:last-child').classList.add('active');
+        if (tab === 'list') {
+            document.getElementById('btnUserList').classList.add('active');
+            document.getElementById('userListTab').style.display = 'block';
+            this.loadUsers();
+        } else if (tab === 'create') {
+            document.getElementById('btnUserCreate').classList.add('active');
+            document.getElementById('createUserTab').style.display = 'block';
+
+            // If we're creating (not editing), reset the form
+            if (!document.getElementById('editUserId').value) {
+                this.resetUserForm();
+            }
+        }
     },
 
-    async createUser() {
+    resetUserForm() {
+        const form = document.getElementById('createUserForm');
+        if (form) form.reset();
+        document.getElementById('editUserId').value = '';
+        document.getElementById('saveUserBtn').innerHTML = '💾 Create User';
+        document.querySelector('#userManagementModal .modal-title').textContent = 'User Management';
+        document.getElementById('newUserPassword').required = true;
+        document.getElementById('passwordNotice').textContent = 'Required for new users (min 6 chars)';
+    },
+
+    async editUser(userId) {
+        try {
+            // In a real app we might fetch user by ID, but we can find them in the current list if we want to save a request
+            // Or just fetch all users again and find. Let's fetch all to be safe and simple.
+            const users = await api.auth.getUsers();
+            const user = users.find(u => u.id === userId);
+
+            if (!user) {
+                this.showError('User not found');
+                return;
+            }
+
+            // Set form to edit mode
+            this.switchUserTab('create');
+            document.getElementById('editUserId').value = user.id;
+            document.getElementById('newUserFullName').value = user.fullName || '';
+            document.getElementById('newUserEmail').value = user.email;
+            document.getElementById('newUserRole').value = user.role;
+            document.getElementById('newUserPassword').required = false;
+            document.getElementById('newUserPassword').value = '';
+            document.getElementById('passwordNotice').textContent = 'Leave blank to keep current password';
+            document.getElementById('saveUserBtn').innerHTML = '💾 Update User';
+            document.querySelector('#userManagementModal .modal-title').textContent = 'Edit User';
+        } catch (error) {
+            this.showError('Could not load user details');
+        }
+    },
+
+    async saveUser() {
+        const id = document.getElementById('editUserId').value;
         const fullName = document.getElementById('newUserFullName').value;
         const email = document.getElementById('newUserEmail').value;
         const password = document.getElementById('newUserPassword').value;
         const role = document.getElementById('newUserRole').value;
 
+        const userData = { fullName, email, role };
+        if (password) userData.password = password;
+
         try {
-            await api.auth.register(email, password, fullName, role);
-            this.showSuccess('User created successfully!');
-            document.getElementById('createUserForm').reset();
+            if (id) {
+                // Update existing
+                await api.auth.updateUser(id, userData);
+                this.showSuccess('User updated successfully!');
+            } else {
+                // Create new
+                await api.auth.register(email, password, fullName, role);
+                this.showSuccess('User created successfully!');
+            }
+
+            this.resetUserForm();
             this.switchUserTab('list');
         } catch (error) {
-            this.showError(error.message || 'Failed to create user');
+            this.showError(error.message || 'Failed to save user');
         }
+    },
+
+    async deleteUser(id, email) {
+        this.showConfirmation(`Are you sure you want to delete user <strong>${email}</strong>?<br><br>This action cannot be undone.`, async () => {
+            try {
+                await api.auth.deleteUser(id);
+                this.showSuccess('User deleted successfully!');
+                await this.loadUsers();
+            } catch (error) {
+                this.showError(error.message || 'Failed to delete user');
+            }
+        });
     },
     async init() {
         console.log('🌾 Initializing Maloure Farm Management System...');

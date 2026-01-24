@@ -6,7 +6,8 @@ const API_CONFIG = {
         auth: {
             register: '/api/auth/register',
             login: '/api/auth/login',
-            me: '/api/auth/me'
+            me: '/api/auth/me',
+            users: '/api/auth/users'
         },
         farms: '/api/farms',
         transactions: '/api/transactions',
@@ -129,6 +130,23 @@ const api = {
 
         async me() {
             return await api.request(API_CONFIG.endpoints.auth.me);
+        },
+
+        async getUsers() {
+            return await api.request(API_CONFIG.endpoints.auth.users);
+        },
+
+        async updateUser(id, userData) {
+            return await api.request(`${API_CONFIG.endpoints.auth.users}/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(userData)
+            });
+        },
+
+        async deleteUser(id) {
+            return await api.request(`${API_CONFIG.endpoints.auth.users}/${id}`, {
+                method: 'DELETE'
+            });
         }
     },
 

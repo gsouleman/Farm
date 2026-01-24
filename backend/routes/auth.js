@@ -196,4 +196,127 @@ router.post('/change-password', [
     }
 });
 
+// === Administrative User Management ===
+
+// Get all users (Admin only)
+router.get('/users', [
+    authMiddleware,
+    requireRole(['admin'])
+], async (req, res) => {
+    try {
+        const result = await db.query(
+            'SELECT id, email, full_name, role, created_at, must_change_password FROM users ORDER BY created_at DESC'
+        );
+
+        const users = result.rows.map(row => ({
+            id: row.id,
+            email: row.email,
+            fullName: row.full_name,
+            role: row.role,
+            createdAt: row.created_at,
+            mustChangePassword: row.must_change_password
+        }));
+
+        res.json(users);
+    } catch (error) {
+        console.error('Get users error:', error);
+        res.status(500).json({ error: { message: 'Failed to fetch users' } });
+    }
+});
+
+// Update user (Admin only)
+router.put('/users/:id', [
+    authMiddleware,
+    requireRole(['admin']),
+    body('email').optional().isEmail().normalizeEmail(),
+    body('fullName').optional().trim(),
+    body('role').optional().isIn(['admin', 'user', 'guest']),
+    body('password').optional().isLength({ min: 6 })
+], async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ error: { message: 'Validation failed', details: errors.array() } });
+        }
+
+        const { id } = req.params;
+        const { email, fullName, role, password } = req.body;
+
+        // Check if user exists
+        const userResult = await db.query('SELECT id FROM users WHERE id = $1', [id]);
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ error: { message: 'User not found' } });
+        }
+
+        let updateQuery = 'UPDATE users SET ';
+        const updateValues = [];
+        let paramCount = 1;
+
+        if (email) {
+            updateQuery += `email = $${paramCount++}, `;
+            updateValues.push(email);
+        }
+        if (fullName !== undefined) {
+            updateQuery += `full_name = $${paramCount++}, `;
+            updateValues.push(fullName);
+        }
+        if (role) {
+            updateQuery += `role = $${paramCount++}, `;
+            updateValues.push(role);
+        }
+        if (password) {
+            const passwordHash = await bcrypt.hash(password, 10);
+            updateQuery += `password_hash = $${paramCount++}, `;
+            updateValues.push(passwordHash);
+        }
+
+        // Remove trailing comma and space
+        updateQuery = updateQuery.slice(0, -2);
+        updateQuery += ` WHERE id = $${paramCount} RETURNING id, email, full_name, role`;
+        updateValues.push(id);
+
+        const result = await db.query(updateQuery, updateValues);
+        const user = result.rows[0];
+
+        res.json({
+            message: 'User updated successfully',
+            user: {
+                id: user.id,
+                email: user.email,
+                fullName: user.full_name,
+                role: user.role
+            }
+        });
+    } catch (error) {
+        console.error('Update user error:', error);
+        res.status(500).json({ error: { message: 'Failed to update user' } });
+    }
+});
+
+// Delete user (Admin only)
+router.delete('/users/:id', [
+    authMiddleware,
+    requireRole(['admin'])
+], async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Prevent admin from deleting themselves
+        if (id === req.userId.toString()) {
+            return res.status(400).json({ error: { message: 'You cannot delete your own account' } });
+        }
+
+        const result = await db.query('DELETE FROM users WHERE id = $1 RETURNING id', [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: { message: 'User not found' } });
+        }
+
+        res.json({ message: 'User deleted successfully' });
+    } catch (error) {
+        console.error('Delete user error:', error);
+        res.status(500).json({ error: { message: 'Failed to delete user' } });
+    }
+});
+
 module.exports = router;

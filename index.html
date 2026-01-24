@@ -33,6 +33,9 @@
   <!-- API Client -->
   <script src="api-client.js"></script>
 
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <!-- Custom Styles -->
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -157,20 +160,27 @@
               <button class="close-modal" onclick="app.closeModal('userManagementModal')">&times;</button>
             </div>
             <div class="modal-body">
-              <div class="tabs">
-                <div class="tab active" onclick="app.switchUserTab('list')">Users List</div>
-                <div class="tab" onclick="app.switchUserTab('create')">Create User</div>
+              <div class="tabs-container">
+                <div class="modal-tabs">
+                  <button class="modal-tab active" id="btnUserList" onclick="app.switchUserTab('list')">
+                    <i class="fas fa-users"></i> Users List
+                  </button>
+                  <button class="modal-tab" id="btnUserCreate" onclick="app.switchUserTab('create')">
+                    <i class="fas fa-user-plus"></i> Create User
+                  </button>
+                </div>
               </div>
 
-              <div id="userListTab">
-                <div class="table-container">
+              <div id="userListTab" class="tab-content active">
+                <div class="table-container improved-table">
                   <table class="table">
                     <thead>
                       <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Created At</th>
+                        <th>NAME</th>
+                        <th>EMAIL</th>
+                        <th>ROLE</th>
+                        <th>CREATED AT</th>
+                        <th style="width: 100px; text-align: center;">ACTIONS</th>
                       </tr>
                     </thead>
                     <tbody id="usersTableBody">
@@ -180,29 +190,36 @@
                 </div>
               </div>
 
-              <div id="createUserTab" style="display: none;">
-                <form id="createUserForm">
+              <div id="createUserTab" class="tab-content" style="display: none;">
+                <form id="createUserForm" onsubmit="event.preventDefault(); app.saveUser();">
+                  <input type="hidden" id="editUserId">
                   <div class="form-group">
                     <label class="form-label" for="newUserFullName">Full Name</label>
-                    <input type="text" class="form-control" id="newUserFullName" required>
+                    <input type="text" class="form-control" id="newUserFullName" required
+                      placeholder="e.g. Jean Dupont">
                   </div>
                   <div class="form-group">
-                    <label class="form-label" for="newUserEmail">Email</label>
-                    <input type="email" class="form-control" id="newUserEmail" required>
+                    <label class="form-label" for="newUserEmail">Email Address</label>
+                    <input type="email" class="form-control" id="newUserEmail" required placeholder="email@example.com">
                   </div>
                   <div class="form-group">
                     <label class="form-label" for="newUserPassword">Password</label>
-                    <input type="password" class="form-control" id="newUserPassword" required minlength="6">
+                    <input type="password" class="form-control" id="newUserPassword" required minlength="6"
+                      placeholder="••••••••">
+                    <small class="text-muted" id="passwordNotice">Required for new users (min 6 chars)</small>
                   </div>
                   <div class="form-group">
-                    <label class="form-label" for="newUserRole">Role</label>
+                    <label class="form-label" for="newUserRole">User Role</label>
                     <select class="form-control" id="newUserRole">
                       <option value="user">User</option>
                       <option value="admin">Admin</option>
                       <option value="guest">Guest</option>
                     </select>
                   </div>
-                  <button type="button" class="btn btn-primary" onclick="app.createUser()">Create User</button>
+                  <div class="modal-footer" style="padding: 1.5rem 0 0 0; border-top: none;">
+                    <button type="submit" class="btn btn-primary" id="saveUserBtn">💾 Create User</button>
+                    <button type="button" class="btn btn-outline" onclick="app.switchUserTab('list')">Cancel</button>
+                  </div>
                 </form>
               </div>
             </div>
