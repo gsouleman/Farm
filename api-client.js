@@ -10,7 +10,8 @@ const API_CONFIG = {
         farms: '/api/farms',
         transactions: '/api/transactions',
         crops: '/api/crops',
-        sections: '/api/sections'
+        sections: '/api/sections',
+        employees: '/api/employees'
     }
 };
 
@@ -93,15 +94,12 @@ const api = {
 
     // Authentication APIs
     auth: {
-        async register(email, password, fullName) {
-            const response = await api.request(API_CONFIG.endpoints.auth.register, {
+        async register(email, password, fullName, role) {
+            const data = await api.request(API_CONFIG.endpoints.auth.register, {
                 method: 'POST',
-                body: JSON.stringify({ email, password, fullName })
+                body: JSON.stringify({ email, password, fullName, role })
             });
-
-            api.setToken(response.token);
-            api.setUser(response.user);
-            return response;
+            return data;
         },
 
         async login(email, password) {
@@ -113,6 +111,13 @@ const api = {
             api.setToken(response.token);
             api.setUser(response.user);
             return response;
+        },
+
+        async changePassword(currentPassword, newPassword) {
+            return await api.request(API_CONFIG.endpoints.auth.changePassword, {
+                method: 'POST',
+                body: JSON.stringify({ currentPassword, newPassword })
+            });
         },
 
         async logout() {
@@ -233,6 +238,33 @@ const api = {
 
         async delete(id) {
             return await api.request(`${API_CONFIG.endpoints.sections}/${id}`, {
+                method: 'DELETE'
+            });
+        }
+    },
+
+    // Employee APIs
+    employees: {
+        async getByFarm(farmId) {
+            return await api.request(`${API_CONFIG.endpoints.employees}/farm/${farmId}`);
+        },
+
+        async create(farmId, employeeData) {
+            return await api.request(`${API_CONFIG.endpoints.employees}/farm/${farmId}`, {
+                method: 'POST',
+                body: JSON.stringify(employeeData)
+            });
+        },
+
+        async update(id, employeeData) {
+            return await api.request(`${API_CONFIG.endpoints.employees}/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(employeeData)
+            });
+        },
+
+        async delete(id) {
+            return await api.request(`${API_CONFIG.endpoints.employees}/${id}`, {
                 method: 'DELETE'
             });
         }

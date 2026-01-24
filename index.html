@@ -30,6 +30,9 @@
   <!-- PDF.js for PDF Parsing -->
   <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3/build/pdf.min.js"></script>
 
+  <!-- API Client -->
+  <script src="api-client.js"></script>
+
   <!-- Custom Styles -->
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -105,6 +108,99 @@
             <div class="stat-card-label">Net Cash Flow</div>
             <div class="stat-card-value" id="netCashFlow">₣0</div>
             <div class="stat-card-trend" id="cashFlowTrend">--</div>
+          </div>
+        </div>
+
+        <!-- Change Password Modal -->
+        <div class="modal-overlay" id="changePasswordModal" style="z-index: 2000;">
+          <div class="modal">
+            <div class="modal-header">
+              <h3 class="modal-title">Change Password</h3>
+            </div>
+            <div class="modal-body">
+              <div class="alert alert-warning" id="passwordChangeAlert">
+                You must change your password before continuing.
+              </div>
+              <form id="changePasswordForm">
+                <div class="form-group">
+                  <label class="form-label">Current Password</label>
+                  <input type="password" class="form-control" id="currentPassword" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">New Password</label>
+                  <input type="password" class="form-control" id="newPassword" required minlength="6">
+                  <small class="text-muted">Minimum 6 characters</small>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Confirm New Password</label>
+                  <input type="password" class="form-control" id="confirmNewPassword" required>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" onclick="app.submitPasswordChange()">Update
+                Password</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Management Modal (Admin Only) -->
+        <div class="modal-overlay" id="userManagementModal">
+          <div class="modal" style="max-width: 800px; width: 90%;">
+            <div class="modal-header">
+              <h3 class="modal-title">User Management</h3>
+              <button class="close-modal" onclick="app.closeModal('userManagementModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+              <div class="tabs">
+                <div class="tab active" onclick="app.switchUserTab('list')">Users List</div>
+                <div class="tab" onclick="app.switchUserTab('create')">Create User</div>
+              </div>
+
+              <div id="userListTab">
+                <div class="table-container">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Created At</th>
+                      </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                      <!-- Loaded via JS -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div id="createUserTab" style="display: none;">
+                <form id="createUserForm">
+                  <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" class="form-control" id="newUserFullName" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" id="newUserEmail" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" id="newUserPassword" required minlength="6">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Role</label>
+                    <select class="form-control" id="newUserRole">
+                      <option value="user">User</option>
+                      <option value="admin">Admin</option>
+                      <option value="guest">Guest</option>
+                    </select>
+                  </div>
+                  <button type="button" class="btn btn-primary" onclick="app.createUser()">Create User</button>
+                </form>
+              </div>
+            </div>
           </div>
         </div>
 

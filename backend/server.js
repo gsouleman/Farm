@@ -24,6 +24,7 @@ app.use('/api/farms', farmRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/crops', cropRoutes);
 app.use('/api/sections', sectionRoutes);
+app.use('/api/employees', require('./routes/employees'));
 
 // Health check
 app.get('/health', (req, res) => {

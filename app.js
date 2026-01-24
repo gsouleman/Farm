@@ -287,26 +287,114 @@ const app = {
         this.getCurrentFarm().customIncomeCategories = val;
     },
 
-    // Initialize the application
-    init() {
-        console.log('ðŸŒ¾ Initializing Maloure Farm Management System...');
+    // Check for forced password change
+    checkPasswordStatus() {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user && user.mustChangePassword) {
+            this.openChangePasswordModal(true);
+        }
 
-        // Load data from localStorage
-        this.loadData();
+        // Setup admin UI if applicable
+        if (user && user.role === 'admin') {
+            this.setupAdminUI();
+        }
+    },
+
+    openChangePasswordModal(forced = false) {
+        const modal = document.getElementById('changePasswordModal');
+        const alert = document.getElementById('passwordChangeAlert');
+        const closeBtn = modal.querySelector('.close-modal');
+
+        if (forced) {
+            alert.style.display = 'block';
+            // Disable closing
+            modal.onclick = null; // Prevent overlay click close
+            if (closeBtn) closeBtn.style.display = 'none';
+        } else {
+            alert.style.display = 'none';
+        }
+
+        this.openModal('changePasswordModal');
+    },
+
+    async submitPasswordChange() {
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirm = document.getElementById('confirmNewPassword').value;
+
+        if (newPassword !== confirm) {
+            alert('New passwords do not match');
+            return;
+        }
+
+        try {
+            await api.auth.changePassword(currentPassword, newPassword);
+            alert('Password changed successfully! Please login again.');
+            api.auth.logout();
+        } catch (error) {
+            alert(error.message || 'Failed to change password');
+        }
+    },
+
+    setupAdminUI() {
+        const nav = document.querySelector('.navbar-nav');
+        if (!document.getElementById('adminLink')) {
+            const li = document.createElement('li');
+            li.innerHTML = `<a href="#admin" id="adminLink" onclick="app.openUserManagement()">⚙️ Admin</a>`;
+            nav.appendChild(li);
+        }
+    },
+
+    openUserManagement() {
+        this.openModal('userManagementModal');
+        // Load users (mock for now because we didn't implement GET /users for admin yet, 
+        // but we can assume we only want to CREATE users for this task request "All users account are created by administrator"
+        // Listing is nice but creation is critical.)
+    },
+
+    switchUserTab(tab) {
+        document.getElementById('userListTab').style.display = tab === 'list' ? 'block' : 'none';
+        document.getElementById('createUserTab').style.display = tab === 'create' ? 'block' : 'none';
+
+        document.querySelectorAll('#userManagementModal .tab').forEach(t => t.classList.remove('active'));
+        if (tab === 'list') document.querySelector('.tab:first-child').classList.add('active');
+        else document.querySelector('.tab:last-child').classList.add('active');
+    },
+
+    async createUser() {
+        const fullName = document.getElementById('newUserFullName').value;
+        const email = document.getElementById('newUserEmail').value;
+        const password = document.getElementById('newUserPassword').value;
+        const role = document.getElementById('newUserRole').value;
+
+        try {
+            await api.auth.register(email, password, fullName, role);
+            alert('User created successfully!');
+            document.getElementById('createUserForm').reset();
+            this.switchUserTab('list');
+        } catch (error) {
+            alert(error.message || 'Failed to create user');
+        }
+    },
+    async init() {
+        console.log('🌾 Initializing Maloure Farm Management System...');
+
+        // Load data from API
+        await this.loadData();
+
+        // Check password status (must come after loadData or at least check valid user)
+        this.checkPasswordStatus();
 
         // Set today's date in forms
         const today = new Date().toISOString().split('T')[0];
-        document.getElementById('transactionDate').value = today;
-        document.getElementById('cropPlantedDate').value = today;
+        const dateInput = document.getElementById('transactionDate');
+        if (dateInput) dateInput.value = today;
+
+        const cropDateInput = document.getElementById('cropPlantedDate');
+        if (cropDateInput) cropDateInput.value = today;
 
         // Render initial UI
-        this.renderDashboard();
-        this.renderFarmMap();
-        this.renderTransactions();
-        this.renderCrops();
-        this.renderFarmSectionsTable(); // Ensure crop allocation table renders
-        this.renderLandAllocationTable(); // Ensure land allocation table renders
-        this.updateCurrentMonth();
+        // Note: loadData already calls renders logic now
 
         // Initialize charts
         this.initializeCharts();
@@ -324,40 +412,122 @@ const app = {
         }
         this.updateAllText();
 
-        console.log('âœ… Application initialized successfully!');
+        console.log('✅ Application initialized successfully!');
     },
 
     // Load data from localStorage
     // Load data from localStorage
-    loadData() {
-        const savedFarms = localStorage.getItem('allFarms');
-        const savedCurrentFarmId = localStorage.getItem('currentFarmId');
-
-        if (savedFarms) {
-            this.farms = JSON.parse(savedFarms);
+    // Load data from API
+    async loadData() {
+        if (!isAuthenticated()) {
+            window.location.href = '/login.html';
+            return;
         }
 
-        if (savedCurrentFarmId && this.farms.find(f => f.id === savedCurrentFarmId)) {
-            this.currentFarmId = savedCurrentFarmId;
-        } else if (this.farms.length > 0) {
-            this.currentFarmId = this.farms[0].id;
+        try {
+            const farms = await api.farms.getAll();
+            this.farms = farms;
+
+            if (this.farms.length > 0) {
+                // Restore current farm from local storage preference or default to first
+                const savedFarmId = parseInt(localStorage.getItem('currentFarmId'));
+                const farmExists = this.farms.find(f => f.id === savedFarmId);
+
+                this.currentFarmId = farmExists ? savedFarmId : this.farms[0].id;
+                await this.loadFarmDetails(this.currentFarmId);
+            } else {
+                // No farms found
+                this.renderDashboard();
+            }
+
+            this.updateFarmSelector();
+        } catch (error) {
+            console.error('Failed to load data:', error);
+            // alert('Failed to load farm data. Please check your connection.');
+        }
+    },
+
+    // Load details for a specific farm
+    async loadFarmDetails(farmId) {
+        try {
+            const farm = this.farms.find(f => f.id === farmId);
+            if (!farm) return;
+
+            // Fetch related data in parallel
+            const [transactions, crops, sections, employees] = await Promise.all([
+                api.transactions.getByFarm(farmId),
+                api.crops.getByFarm(farmId),
+                api.sections.getByFarm(farmId),
+                api.employees.getByFarm(farmId)
+            ]);
+
+            // Attach to farm object in memory
+            farm.transactions = transactions;
+
+            // Split crops into fruit trees and cash crops
+            farm.fruitTrees = crops.filter(c => c.category === 'fruit');
+            farm.cashCrops = crops.filter(c => c.category === 'cash');
+
+            farm.sections = sections;
+            farm.employees = employees;
+
+            // Update UI
+            this.renderFarmDetails();
+            this.renderDashboard();
+            this.renderTransactions();
+            this.renderCrops();
+            this.renderFarmMap(); // Re-render map with new boundaries
+
+            // Re-render employees if table exists (it's in the employees tab)
+            this.renderEmployees();
+
+        } catch (error) {
+            console.error('Failed to load farm details:', error);
+        }
+    },
+
+    // Render employees (new method needed since I added the functionality)
+    renderEmployees() {
+        const tbody = document.getElementById('employeesTableBody');
+        const emptyMsg = document.getElementById('noEmployeesMessage');
+        const farm = this.getCurrentFarm();
+
+        if (!tbody) return;
+
+        const employees = farm.employees || [];
+
+        if (employees.length === 0) {
+            tbody.innerHTML = '';
+            if (emptyMsg) emptyMsg.classList.remove('hidden');
+            return;
         }
 
-        // Update UI to show current farm name
-        // Update farm details in UI
-        this.renderFarmDetails();
+        if (emptyMsg) emptyMsg.classList.add('hidden');
 
-        // Update farm selector if it exists
-        this.updateFarmSelector();
+        tbody.innerHTML = employees.map(emp => `
+            <tr>
+                <td><strong>${emp.name}</strong></td>
+                <td>${emp.role}</td>
+                <td><span class="badge badge-secondary">${emp.type}</span></td>
+                <td><span class="badge ${emp.status === 'Active' ? 'badge-success' : 'badge-danger'}">${emp.status}</span></td>
+                <td>${emp.phone || '-'}</td>
+                <td>${emp.pay_frequency || '-'}</td>
+                <td>${emp.pay_rate ? this.formatCurrency(emp.pay_rate) : '-'}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="app.editEmployee(${emp.id})">✏️</button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="app.deleteEmployee(${emp.id})">🗑️</button>
+                </td>
+            </tr>
+        `).join('');
     },
 
     // Save data to localStorage
+    // Save data (Deprecated - now using API directly)
     saveData() {
-        localStorage.setItem('allFarms', JSON.stringify(this.farms));
-        localStorage.setItem('currentFarmId', this.currentFarmId);
-
-        // Refresh land allocation table if visible
-        this.renderLandAllocationTable();
+        // localStorage.setItem('allFarms', JSON.stringify(this.farms));
+        if (this.currentFarmId) {
+            localStorage.setItem('currentFarmId', this.currentFarmId);
+        }
     },
 
     // Calculate financial metrics
@@ -1229,7 +1399,7 @@ const app = {
     },
 
     // Save coordinates and update maps
-    saveCoordinates() {
+    async saveCoordinates() {
         // Allow clearing all coordinates for blank map
         if (this.tempCoordinates.length === 0) {
             // Clear boundaries and all crop allocations
@@ -1264,29 +1434,34 @@ const app = {
         const centerLng = this.tempCoordinates.reduce((sum, coord) => sum + coord.lng, 0) / this.tempCoordinates.length;
 
         // Update farm data
-        this.farmData.boundaries = JSON.parse(JSON.stringify(this.tempCoordinates));
-        this.farmData.centerCoordinates = {
-            lat: centerLat,
-            lng: centerLng
+        // Update farm data payload
+        const updateData = {
+            boundaries: this.tempCoordinates,
+            centerLat: centerLat,
+            centerLng: centerLng
         };
 
-        // Save to localStorage
-        this.saveData();
+        try {
+            await api.farms.update(this.farmData.id, updateData);
 
-        // Update the map views
-        this.updateMapViews();
+            // Update local memory
+            this.farmData.boundaries = JSON.parse(JSON.stringify(this.tempCoordinates));
+            this.farmData.centerCoordinates = {
+                lat: centerLat,
+                lng: centerLng
+            };
 
-        // Update Farm Info display
-        this.renderFarmDetails();
+            this.updateMapViews();
+            this.renderFarmDetails();
+            this.renderFarmSectionsTable();
+            this.closeModal('coordinateEditorModal');
 
-        // Re-render sections table
-        this.renderFarmSectionsTable();
+            alert(`✓ Coordinates saved successfully!\n\nBoundary points: ${this.tempCoordinates.length}\nNew center: ${centerLat.toFixed(6)}, ${centerLng.toFixed(6)}`);
 
-        // Close modal
-        this.closeModal('coordinateEditorModal');
-
-        // Show success message
-        alert(`âœ“ Coordinates saved successfully!\n\nBoundary points: ${this.tempCoordinates.length}\nNew center: ${centerLat.toFixed(6)}, ${centerLng.toFixed(6)}`);
+        } catch (error) {
+            console.error('Failed to save coordinates:', error);
+            alert('Failed to save boundaries: ' + error.message);
+        }
     },
 
     // Update map views after coordinate changes
@@ -1336,81 +1511,133 @@ const app = {
     },
 
     // Add transaction
-    addTransaction(event) {
+    async addTransaction(event) {
         event.preventDefault();
 
-        const transaction = {
+        const transactionData = {
             date: document.getElementById('transactionDate').value,
             type: document.getElementById('transactionType').value,
             category: document.getElementById('transactionCategory').value,
             description: document.getElementById('transactionDescription').value,
-            amount: document.getElementById('transactionAmount').value
+            amount: parseFloat(document.getElementById('transactionAmount').value)
         };
 
-        this.transactions.push(transaction);
-        this.saveData();
-        this.renderDashboard();
-        this.renderTransactions();
-        this.updateCurrentMonth();
-        this.initializeCharts();
+        try {
+            const newTransaction = await api.transactions.create(this.currentFarmId, transactionData);
 
-        this.closeModal('addTransactionModal');
+            // Add to local array and update UI
+            this.transactions.push(newTransaction);
+            // Re-sort
+            this.transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            this.renderDashboard();
+            this.renderTransactions();
+            this.updateCurrentMonth();
+            this.initializeCharts();
+            this.closeModal('addTransactionModal');
+
+        } catch (error) {
+            console.error('Failed to add transaction:', error);
+            alert('Failed to add transaction: ' + error.message);
+        }
     },
 
-    // Delete transaction (Auto-confirmed)
-    deleteTransaction(index) {
-        // Sort to get the correct index
+    // Delete transaction
+    async deleteTransaction(index) {
+        if (!confirm('Are you sure you want to delete this transaction?')) return;
+
+        // Sort to get the correct object (UI uses sorted list)
         const sorted = [...this.transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
         const transaction = sorted[index];
-        const originalIndex = this.transactions.indexOf(transaction);
 
-        this.transactions.splice(originalIndex, 1);
-        this.saveData();
-        this.renderDashboard();
-        this.renderTransactions();
-        this.updateCurrentMonth();
-        this.initializeCharts();
+        try {
+            await api.transactions.delete(transaction.id);
+
+            // Remove from local array
+            this.transactions = this.transactions.filter(t => t.id !== transaction.id);
+
+            this.renderDashboard();
+            this.renderTransactions();
+            this.updateCurrentMonth();
+            this.initializeCharts();
+
+        } catch (error) {
+            console.error('Failed to delete transaction:', error);
+            alert('Failed to delete transaction');
+        }
     },
 
     // Add crop
-    addCrop(event) {
+    async addCrop(event) {
         event.preventDefault();
 
         const category = document.getElementById('cropCategory').value;
-        const crop = {
+        const cropData = {
+            category: category,
             type: document.getElementById('cropType').value,
             plantedDate: document.getElementById('cropPlantedDate').value,
             status: document.getElementById('cropStatus').value
         };
 
         if (category === 'fruit') {
-            crop.count = parseInt(document.getElementById('cropCount').value);
-            crop.expectedHarvest = 'TBD';
-            this.fruitTrees.push(crop);
+            cropData.count = parseInt(document.getElementById('cropCount').value) || 0;
+            // cropData.expectedHarvest = 'TBD'; // Not in DB schema yet, maybe add to notes? Or status covers it?
         } else {
-            crop.area = parseFloat(document.getElementById('cropArea').value);
-            crop.harvestDate = null;
-            crop.yield = 0;
-            this.cashCrops.push(crop);
+            cropData.area = parseFloat(document.getElementById('cropArea').value) || 0;
+            cropData.yield = 0;
         }
 
-        this.saveData();
-        this.renderCrops();
-        this.closeModal('addCropModal');
+        try {
+            const newCrop = await api.crops.create(this.currentFarmId, cropData);
+
+            // Add to appropriate local array
+            if (category === 'fruit') {
+                this.fruitTrees.push(newCrop);
+            } else {
+                this.cashCrops.push(newCrop);
+            }
+
+            this.renderCrops();
+            this.closeModal('addCropModal');
+
+        } catch (error) {
+            console.error('Failed to add crop:', error);
+            alert('Failed to add crop: ' + error.message);
+        }
     },
 
-    // Delete fruit tree (Auto-confirmed)
-    deleteFruitTree(index) {
-        this.fruitTrees.splice(index, 1);
-        this.saveData();
-        this.renderCrops();
+    // Delete fruit tree
+    async deleteFruitTree(index) {
+        if (!confirm('Are you sure you want to delete this crop?')) return;
+
+        const crop = this.fruitTrees[index];
+        try {
+            await api.crops.delete(crop.id);
+
+            this.fruitTrees.splice(index, 1);
+            this.renderCrops();
+
+        } catch (error) {
+            console.error('Failed to delete fruit tree:', error);
+            alert('Failed to delete crop');
+        }
     },
 
-    // Delete cash crop (Auto-confirmed)
-    deleteCashCrop(index) {
-        this.cashCrops.splice(index, 1);
-        this.saveData();
-        this.renderCrops();
+    // Delete cash crop
+    async deleteCashCrop(index) {
+        if (!confirm('Are you sure you want to delete this crop?')) return;
+
+        const crop = this.cashCrops[index];
+        try {
+            await api.crops.delete(crop.id);
+
+            this.cashCrops.splice(index, 1);
+            this.renderCrops();
+
+        } catch (error) {
+            console.error('Failed to delete cash crop:', error);
+            alert('Failed to delete crop');
+        }
     },
 
     // Export transactions
@@ -1764,7 +1991,8 @@ const app = {
         document.getElementById('farmForm').reset();
     },
 
-    createNewFarm(event) {
+    // Create new farm
+    async createNewFarm(event) {
         event.preventDefault();
 
         // Get form values
@@ -1795,72 +2023,115 @@ const app = {
             lng: parseFloat(document.getElementById('newFarmLng').value)
         };
 
-        if (this.editingFarmId) {
-            // Update existing farm
-            const farm = this.farms.find(f => f.id === this.editingFarmId);
-            if (farm) {
-                farm.name = name;
-                farm.location = location;
-                farm.area = area;
-                farm.perimeter = perimeter;
-                farm.centerCoordinates = centerCoordinates;
-                if (boundaries.length > 0) farm.boundaries = boundaries;
+        // Prepare payload (field names must match backend valid keys - backend maps to columns)
+        // Backend expects: name, location, area, perimeter, centerLat, centerLng, boundaries, zones
+        // Note: My backend uses snake_case for DB columns but req.body parsing might expect camelCase or simply match.
+        // Let's check farms.js: const { name, location, area, perimeter, centerLat, centerLng, boundaries, zones } = req.body;
 
-                this.saveData();
-                this.updateFarmSelector();
-                this.renderFarmDetails();
-
-                this.closeModal('createFarmModal');
-                alert('Farm updated successfully!');
-                this.editingFarmId = null;
-                return;
-            }
-        }
-
-        // Create new farm
-        const farmId = name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
-
-        const newFarm = {
-            id: farmId,
+        const farmData = {
             name: name,
             location: location,
             area: area,
             perimeter: perimeter,
-            centerCoordinates: centerCoordinates,
-            boundaries: boundaries,
+            centerLat: centerCoordinates.lat,
+            centerLng: centerCoordinates.lng,
+            boundaries: boundaries.length > 0 ? boundaries : null,
+            // Initialize zones if new
             zones: {
                 fruitTrees: { area: 0, percentage: 0 },
                 cashCrops: { area: 0, percentage: 0 },
                 farmHouse: { area: 0, percentage: 0 },
                 residential: { area: 0, percentage: 0 }
-            },
-            transactions: [],
-            fruitTrees: [],
-            cashCrops: [],
-            customExpenseCategories: [],
-            customIncomeCategories: []
+            }
         };
 
-        // Add new farm to farms array
-        this.farms.push(newFarm);
+        try {
+            if (this.editingFarmId) {
+                // Update existing farm
+                // Fetch current farm to preserve zones if not modified here? 
+                // Currently zones are only modified by saveFarmSection or here init.
+                // If checking backend update route: it allows partial updates of zones.
+                // But here we might overwrite zones if we send default.
+                // We should probably NOT send zones on update unless we are explicitly resetting them?
+                // For now, let's keep zones out of update unless we want to reset.
+                // But the form doesn't edit zones.
 
-        // Switch to the new farm
-        this.currentFarmId = farmId;
+                delete farmData.zones;
 
-        // Save to localStorage
-        this.saveData();
+                const updatedFarm = await api.farms.update(this.editingFarmId, farmData);
 
-        // Update UI
-        this.renderFarmDetails();
-        this.renderDashboard();
-        this.renderFarmMap();
-        this.renderTransactions();
-        this.renderCrops();
-        this.initializeCharts();
-        this.updateFarmSelector();
+                // Update local array
+                const index = this.farms.findIndex(f => f.id === this.editingFarmId);
+                if (index !== -1) {
+                    // Update farm properties but keep local enriched data (transactions, crops, etc.)
+                    // Actually, safer to just update properties.
+                    Object.assign(this.farms[index], updatedFarm);
+                    // Ensure centerCoordinates is formatted as object if backend returns lat/lng fields
+                    this.farms[index].centerCoordinates = {
+                        lat: parseFloat(updatedFarm.center_lat),
+                        lng: parseFloat(updatedFarm.center_lng)
+                    };
+                    // Ensure boundaries is parsed
+                    if (typeof updatedFarm.boundaries === 'string') this.farms[index].boundaries = JSON.parse(updatedFarm.boundaries);
+                    else this.farms[index].boundaries = updatedFarm.boundaries || [];
+                }
 
-        this.closeModal('createFarmModal');
-        alert(`Farm "${newFarm.name}" created successfully! You are now managing this farm.`);
+                this.updateFarmSelector();
+                this.renderFarmDetails();
+                this.closeModal('createFarmModal');
+                alert('Farm updated successfully!');
+                this.editingFarmId = null;
+                return;
+            }
+
+            // Create new farm
+            const newFarm = await api.farms.create(farmData);
+
+            // Backend returns snake_case columns usually?
+            // farms.js: RETURNING * -> id, user_id, name, location, area, perimeter, center_lat, center_lng, etc.
+            // I need to map backend response to frontend object structure expected by app
+
+            const mappedFarm = {
+                ...newFarm,
+                centerCoordinates: {
+                    lat: parseFloat(newFarm.center_lat),
+                    lng: parseFloat(newFarm.center_lng)
+                },
+                boundaries: newFarm.boundaries || [],
+                zones: newFarm.zones || farmData.zones,
+                transactions: [],
+                fruitTrees: [],
+                cashCrops: [],
+                sections: [], // backend uses sections table, not farm.sections array for storage? Wait.
+                // Frontend seems to use farm.sections for crop allocation graphical map.
+                // Backend has separate `sections` table. 
+                // So localized `sections` array should be empty initially.
+                employees: []
+            };
+
+            this.farms.push(mappedFarm);
+
+            // Switch to the new farm
+            this.currentFarmId = newFarm.id;
+
+            // We should load details (even if empty) to set up state?
+            // await this.loadFarmDetails(this.currentFarmId); // optional since it's new
+
+            // Update UI
+            this.renderFarmDetails();
+            this.renderDashboard();
+            this.renderFarmMap();
+            this.renderTransactions();
+            this.renderCrops();
+            this.initializeCharts();
+            this.updateFarmSelector();
+
+            this.closeModal('createFarmModal');
+            alert(`Farm "${mappedFarm.name}" created successfully! You are now managing this farm.`);
+        } catch (error) {
+            console.error('Failed to save farm:', error);
+            alert('Failed to save farm: ' + error.message);
+        }
     },
 
     // Handle farm dropdown selection (includes create option)
@@ -1882,26 +2153,31 @@ const app = {
     },
 
     // Switch between farms
-    switchFarm(farmId) {
-        const farm = this.farms.find(f => f.id === farmId);
+    async switchFarm(farmId) {
+        // Find existing farm object or wait to load?
+        // Usually assume it's in the list
+        const farm = this.farms.find(f => f.id === parseInt(farmId)); // Ensure type match (backend uses numeric IDs)
+        // Wait, localStorage uses string if API returns number?
+        // Let's coerce both to string for comparison or standardise on number.
+        // Farms list from API likely has numeric IDs.
+
         if (!farm) {
-            alert('Farm not found!');
-            return;
+            // Maybe it was just created or loaded?
+            // Or maybe ID type mismatch.
+            const farmByStr = this.farms.find(f => f.id == farmId);
+            if (!farmByStr) {
+                console.warn(`Farm ${farmId} not found`);
+                return;
+            }
         }
 
-        this.currentFarmId = farmId;
-        this.saveData();
+        this.currentFarmId = parseInt(farmId);
+        localStorage.setItem('currentFarmId', this.currentFarmId); // Persist preference
 
-        // Update UI
-        // Update UI
-        this.renderFarmDetails();
-        this.renderDashboard();
-        this.renderFarmMap();
-        this.renderTransactions();
-        this.renderCrops();
-        this.renderEmployees(); // Render employees
-        this.initializeCharts();
-        this.updateCurrentMonth();
+        await this.loadFarmDetails(this.currentFarmId);
+
+        // Update UI logic is inside loadFarmDetails now
+
         this.updateFarmSelector();
 
         // Scroll to top
@@ -2511,32 +2787,49 @@ const app = {
             `Corner ${i + 1}: ${coord.lat.toFixed(6)}, ${coord.lng.toFixed(6)}`
         ).join('\n');
 
-        const section = {
-            id: 'section-' + Date.now(),
+        const sectionData = {
             name: name,
             type: type,
             cropType: cropType || null,
             boundaries: boundaries,
-            centerCoordinates: { lat: centerLat, lng: centerLng },
+            // centerCoordinates not needed in payload if boundaries provided? 
+            // backend schema: boundaries JSONB. Logic to parse center might be needed on reload?
+            // Actually schema doesn't have center_lat/lng for sections, just boundaries.
+            // Frontend calculates center on load?
             area: area,
-            percentage: (area / (this.farmData.area || 1)) * 100,
+            percentage: parseFloat((area / (this.farmData.area || 1)) * 100),
             color: color,
             notes: `Drawn on ${new Date().toLocaleDateString()}\nCenter: ${centerLat.toFixed(6)}, ${centerLng.toFixed(6)}\n\n4 Corner Coordinates:\n${cornerCoords}`
         };
 
-        // Add to farm data
-        if (!this.getCurrentFarm().sections) {
-            this.getCurrentFarm().sections = [];
+        try {
+            // Add to farm data via API
+            // Note: Use async inside this synchronous flow causing issues? 
+            // Better to make this method async.
+            this.createSectionAsync(sectionData, name, area, centerLat, centerLng, cornerCoords);
+        } catch (e) {
+            console.error(e);
         }
-        this.getCurrentFarm().sections.push(section);
+    },
 
-        this.saveData();
-        this.renderFarmSectionsTable();
-        this.renderLandAllocationTable();
-        this.renderGraphicalMap();
-        this.renderLandAllocationTable();
+    async createSectionAsync(sectionData, name, area, centerLat, centerLng, cornerCoords) {
+        try {
+            const newSection = await api.sections.create(this.currentFarmId, sectionData);
 
-        alert(`Section "${name}" created!\nArea: ${area.toFixed(4)} hectares\n\nCenter Coordinates:\nLat: ${centerLat.toFixed(6)}\nLng: ${centerLng.toFixed(6)}\n\n4 Corner Coordinates:\n${cornerCoords}`);
+            // Normalize
+            newSection.boundaries = newSection.boundaries || [];
+            if (!this.getCurrentFarm().sections) this.getCurrentFarm().sections = [];
+            this.getCurrentFarm().sections.push(newSection);
+
+            this.renderFarmSectionsTable();
+            this.renderLandAllocationTable();
+            this.renderGraphicalMap();
+
+            alert(`Section "${name}" created!\nArea: ${area.toFixed(4)} hectares\n\nCenter Coordinates:\nLat: ${centerLat.toFixed(6)}\nLng: ${centerLng.toFixed(6)}\n\n4 Corner Coordinates:\n${cornerCoords}`);
+        } catch (error) {
+            console.error('Failed to create section:', error);
+            alert('Failed to save drawn section');
+        }
     },
 
     // Cancel drawing
@@ -2595,7 +2888,7 @@ const app = {
     },
 
     // Save farm section with manual area input
-    saveFarmSection(event) {
+    async saveFarmSection(event) {
         event.preventDefault();
 
         const farm = this.getCurrentFarm();
@@ -2622,55 +2915,67 @@ const app = {
         // Calculate percentage of total farm area
         const percentage = ((area / farm.area) * 100).toFixed(1);
 
-        // Generate simple boundaries for graphical visualization
+        // Generate simple boundaries for graphical visualization if not provided
+        // (If we were in drawing mode, boundaries would be passed, but here it's manual)
+        // We can keep the dummy boundaries generation if needed for visual compatibility
         const index = farm.sections ? farm.sections.length : 0;
         const baseOffset = index * 0.0005;
-        const boundaries = [
+        const dummyBoundaries = [
             { lat: 5.916 + baseOffset, lng: 11.043 },
             { lat: 5.917 + baseOffset, lng: 11.043 },
             { lat: 5.917 + baseOffset, lng: 11.044 },
             { lat: 5.916 + baseOffset, lng: 11.044 }
         ];
 
-        if (sectionId) {
-            // Update existing section
-            const section = farm.sections.find(s => s.id === sectionId);
-            if (section) {
-                section.name = name;
-                section.type = type;
-                section.crop = crop;
-                section.color = color;
-                section.area = area;
-                section.percentage = percentage;
+        const sectionData = {
+            name: name,
+            type: type,
+            cropType: crop,
+            color: color,
+            area: area,
+            percentage: parseFloat(percentage),
+            boundaries: dummyBoundaries, // Or pass existing if updating?
+            notes: document.getElementById('sectionNotes').value
+        };
+
+        try {
+            if (sectionId && !sectionId.startsWith('section_')) { // existing DB section
+                // Update existing section
+                const updatedSection = await api.sections.update(sectionId, sectionData);
+
+                // Update local array
+                const index = farm.sections.findIndex(s => s.id === sectionId);
+                if (index !== -1) {
+                    // Preserve extra properties if any?
+                    Object.assign(farm.sections[index], updatedSection);
+                    // Ensure boundaries and coords are parsed
+                    farm.sections[index].boundaries = updatedSection.boundaries || [];
+                }
+            } else {
+                // Add new section
+                const newSection = await api.sections.create(farm.id, sectionData);
+
+                // normalize response
+                newSection.boundaries = newSection.boundaries || [];
+
+                if (!farm.sections) farm.sections = [];
+                farm.sections.push(newSection);
             }
-        } else {
-            // Add new section
-            if (!farm.sections) {
-                farm.sections = [];
-            }
-            const newSection = {
-                id: 'section_' + Date.now(),
-                name: name,
-                type: type,
-                crop: crop,
-                color: color,
-                area: area,
-                percentage: percentage,
-                boundaries: boundaries
-            };
-            farm.sections.push(newSection);
+
+            this.renderFarmSectionsTable();
+            this.renderLandAllocationTable();
+            this.renderGraphicalMap();
+            this.closeModal('sectionModal');
+
+            // Clear form
+            document.getElementById('sectionForm').reset();
+
+            alert(`Section "${name}" saved!\nArea: ${area} ha (${percentage}% of farm)`);
+
+        } catch (error) {
+            console.error('Failed to save section:', error);
+            alert('Failed to save section: ' + error.message);
         }
-
-        this.saveData();
-        this.renderFarmSectionsTable();
-        this.renderLandAllocationTable();
-        this.renderGraphicalMap();
-        this.closeModal('sectionModal');
-
-        // Clear form
-        document.getElementById('sectionForm').reset();
-
-        alert(`Section "${name}" saved!\nArea: ${area} ha (${percentage}% of farm)`);
     },
 
     // Render farm sections on map
@@ -2756,22 +3061,38 @@ const app = {
 
 
     // Delete section
-    deleteSection(sectionId) {
-        // Auto-confirmed
+    async deleteSection(sectionId) {
+        if (!confirm('Are you sure you want to delete this section?')) return;
+
         const farm = this.getCurrentFarm();
-        farm.sections = farm.sections.filter(s => s.id !== sectionId);
 
-        // Remove polygon from map
-        const polygonRef = this.sectionPolygons.find(sp => sp.id === sectionId);
-        if (polygonRef) {
-            polygonRef.polygon.setMap(null);
-            this.sectionPolygons = this.sectionPolygons.filter(sp => sp.id !== sectionId);
+        try {
+            await api.sections.delete(sectionId);
+
+            // Remove from local array
+            farm.sections = farm.sections.filter(s => s.id !== sectionId);
+
+            // Remove polygon from map
+            const polygonRef = this.sectionPolygons.find(sp => sp.id === sectionId);
+            if (polygonRef) {
+                polygonRef.polygon.setMap(null);
+                this.sectionPolygons = this.sectionPolygons.filter(sp => sp.id !== sectionId);
+            }
+
+            this.renderFarmSectionsTable();
+            this.renderLandAllocationTable();
+            alert('Section deleted successfully');
+
+        } catch (error) {
+            console.error('Failed to delete section:', error);
+            // Check if it was a temporary local section (failed save?)
+            if (sectionId.startsWith('section_')) {
+                farm.sections = farm.sections.filter(s => s.id !== sectionId);
+                this.renderFarmSectionsTable();
+            } else {
+                alert('Failed to delete section: ' + error.message);
+            }
         }
-
-        this.saveData();
-        this.renderFarmSectionsTable();
-        this.renderLandAllocationTable();
-        alert('Section deleted successfully');
     },
 
     // Print Land Allocation table
@@ -2956,7 +3277,7 @@ const app = {
         const canvas = document.getElementById('farmMapCanvas');
 
         // If Google Maps is not available and user tries satellite, switch to graphical
-        if (viewType === 'satellite' && !this.googleMap) {
+        if (viewType === 'satellite' && !this.map) {
             this.showAlert(
                 'Google Maps API Unavailable',
                 'Please add your API key in index.html to use Satellite View.<br><br>Using Graphical View instead.'
