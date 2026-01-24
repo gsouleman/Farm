@@ -306,7 +306,6 @@ const app = {
         this.renderCrops();
         this.renderFarmSectionsTable(); // Ensure crop allocation table renders
         this.renderLandAllocationTable(); // Ensure land allocation table renders
-        this.renderLandAllocationTable(); // Ensure land allocation table renders
         this.updateCurrentMonth();
 
         // Initialize charts
@@ -1228,7 +1227,7 @@ const app = {
 
             // Update views
             this.updateMapViews();
-            this.updateFarmInfo();
+            this.renderFarmDetails();
             this.renderFarmSectionsTable();
             this.renderGraphicalMap();
 
@@ -1263,7 +1262,7 @@ const app = {
         this.updateMapViews();
 
         // Update Farm Info display
-        this.updateFarmInfo();
+        this.renderFarmDetails();
 
         // Re-render sections table
         this.renderFarmSectionsTable();
@@ -1290,12 +1289,7 @@ const app = {
     },
 
     // Update Farm Info tab with new boundary count
-    updateFarmInfo() {
-        const coordEl = document.getElementById('farmCoordinates');
-        if (coordEl) {
-            coordEl.textContent = `${this.farmData.centerCoordinates.lat.toFixed(6)}, ${this.farmData.centerCoordinates.lng.toFixed(6)}`;
-        }
-    },
+
 
     // Update category options based on transaction type
     updateCategoryOptions() {
@@ -2653,6 +2647,7 @@ const app = {
 
         this.saveData();
         this.renderFarmSectionsTable();
+        this.renderLandAllocationTable();
         this.renderGraphicalMap();
         this.closeModal('sectionModal');
 
@@ -2743,26 +2738,7 @@ const app = {
         `).join('');
     },
 
-    // Render Land Allocation table (on the left card)
-    renderLandAllocationTable() {
-        const tbody = document.getElementById('landAllocationTable');
-        if (!tbody) return;
 
-        const sections = this.getCurrentFarm().sections || [];
-
-        if (sections.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #999;">No allocations yet</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = sections.map(section => `
-            <tr>
-                <td><strong>${section.name}</strong></td>
-                <td>${section.area.toFixed(2)}</td>
-                <td>${section.percentage.toFixed(1)}%</td>
-            </tr>
-        `).join('');
-    },
 
     // Delete section
     deleteSection(sectionId) {
