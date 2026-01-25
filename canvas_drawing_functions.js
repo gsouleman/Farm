@@ -564,7 +564,17 @@ Object.assign(app, {
         const form = document.getElementById('sectionForm');
         form.reset();
         document.getElementById('sectionArea').value = area.toFixed(4);
-        document.getElementById('sectionArea').readOnly = true;
+        // document.getElementById('sectionArea').readOnly = true; // Already set in HTML
+
+        // Calculate Percentage
+        const totalFarmArea = parseFloat(this.farmData.area) || 0;
+        if (totalFarmArea > 0) {
+            const pct = (area / totalFarmArea) * 100;
+            document.getElementById('sectionPercentage').value = pct.toFixed(2);
+        } else {
+            document.getElementById('sectionPercentage').value = '0';
+        }
+
         this.pendingSectionBoundaries = boundaries;
         this.openModal('sectionModal');
     },

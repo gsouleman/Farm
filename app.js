@@ -3420,6 +3420,16 @@ Object.assign(app, {
         document.getElementById('sectionType').value = section.type;
         document.getElementById('sectionCrop').value = section.cropType || section.crop || '';
         document.getElementById('sectionArea').value = section.area;
+
+        // Calculate Percentage
+        const totalFarmArea = parseFloat(farm.area) || 0;
+        if (totalFarmArea > 0) {
+            const pct = (section.area / totalFarmArea) * 100;
+            document.getElementById('sectionPercentage').value = pct.toFixed(1);
+        } else {
+            document.getElementById('sectionPercentage').value = '0.0';
+        }
+
         document.getElementById('sectionColor').value = section.color;
         document.getElementById('sectionNotes').value = section.notes || '';
 
