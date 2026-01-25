@@ -8,6 +8,7 @@ Object.assign(app, {
     draggingVertex: null, // { sectionId, vertexIndex }
     isDragging: false,
     hoveredVertex: null,
+    shiftKeyPressed: false, // Track Shift key
 
     // Constants
     VERTEX_radius: 6,
@@ -17,15 +18,28 @@ Object.assign(app, {
         const canvas = document.getElementById('farmMapCanvas');
         if (!canvas) return;
 
+        // Track Shift key for square drawing
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Shift') this.shiftKeyPressed = true;
+        });
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'Shift') this.shiftKeyPressed = false;
+        });
+
         // Mouse Down: Start Drawing OR Select/Drag
         canvas.addEventListener('mousedown', (e) => {
-            if (this.drawingMode) return; // handled by click for drawing
-
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
             const x = (e.clientX - rect.left) * scaleX;
             const y = (e.clientY - rect.top) * scaleY;
+
+            if (this.drawingMode) {
+                // Start generic drawing (potential drag)
+                this.drawingStartPoint = { x, y };
+                this.isDrawingDrag = false;
+                return;
+            }
 
             // 1. Check if clicking a vertex of selected section
             if (this.selectedSectionId) {
@@ -61,9 +75,31 @@ Object.assign(app, {
             const x = (e.clientX - rect.left) * scaleX;
             const y = (e.clientY - rect.top) * scaleY;
 
-            // Handle Drawing Preview
-            if (this.drawingMode) {
-                // Could show preview line here
+            // Handle Drawing Preview (Hybrid)
+            if (this.drawingMode && this.drawingStartPoint) {
+                let dx = x - this.drawingStartPoint.x;
+                let dy = y - this.drawingStartPoint.y;
+
+                // If moved significantly, treat as Rectangle Drag
+                if (Math.abs(dx) > 10 || Math.abs(dy) > 10 || this.isDrawingDrag) {
+                    this.isDrawingDrag = true;
+
+                    // Square constraint
+                    if (this.shiftKeyPressed) {
+                        const size = Math.max(Math.abs(dx), Math.abs(dy));
+                        dx = dx >= 0 ? size : -size;
+                        dy = dy >= 0 ? size : -size;
+                    }
+
+                    // Preview Rectangle (or Square)
+                    this.currentDrawing = [
+                        { x: this.drawingStartPoint.x, y: this.drawingStartPoint.y },
+                        { x: this.drawingStartPoint.x + dx, y: this.drawingStartPoint.y },
+                        { x: this.drawingStartPoint.x + dx, y: this.drawingStartPoint.y + dy },
+                        { x: this.drawingStartPoint.x, y: this.drawingStartPoint.y + dy }
+                    ];
+                    this.renderGraphicalMapWithDrawing();
+                }
                 return;
             }
 
@@ -90,6 +126,30 @@ Object.assign(app, {
 
         // Mouse Up: Stop Dragging & Save
         canvas.addEventListener('mouseup', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+
+            // Finish Drawing Logic
+            if (this.drawingMode && this.drawingStartPoint) {
+                if (this.isDrawingDrag) {
+                    // Finish Rectangle
+                    this.finishDrawing();
+                } else {
+                    // It was a click (Polygon mode) - Add point
+                    // Logic moved from 'click' handler to here to avoid conflicts
+                    // But we can leave 'click' handler for adding points if we reset startPoint here
+                    // Actually better to handle "Add Point" here to avoid 'click' firing after drag
+                    this.currentDrawing.push({ x, y });
+                    this.renderGraphicalMapWithDrawing();
+                }
+                this.drawingStartPoint = null;
+                this.isDrawingDrag = false;
+                return;
+            }
+
             if (this.isDragging && this.draggingVertex) {
                 this.isDragging = false;
                 this.saveSectionChanges(this.draggingVertex.sectionId);
@@ -98,22 +158,9 @@ Object.assign(app, {
             }
         });
 
-        // Drawing Mode Click (Legacy)
-        canvas.addEventListener('click', (e) => {
-            if (!this.drawingMode) return;
-
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            const x = (e.clientX - rect.left) * scaleX;
-            const y = (e.clientY - rect.top) * scaleY;
-
-            // Add point to current drawing
-            this.currentDrawing.push({ x, y });
-
-            // Redraw canvas with current points
-            this.renderGraphicalMapWithDrawing();
-        });
+        // Drawing Mode Click (Legacy - preserved for robustness but MouseUp handles primary logic now)
+        // We can remove it or keep it as backup if mouseup logic fails (but mouseup covers it)
+        // Let's remove conflicting 'click' to be safe.
 
         // Add double-click to finish drawing
         canvas.addEventListener('dblclick', (e) => {
