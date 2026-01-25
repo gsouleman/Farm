@@ -3038,7 +3038,7 @@ Object.assign(app, {
         };
 
         try {
-            if (sectionId && !sectionId.startsWith('section_')) { // existing DB section
+            if (sectionId && !String(sectionId).startsWith('section_')) { // existing DB section
                 // Update existing section
                 const updatedSection = await api.sections.update(sectionId, sectionData);
 
@@ -3207,7 +3207,7 @@ Object.assign(app, {
 
         this.showConfirmation('Are you sure you want to delete this section?', async () => {
             try {
-                if (!sectionId.startsWith('section_')) {
+                if (!String(sectionId).startsWith('section_')) {
                     await api.sections.delete(sectionId);
                 }
 
