@@ -22,8 +22,10 @@ Object.assign(app, {
             if (this.drawingMode) return; // handled by click for drawing
 
             const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
 
             // 1. Check if clicking a vertex of selected section
             if (this.selectedSectionId) {
@@ -54,8 +56,10 @@ Object.assign(app, {
         // Mouse Move: Dragging or Cursor Update
         canvas.addEventListener('mousemove', (e) => {
             const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
 
             // Handle Drawing Preview
             if (this.drawingMode) {
@@ -99,8 +103,10 @@ Object.assign(app, {
             if (!this.drawingMode) return;
 
             const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
 
             // Add point to current drawing
             this.currentDrawing.push({ x, y });
@@ -127,8 +133,10 @@ Object.assign(app, {
             }
 
             const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
 
             const sectionId = this.getSectionAtPoint(x, y);
 
