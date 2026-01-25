@@ -3612,11 +3612,6 @@ Object.assign(app, {
         sections.forEach(section => {
             if (section.boundaries && section.boundaries.length > 0) {
                 // Calculate Area for Stats
-                // Note: Simplified calculation if area property exists, else calculate
-                // We should assume section.area is reliable or recalc it.
-                // Let's recalc on the fly for pure graphical accuracy if needed, 
-                // but usually section.area is stored.
-                // If not stored, we'll need a helper. Let's use stored if valid.
                 if (section.area) totalAllocatedArea += parseFloat(section.area);
 
                 ctx.beginPath();
@@ -3638,131 +3633,100 @@ Object.assign(app, {
                 ctx.fill();
                 ctx.stroke();
 
-                // Calculate midpoint for label position
-                const midLng = (coord.lng + nextCoord.lng) / 2;
-                const midLat = (coord.lat + nextCoord.lat) / 2;
+                // Draw edge dimensions (Length)
+                ctx.font = 'bold 10px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
 
-                const labelX = scaleX(midLng);
-                const labelY = scaleY(midLat);
-                const labelText = `${distance.toFixed(1)}m`;
+                for (let i = 0; i < section.boundaries.length; i++) {
+                    const j = (i + 1) % section.boundaries.length;
+                    const p1 = section.boundaries[i];
+                    const p2 = section.boundaries[j];
 
-                // Draw label background
-                const textMetrics = ctx.measureText(labelText);
-                const padding = 2;
-                const bgWidth = textMetrics.width + (padding * 2);
-                const bgHeight = 14;
+                    const pix1 = pixels[i];
+                    const pix2 = pixels[j];
 
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                ctx.beginPath();
-                ctx.roundRect(labelX - bgWidth / 2, labelY - bgHeight / 2, bgWidth, bgHeight, 3);
-                ctx.fill();
+                    const dist = this.coordsToMeters(p1.lat, p1.lng, p2.lat, p2.lng);
 
-                // Draw label text
-                ctx.fillStyle = 'white';
-                ctx.fillText(labelText, labelX, labelY);
-            }
-        });
-    }
+                    if (dist > 2) { // Only show label if segment is significant
+                        const label = dist.toFixed(1) + 'm';
+                        const midX = (pix1.x + pix2.x) / 2;
+                        const midY = (pix1.y + pix2.y) / 2;
 
-                // Add coordinates label at center
-                if(section.boundaries.length > 2) {
-    const centerLat = section.centerCoordinates?.lat || section.boundaries.reduce((sum, c) => sum + c.lat, 0) / section.boundaries.length;
-    const centerLng = section.centerCoordinates?.lng || section.boundaries.reduce((sum, c) => sum + c.lng, 0) / section.boundaries.length;
-    const centerX = scaleX(centerLng);
-    const centerY = scaleY(centerLat);
+                        // Draw Label Background
+                        const textWidth = ctx.measureText(label).width;
+                        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                        ctx.fillRect(midX - textWidth / 2 - 2, midY - 7, textWidth + 4, 14);
 
-    // Only show corner coordinates if this section is selected
-    const showCorners = this.selectedSectionId === section.id;
+                        // Draw Text
+                        ctx.fillStyle = '#fff';
+                        ctx.fillText(label, midX, midY);
+                    }
+                }
 
-    if (showCorners) {
-        // Draw corner coordinates at each corner (only when clicked)
-        const corners = section.boundaries.slice(0, 4);
-        ctx.font = 'bold 9px Inter, sans-serif';
-        corners.forEach((corner, i) => {
-            const cornerX = scaleX(corner.lng);
-            const cornerY = scaleY(corner.lat);
-            const cornerText = `${corner.lat.toFixed(6)}, ${corner.lng.toFixed(6)}`;
-
-            // Background box
-            const textWidth = ctx.measureText(cornerText).width;
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-            ctx.fillRect(cornerX - textWidth / 2 - 2, cornerY - 18, textWidth + 4, 14);
-
-            ctx.fillStyle = section.color;
-            ctx.textAlign = 'center';
-            ctx.fillText(cornerText, cornerX, cornerY - 8);
-
-            // Marker
-            ctx.beginPath();
-            ctx.arc(cornerX, cornerY, 3, 0, 2 * Math.PI);
-            ctx.fill();
-        });
-    }
-
-    // Always show center section name
-    ctx.font = 'bold 11px Inter, sans-serif';
-    ctx.fillStyle = '#333';
-    ctx.textAlign = 'center';
-    ctx.fillText(section.name, centerX, centerY + 15);
-}
+                // Draw Section Label (Centroid)
+                const center = this.getPolygonCenter(pixels);
+                ctx.fillStyle = '#333';
+                ctx.font = 'bold 12px Inter, sans-serif';
+                ctx.fillText(section.name || section.cropType, center.x, center.y);
             }
         });
 
-ctx.restore(); // Restore state after drawing sections (removes clipping)
+        ctx.restore(); // Restore state after drawing sections (removes clipping)
 
-ctx.restore(); // Restore state after drawing sections (removes clipping)
+        ctx.restore(); // Restore state after drawing sections (removes clipping)
 
-// Draw farm center point
-const centerX = scaleX(this.farmData.centerCoordinates.lng);
-const centerY = scaleY(this.farmData.centerCoordinates.lat);
+        // Draw farm center point
+        const centerX = scaleX(this.farmData.centerCoordinates.lng);
+        const centerY = scaleY(this.farmData.centerCoordinates.lat);
 
-ctx.fillStyle = '#ffd700';
-ctx.beginPath();
-ctx.arc(centerX, centerY, 8, 0, 2 * Math.PI);
-ctx.fill();
-ctx.strokeStyle = '#cc0000';
-ctx.lineWidth = 2;
-ctx.stroke();
+        ctx.fillStyle = '#ffd700';
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 8, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.strokeStyle = '#cc0000';
+        ctx.lineWidth = 2;
+        ctx.stroke();
 
-// Add title and info
-ctx.fillStyle = '#333';
-ctx.font = 'bold 18px Inter, sans-serif';
-ctx.textAlign = 'center';
-ctx.fillText(this.farmData.name, width / 2, 30);
-
-ctx.font = '14px Inter, sans-serif';
-ctx.textAlign = 'left';
-ctx.fillText(`Area: ${parseFloat(this.farmData.area).toFixed(4)} ha`, padding, padding - 30);
-ctx.textAlign = 'right';
-ctx.fillText(`Sections: ${sections.length}`, width - padding, padding - 30);
-
-// Add legend if there are sections
-if (sections.length > 0) {
-    const legendX = width - padding - 150;
-    let legendY = padding + 20;
-
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-    ctx.strokeStyle = '#ccc';
-    ctx.lineWidth = 1;
-    ctx.fillRect(legendX, legendY, 140, sections.length * 25 + 20);
-    ctx.strokeRect(legendX, legendY, 140, sections.length * 25 + 20);
-
-    ctx.fillStyle = '#333';
-    ctx.font = 'bold 12px Inter, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('Sections', legendX + 10, legendY + 15);
-
-    legendY += 25;
-    ctx.font = '11px Inter, sans-serif';
-    sections.forEach((section, i) => {
-        ctx.fillStyle = section.color;
-        ctx.fillRect(legendX + 10, legendY + i * 20, 15, 15);
-        ctx.strokeStyle = '#666';
-        ctx.strokeRect(legendX + 10, legendY + i * 20, 15, 15);
+        // Add title and info
         ctx.fillStyle = '#333';
-        ctx.fillText(section.name.substring(0, 12), legendX + 30, legendY + i * 20 + 11);
-    });
-}
+        ctx.font = 'bold 18px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(this.farmData.name, width / 2, 30);
+
+        ctx.font = '14px Inter, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(`Area: ${parseFloat(this.farmData.area).toFixed(4)} ha`, padding, padding - 30);
+        ctx.textAlign = 'right';
+        ctx.fillText(`Sections: ${sections.length}`, width - padding, padding - 30);
+
+        // Add legend if there are sections
+        if (sections.length > 0) {
+            const legendX = width - padding - 150;
+            let legendY = padding + 20;
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.strokeStyle = '#ccc';
+            ctx.lineWidth = 1;
+            ctx.fillRect(legendX, legendY, 140, sections.length * 25 + 20);
+            ctx.strokeRect(legendX, legendY, 140, sections.length * 25 + 20);
+
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 12px Inter, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('Sections', legendX + 10, legendY + 15);
+
+            legendY += 25;
+            ctx.font = '11px Inter, sans-serif';
+            sections.forEach((section, i) => {
+                ctx.fillStyle = section.color;
+                ctx.fillRect(legendX + 10, legendY + i * 20, 15, 15);
+                ctx.strokeStyle = '#666';
+                ctx.strokeRect(legendX + 10, legendY + i * 20, 15, 15);
+                ctx.fillStyle = '#333';
+                ctx.fillText(section.name.substring(0, 12), legendX + 30, legendY + i * 20 + 11);
+            });
+        }
     },
 });
 
