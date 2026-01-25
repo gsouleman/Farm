@@ -162,12 +162,27 @@ Object.assign(app, {
         // We can remove it or keep it as backup if mouseup logic fails (but mouseup covers it)
         // Let's remove conflicting 'click' to be safe.
 
-        // Add double-click to finish drawing
+        // Add double-click to finish drawing OR confirm selection/edit
         canvas.addEventListener('dblclick', (e) => {
-            if (!this.drawingMode || this.currentDrawing.length < 3) return;
+            if (this.drawingMode && this.currentDrawing.length >= 3) {
+                e.preventDefault();
+                this.finishDrawing();
+                return;
+            }
 
-            e.preventDefault();
-            this.finishDrawing();
+            // If not drawing, double click might be used for selecting or just ensuring interaction
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+
+            const sectionId = this.getSectionAtPoint(x, y);
+            if (sectionId) {
+                this.selectedSectionId = sectionId;
+                this.renderGraphicalMap();
+                e.preventDefault();
+            }
         });
 
         // Right-Click: Context Menu OR Cancel Drawing

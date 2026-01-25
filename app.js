@@ -3666,6 +3666,37 @@ Object.assign(app, {
 
                 // Draw Section Label (Centroid)
                 const center = this.getPolygonCenter(pixels);
+
+                // Show Corner Coordinates if Selected
+                if (this.selectedSectionId === section.id) {
+                    const corners = section.boundaries;
+                    ctx.font = 'bold 9px Inter, sans-serif';
+                    corners.forEach((corner, i) => {
+                        const cornerX = scaleX(corner.lng);
+                        const cornerY = scaleY(corner.lat);
+                        const cornerText = `${corner.lat.toFixed(5)}, ${corner.lng.toFixed(5)}`;
+
+                        // Background box for visibility
+                        const textWidth = ctx.measureText(cornerText).width;
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                        ctx.strokeStyle = '#333';
+                        ctx.lineWidth = 0.5;
+                        ctx.fillRect(cornerX - textWidth / 2 - 2, cornerY - 20, textWidth + 4, 14);
+                        ctx.strokeRect(cornerX - textWidth / 2 - 2, cornerY - 20, textWidth + 4, 14);
+
+                        // Text
+                        ctx.fillStyle = '#cc0000'; // Distinct color for coords
+                        ctx.textAlign = 'center';
+                        ctx.fillText(cornerText, cornerX, cornerY - 10);
+
+                        // Marker dot
+                        ctx.beginPath();
+                        ctx.arc(cornerX, cornerY, 3, 0, 2 * Math.PI);
+                        ctx.fillStyle = '#cc0000';
+                        ctx.fill();
+                    });
+                }
+
                 ctx.fillStyle = '#333';
                 ctx.font = 'bold 12px Inter, sans-serif';
                 ctx.fillText(section.name || section.cropType, center.x, center.y);
