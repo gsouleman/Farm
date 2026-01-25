@@ -3731,6 +3731,118 @@ Object.assign(app, {
         ctx.textAlign = 'right';
         ctx.fillText(`Sections: ${sections.length}`, width - padding, padding - 30);
 
+        // ==========================================
+        // UNALLOCATED SPACE VISUALIZATION (AutoCAD-style)
+        // ==========================================
+        if (typeof turf !== 'undefined' && this.farmData.boundaries && this.farmData.boundaries.length >= 3) {
+            try {
+                // 1. Create Farm Polygon
+                const farmCoords = this.farmData.boundaries.map(p => [p.lng, p.lat]);
+                farmCoords.push(farmCoords[0]); // Close ring
+                const farmPoly = turf.polygon([farmCoords]);
+
+                // 2. Union all Section Polygons
+                let allocatedPoly = null;
+                const validSections = sections.filter(s => s.boundaries && s.boundaries.length >= 3);
+
+                if (validSections.length > 0) {
+                    const sectionPolys = validSections.map(s => {
+                        const coords = s.boundaries.map(p => [p.lng, p.lat]);
+                        coords.push(coords[0]); // Close ring
+                        return turf.polygon([coords]);
+                    });
+
+                    // Union sequentially
+                    // Note: turf.union takes 2 features. We must reduce.
+                    allocatedPoly = sectionPolys[0];
+                    for (let i = 1; i < sectionPolys.length; i++) {
+                        // try-catch specific union in case of topology errors
+                        try {
+                            allocatedPoly = turf.union(allocatedPoly, sectionPolys[i]);
+                        } catch (e) { console.warn('Union error', e); }
+                    }
+                }
+
+                // 3. Compute Difference (Farm - Allocated)
+                let unallocatedFeatures = null;
+                if (allocatedPoly) {
+                    try {
+                        unallocatedFeatures = turf.difference(farmPoly, allocatedPoly);
+                    } catch (e) {
+                        // Fallback if difference fails (complex topology)
+                        console.warn('Difference error', e);
+                        unallocatedFeatures = farmPoly;
+                    }
+                } else {
+                    unallocatedFeatures = farmPoly; // Nothing allocated
+                }
+
+                // 4. Render Unallocated Spaces
+                if (unallocatedFeatures) {
+                    // Normalize to array of Features (Polygon)
+                    let features = [];
+                    if (unallocatedFeatures.geometry.type === 'MultiPolygon') {
+                        features = unallocatedFeatures.geometry.coordinates.map(coords => turf.polygon(coords));
+                    } else if (unallocatedFeatures.geometry.type === 'Polygon') {
+                        features = [unallocatedFeatures];
+                    }
+
+                    features.forEach(feature => {
+                        // Calculate Area
+                        const areaSqMeters = turf.area(feature);
+                        const areaHa = areaSqMeters / 10000;
+
+                        // Only show significant spaces (> 0.05 ha) to avoid noise
+                        if (areaHa > 0.05) {
+                            // Draw Outline (Dashed)
+                            ctx.beginPath();
+                            ctx.setLineDash([5, 5]);
+                            ctx.strokeStyle = '#b0bec5'; // light blue-grey
+                            ctx.lineWidth = 1.5;
+
+                            // Iterate rings (Outer + Holes)
+                            const rings = feature.geometry.coordinates;
+                            rings.forEach(ring => {
+                                ring.forEach((coord, i) => {
+                                    const x = scaleX(coord[0]);
+                                    const y = scaleY(coord[1]);
+                                    if (i === 0) ctx.moveTo(x, y);
+                                    else ctx.lineTo(x, y);
+                                });
+                                ctx.closePath();
+                            });
+                            ctx.stroke();
+                            ctx.setLineDash([]); // Reset dash
+
+                            // Draw Label (Area) at Centroid
+                            const center = turf.centerOfMass(feature);
+                            const centerCoords = center.geometry.coordinates;
+                            const centerX = scaleX(centerCoords[0]);
+                            const centerY = scaleY(centerCoords[1]);
+
+                            // Label Box
+                            const labelText = `Free: ${areaHa.toFixed(2)} ha`;
+                            ctx.font = 'italic 11px Inter, sans-serif';
+                            const metrics = ctx.measureText(labelText);
+
+                            // Semi-transparent background
+                            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                            ctx.fillRect(centerX - metrics.width / 2 - 4, centerY - 10, metrics.width + 8, 20);
+                            ctx.strokeStyle = '#b0bec5';
+                            ctx.lineWidth = 0.5;
+                            ctx.strokeRect(centerX - metrics.width / 2 - 4, centerY - 10, metrics.width + 8, 20);
+
+                            ctx.fillStyle = '#546e7a'; // Text color
+                            ctx.textAlign = 'center';
+                            ctx.fillText(labelText, centerX, centerY + 4);
+                        }
+                    });
+                }
+            } catch (err) {
+                console.warn('Error calculating unallocated space:', err);
+            }
+        }
+
         // Add legend if there are sections
         if (sections.length > 0) {
             const legendX = width - padding - 150;
