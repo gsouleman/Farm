@@ -2599,7 +2599,7 @@ Object.assign(app, {
     },
 
     // Initialize canvas drawing for crop allocation
-    initializeCanvasDrawing() {
+    legacy_initializeCanvasDrawing() {
         const canvas = document.getElementById('farmMapCanvas');
         if (!canvas) return;
 

@@ -402,11 +402,8 @@ Object.assign(app, {
     },
 
     pixelsToLatLng(pixels) {
-        return this.coordsToLatLng(pixels.x, pixels.y); // Wait, this expects array?
-        // Fixing logic:
         const canvas = document.getElementById('farmMapCanvas');
-        if (!canvas) return [];
-        // Just reuse logic from start of file but map it
+        if (!canvas || !pixels) return [];
         return pixels.map(p => this.coordsToLatLng(p.x, p.y));
     },
 
