@@ -3989,7 +3989,7 @@ Object.assign(app, {
 
         if (totalAreaEl) totalAreaEl.textContent = farmTotalArea.toFixed(4) + ' ha';
         if (allocatedAreaEl) allocatedAreaEl.textContent = _allocated.toFixed(4) + ' ha';
-        if (unallocatedAreaEl) unallocatedAreaEl.textContent = (availableArea * 10000).toFixed(2) + ' m²'; // Converted to m²
+        if (unallocatedAreaEl) unallocatedAreaEl.textContent = availableArea.toFixed(4) + ' ha'; // Reverted to ha
         if (countEl) countEl.textContent = sections.length;
     },
 });
