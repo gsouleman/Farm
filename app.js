@@ -3732,7 +3732,7 @@ Object.assign(app, {
         ctx.fillText(`Sections: ${sections.length}`, width - padding, padding - 30);
 
         // ==========================================
-        // UNALLOCATED SPACE VISUALIZATION (AutoCAD-style)
+        // UNALLOCATED SPACE VISUALIZATION (GRID-BASED)
         // ==========================================
         if (typeof turf !== 'undefined' && this.farmData.boundaries && this.farmData.boundaries.length >= 3) {
             try {
@@ -3752,94 +3752,104 @@ Object.assign(app, {
                         return turf.polygon([coords]);
                     });
 
-                    // Union sequentially
-                    // Note: turf.union takes 2 features. We must reduce.
                     allocatedPoly = sectionPolys[0];
                     for (let i = 1; i < sectionPolys.length; i++) {
-                        // try-catch specific union in case of topology errors
                         try {
                             allocatedPoly = turf.union(allocatedPoly, sectionPolys[i]);
                         } catch (e) { console.warn('Union error', e); }
                     }
                 }
 
-                // 3. Compute Difference (Farm - Allocated)
+                // 3. Compute Difference (Entire Empty Space)
                 let unallocatedFeatures = null;
                 if (allocatedPoly) {
                     try {
                         unallocatedFeatures = turf.difference(farmPoly, allocatedPoly);
                     } catch (e) {
-                        // Fallback if difference fails (complex topology)
-                        console.warn('Difference error', e);
                         unallocatedFeatures = farmPoly;
                     }
                 } else {
-                    unallocatedFeatures = farmPoly; // Nothing allocated
+                    unallocatedFeatures = farmPoly;
                 }
 
-                // 4. Render Unallocated Spaces
+                // 4. Subdivide by Grid (10x10)
                 if (unallocatedFeatures) {
-                    // Normalize to array of Features (Polygon)
-                    let features = [];
-                    if (unallocatedFeatures.geometry.type === 'MultiPolygon') {
-                        features = unallocatedFeatures.geometry.coordinates.map(coords => turf.polygon(coords));
-                    } else if (unallocatedFeatures.geometry.type === 'Polygon') {
-                        features = [unallocatedFeatures];
-                    }
+                    const latStep = (maxLat - minLat) / 10;
+                    const lngStep = (maxLng - minLng) / 10;
 
-                    features.forEach(feature => {
-                        // Calculate Area
-                        const areaSqMeters = turf.area(feature);
-                        const areaHa = areaSqMeters / 10000;
+                    for (let row = 0; row < 10; row++) {
+                        for (let col = 0; col < 10; col++) {
+                            // Define Grid Cell Polygon
+                            const cellMinLng = minLng + (col * lngStep);
+                            const cellMaxLng = cellMinLng + lngStep;
+                            const cellMinLat = minLat + (row * latStep);
+                            const cellMaxLat = cellMinLat + latStep;
 
-                        // Only show significant spaces (> 0.05 ha) to avoid noise
-                        if (areaHa > 0.05) {
-                            // Draw Outline (Dashed)
-                            ctx.beginPath();
-                            ctx.setLineDash([5, 5]);
-                            ctx.strokeStyle = '#b0bec5'; // light blue-grey
-                            ctx.lineWidth = 1.5;
+                            const cellPoly = turf.polygon([[
+                                [cellMinLng, cellMinLat],
+                                [cellMaxLng, cellMinLat],
+                                [cellMaxLng, cellMaxLat],
+                                [cellMinLng, cellMaxLat],
+                                [cellMinLng, cellMinLat]
+                            ]]);
 
-                            // Iterate rings (Outer + Holes)
-                            const rings = feature.geometry.coordinates;
-                            rings.forEach(ring => {
-                                ring.forEach((coord, i) => {
-                                    const x = scaleX(coord[0]);
-                                    const y = scaleY(coord[1]);
-                                    if (i === 0) ctx.moveTo(x, y);
-                                    else ctx.lineTo(x, y);
-                                });
-                                ctx.closePath();
-                            });
-                            ctx.stroke();
-                            ctx.setLineDash([]); // Reset dash
+                            // Intersect Grid Cell with Unallocated Space
+                            try {
+                                const fragment = turf.intersect(cellPoly, unallocatedFeatures);
 
-                            // Draw Label (Area) at Centroid
-                            const center = turf.centerOfMass(feature);
-                            const centerCoords = center.geometry.coordinates;
-                            const centerX = scaleX(centerCoords[0]);
-                            const centerY = scaleY(centerCoords[1]);
+                                if (fragment) {
+                                    // Handle both Polygon and MultiPolygon fragments
+                                    let frags = [];
+                                    if (fragment.geometry.type === 'MultiPolygon') {
+                                        frags = fragment.geometry.coordinates.map(c => turf.polygon(c));
+                                    } else {
+                                        frags = [fragment];
+                                    }
 
-                            // Label Box
-                            const labelText = `Free: ${areaHa.toFixed(2)} ha`;
-                            ctx.font = 'italic 11px Inter, sans-serif';
-                            const metrics = ctx.measureText(labelText);
+                                    frags.forEach(frag => {
+                                        const areaSqMeters = turf.area(frag);
+                                        const areaHa = areaSqMeters / 10000;
 
-                            // Semi-transparent background
-                            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-                            ctx.fillRect(centerX - metrics.width / 2 - 4, centerY - 10, metrics.width + 8, 20);
-                            ctx.strokeStyle = '#b0bec5';
-                            ctx.lineWidth = 0.5;
-                            ctx.strokeRect(centerX - metrics.width / 2 - 4, centerY - 10, metrics.width + 8, 20);
+                                        // Only show significant fragments (> 0.005 ha)
+                                        if (areaHa > 0.005) {
+                                            // Draw Outline
+                                            ctx.beginPath();
+                                            ctx.strokeStyle = '#90a4ae'; // Grid cell border color
+                                            ctx.lineWidth = 1;
 
-                            ctx.fillStyle = '#546e7a'; // Text color
-                            ctx.textAlign = 'center';
-                            ctx.fillText(labelText, centerX, centerY + 4);
+                                            const rings = frag.geometry.coordinates;
+                                            rings.forEach(ring => {
+                                                ring.forEach((coord, i) => {
+                                                    const x = scaleX(coord[0]);
+                                                    const y = scaleY(coord[1]);
+                                                    if (i === 0) ctx.moveTo(x, y);
+                                                    else ctx.lineTo(x, y);
+                                                });
+                                                ctx.closePath();
+                                            });
+                                            ctx.stroke();
+
+                                            // Draw Label
+                                            const center = turf.centerOfMass(frag);
+                                            const cx = scaleX(center.geometry.coordinates[0]);
+                                            const cy = scaleY(center.geometry.coordinates[1]);
+
+                                            // Only label if space permits (heuristic)
+                                            ctx.fillStyle = '#455a64';
+                                            ctx.font = '10px Inter, sans-serif';
+                                            ctx.textAlign = 'center';
+                                            ctx.fillText(`${areaHa.toFixed(3)} ha`, cx, cy);
+                                        }
+                                    });
+                                }
+                            } catch (err) {
+                                // Intersection might fail if no overlap
+                            }
                         }
-                    });
+                    }
                 }
             } catch (err) {
-                console.warn('Error calculating unallocated space:', err);
+                console.warn('Error calculating grid unallocated space:', err);
             }
         }
 
