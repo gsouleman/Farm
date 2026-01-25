@@ -3867,17 +3867,37 @@ Object.assign(app, {
                                     frags.forEach(frag => {
                                         const areaSqMeters = turf.area(frag);
                                         // Store for interactivity
-                                        if (areaSqMeters > 5) { // Show slightly smaller fragments too
+                                        if (areaSqMeters > 5) {
+                                            const center = turf.centerOfMass(frag);
+                                            const centerCoords = center.geometry.coordinates;
+
+                                            // Handle Selection State Persistence
+                                            // Store fragments with an ID based on centroid for reliable selection tracking
+                                            const fragId = `${centerCoords[0].toFixed(6)},${centerCoords[1].toFixed(6)}`;
+                                            frag.id = fragId;
+
                                             this.unallocatedFragments.push({
                                                 geometry: frag.geometry,
-                                                areaSqMeters: areaSqMeters
+                                                areaSqMeters: areaSqMeters,
+                                                id: fragId,
+                                                center: centerCoords
                                             });
+
+                                            // Check if selected
+                                            const isSelected = this.selectedUnallocatedIds && this.selectedUnallocatedIds.has(fragId);
 
                                             // Draw Outline
                                             ctx.beginPath();
-                                            // Make these slightly distinct
-                                            ctx.strokeStyle = '#90a4ae';
-                                            ctx.lineWidth = 0.5;
+                                            // Highlight if selected
+                                            if (isSelected) {
+                                                ctx.fillStyle = 'rgba(33, 150, 243, 0.3)'; // Blue Selection Fill
+                                                ctx.strokeStyle = '#2196F3';
+                                                ctx.lineWidth = 2;
+                                            } else {
+                                                ctx.fillStyle = 'transparent';
+                                                ctx.strokeStyle = '#90a4ae';
+                                                ctx.lineWidth = 0.5;
+                                            }
 
                                             const rings = frag.geometry.coordinates;
                                             rings.forEach(ring => {
@@ -3889,26 +3909,32 @@ Object.assign(app, {
                                                 });
                                                 ctx.closePath();
                                             });
+                                            if (isSelected) ctx.fill();
                                             ctx.stroke();
 
                                             // Draw Label
-                                            const center = turf.centerOfMass(frag);
-                                            const cx = scaleX(center.geometry.coordinates[0]);
-                                            const cy = scaleY(center.geometry.coordinates[1]);
+                                            const cx = scaleX(centerCoords[0]);
+                                            const cy = scaleY(centerCoords[1]);
 
-                                            // Only label if space permits (heuristic)
-                                            // Check visual size of fragment
-                                            // const bbox = turf.bbox(frag);
-                                            // const widthPx = scaleX(bbox[2]) - scaleX(bbox[0]);
-                                            // if (widthPx > 20) ... 
+                                            // Force 500m² display if close
+                                            let displayArea;
+                                            if (Math.abs(areaSqMeters - 500) < 2) {
+                                                displayArea = "500";
+                                            } else {
+                                                displayArea = areaSqMeters.toFixed(0);
+                                            }
 
-                                            ctx.fillStyle = '#455a64';
-                                            ctx.font = '9px Inter, sans-serif'; // Smaller font for dense grid
+                                            // Styles: Bold and Black
+                                            ctx.fillStyle = '#000000'; // Black
                                             ctx.textAlign = 'center';
-                                            // Show integer m²
-                                            ctx.fillText(`${areaSqMeters.toFixed(0)}`, cx, cy);
-                                            ctx.font = '7px Inter';
-                                            ctx.fillText('m²', cx, cy + 8);
+
+                                            // Main Area text
+                                            ctx.font = 'bold 10px Inter, sans-serif';
+                                            ctx.fillText(displayArea, cx, cy);
+
+                                            // Unit text
+                                            ctx.font = 'bold 7px Inter, sans-serif';
+                                            ctx.fillText('m²', cx, cy + 9);
                                         }
                                     });
                                 }

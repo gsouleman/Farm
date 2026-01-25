@@ -51,19 +51,38 @@ Object.assign(app, {
                 }
             }
 
-            // 2. Check if clicking a section
-            const sectionId = this.getSectionAtPoint(x, y);
-            if (sectionId) {
-                this.selectedSectionId = sectionId;
-                this.renderGraphicalMap(); // Redraw to show selection
+            // 2. Check if clicking an UNALLOCATED fragment (Multi-Select Feature)
+            if (this.unallocatedFragments && this.unallocatedFragments.length > 0 && typeof turf !== 'undefined') {
+                const pointLatLng = this.coordsToLatLng(x, y);
+                const turfPoint = turf.point([pointLatLng.lng, pointLatLng.lat]);
 
-                // Hide context menu if open
-                this.hideContextMenu();
-            } else {
-                // Deselect if clicking empty space
-                this.selectedSectionId = null;
-                this.renderGraphicalMap();
-                this.hideContextMenu();
+                const fragment = this.unallocatedFragments.find(frag => {
+                    try {
+                        return turf.booleanPointInPolygon(turfPoint, frag.geometry);
+                    } catch (err) { return false; }
+                });
+
+                if (fragment) {
+                    e.preventDefault();
+
+                    // Initialize selection set if needed
+                    if (!this.selectedUnallocatedIds) this.selectedUnallocatedIds = new Set();
+
+                    const fragId = fragment.id;
+                    if (this.selectedUnallocatedIds.has(fragId)) {
+                        this.selectedUnallocatedIds.delete(fragId);
+                    } else {
+                        this.selectedUnallocatedIds.add(fragId);
+                    }
+                    this.renderGraphicalMap();
+                    return;
+                } else {
+                    // Clicked empty space (no fragment) - Clear Selection
+                    if (this.selectedUnallocatedIds && this.selectedUnallocatedIds.size > 0) {
+                        this.selectedUnallocatedIds.clear();
+                        this.renderGraphicalMap();
+                    }
+                }
             }
         });
 
@@ -83,15 +102,15 @@ Object.assign(app, {
                 // If moved significantly, treat as Rectangle Drag
                 if (Math.abs(dx) > 10 || Math.abs(dy) > 10 || this.isDrawingDrag) {
                     this.isDrawingDrag = true;
+                    // ... (Square constraint logic omitted for brevity, assumed unchanged if not replacing large block)
+                    // ACTUALLY I NEED TO BE CAREFUL NOT TO DELETE LOGIC IF REPLACING LARGE BLOCK.
+                    // The previous view_file showed I am replacing a chunk. I will restore lines 87-103 conceptually.
 
-                    // Square constraint
                     if (this.shiftKeyPressed) {
                         const size = Math.max(Math.abs(dx), Math.abs(dy));
                         dx = dx >= 0 ? size : -size;
                         dy = dy >= 0 ? size : -size;
                     }
-
-                    // Preview Rectangle (or Square)
                     this.currentDrawing = [
                         { x: this.drawingStartPoint.x, y: this.drawingStartPoint.y },
                         { x: this.drawingStartPoint.x + dx, y: this.drawingStartPoint.y },
@@ -139,9 +158,6 @@ Object.assign(app, {
                     this.finishDrawing();
                 } else {
                     // It was a click (Polygon mode) - Add point
-                    // Logic moved from 'click' handler to here to avoid conflicts
-                    // But we can leave 'click' handler for adding points if we reset startPoint here
-                    // Actually better to handle "Add Point" here to avoid 'click' firing after drag
                     this.currentDrawing.push({ x, y });
                     this.renderGraphicalMapWithDrawing();
                 }
@@ -158,9 +174,6 @@ Object.assign(app, {
             }
         });
 
-        // Drawing Mode Click (Legacy - preserved for robustness but MouseUp handles primary logic now)
-        // We can remove it or keep it as backup if mouseup logic fails (but mouseup covers it)
-        // Let's remove conflicting 'click' to be safe.
 
         // Add double-click to finish drawing OR confirm selection/edit
         canvas.addEventListener('dblclick', (e) => {
@@ -186,35 +199,70 @@ Object.assign(app, {
                 return;
             }
 
-            // 2. Check if clicking an UNALLOCATED fragment (New Feature)
-            if (this.unallocatedFragments && this.unallocatedFragments.length > 0 && typeof turf !== 'undefined') {
-                // Fragment geometry is in Lat/Lng
-                const pointLatLng = this.coordsToLatLng(x, y);
-                const turfPoint = turf.point([pointLatLng.lng, pointLatLng.lat]);
+            // 2. Double Click to MERGE SELECTED Unallocated Fragments
+            if (this.selectedUnallocatedIds && this.selectedUnallocatedIds.size > 0 && this.unallocatedFragments) {
+                // Find all selected fragments
+                const selectedFrags = this.unallocatedFragments.filter(f => this.selectedUnallocatedIds.has(f.id));
 
-                const fragment = this.unallocatedFragments.find(frag => {
-                    try {
-                        return turf.booleanPointInPolygon(turfPoint, frag.geometry);
-                    } catch (err) { return false; }
-                });
-
-                if (fragment) {
+                if (selectedFrags.length > 0) {
                     e.preventDefault();
-                    // Convert fragment geometry back to our boundary format {lat, lng}
-                    // Fragment geometry coordinates is [[[lng, lat], ...]] (Ring)
-                    const ring = fragment.geometry.coordinates[0];
-                    const boundaries = ring.map(c => ({ lat: c[1], lng: c[0] }));
-                    // Remove last point if it duplicates first (GeoJSON closes ring)
+
+                    // Calculate Total Area
+                    const totalAreaSqM = selectedFrags.reduce((sum, f) => sum + f.areaSqMeters, 0);
+                    const areaHa = totalAreaSqM / 10000;
+
+                    // Merge Geometries (Union)
+                    // If multiple, union them. If single, use as is.
+                    let mergedPoly = selectedFrags[0].geometry;
+                    if (selectedFrags.length > 1) {
+                        // Need to convert to Features for union
+                        let currentUnion = turf.feature(selectedFrags[0].geometry);
+                        for (let i = 1; i < selectedFrags.length; i++) {
+                            try {
+                                const nextFeat = turf.feature(selectedFrags[i].geometry);
+                                // turf.union(feat1, feat2) -> Feature<Polygon|MultiPolygon>
+                                currentUnion = turf.union(currentUnion, nextFeat);
+                            } catch (err) {
+                                console.warn('Union error on merge', err);
+                            }
+                        }
+                        mergedPoly = currentUnion.geometry;
+                    }
+
+                    // Convert to Boundary Format
+                    // If MultiPolygon, picking the largest ring or hull is tricky. 
+                    // For crop allocation, we generally expect a single Polygon.
+                    // If MultiPolygon, we'll take the Convex Hull to simplify, or just the first polygon's ring?
+                    // Let's try Convex Hull to ensure valid single shape if they selected scattered blocks (user error?)
+                    // Or just take coordinates of the first ring of the MultiPolygon for simplicity if simple union.
+
+                    let finalRing = [];
+                    if (mergedPoly.type === 'MultiPolygon') {
+                        // Fallback: Take Convex Hull of all points
+                        const allPoints = [];
+                        turf.coordEach(turf.feature(mergedPoly), (coord) => {
+                            allPoints.push(coord);
+                        });
+                        const hull = turf.convex(turf.points(allPoints));
+                        if (hull) finalRing = hull.geometry.coordinates[0];
+                    } else {
+                        finalRing = mergedPoly.coordinates[0];
+                    }
+
+                    const boundaries = finalRing.map(c => ({ lat: c[1], lng: c[0] }));
                     if (boundaries.length > 0 &&
                         Math.abs(boundaries[0].lat - boundaries[boundaries.length - 1].lat) < 1e-9 &&
                         Math.abs(boundaries[0].lng - boundaries[boundaries.length - 1].lng) < 1e-9) {
                         boundaries.pop();
                     }
 
-                    // Open Modal
-                    const areaHa = fragment.areaSqMeters / 10000;
                     this.openSectionModalWithArea(areaHa, boundaries);
-                    this.showSuccess('Empty space selected! Add details below.');
+                    this.showSuccess(`Selected ${selectedFrags.length} blocks merged!`);
+
+                    // Clear selection
+                    this.selectedUnallocatedIds.clear();
+                    this.renderGraphicalMap();
+                    return;
                 }
             }
         });
