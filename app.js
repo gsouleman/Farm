@@ -341,8 +341,13 @@ Object.assign(app, {
 
         try {
             await api.auth.changePassword(currentPassword, newPassword);
-            this.showSuccess('Password changed successfully! Please login again.');
-            api.auth.logout();
+            this.showSuccess('Password updated successfully!');
+
+            // Close modal after delay to allow user to read message
+            setTimeout(() => {
+                this.closeModal('changePasswordModal');
+                api.auth.logout();
+            }, 1500);
         } catch (error) {
             this.showError(error.message || 'Failed to change password');
         }

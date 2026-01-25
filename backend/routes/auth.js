@@ -74,6 +74,7 @@ router.post('/login', [
         }
 
         const { email, password } = req.body;
+        console.log('Login Attempt Body:', JSON.stringify(req.body)); // Debug log
 
         // Find user
         const result = await db.query(
@@ -82,6 +83,7 @@ router.post('/login', [
         );
 
         if (result.rows.length === 0) {
+            console.log('Login failed: User not found for email:', email);
             return res.status(401).json({ error: { message: 'Invalid credentials' } });
         }
 
@@ -90,6 +92,7 @@ router.post('/login', [
         // Verify password
         const isValidPassword = await bcrypt.compare(password, user.password_hash);
         if (!isValidPassword) {
+            console.log('Login failed: Invalid password for user:', email);
             return res.status(401).json({ error: { message: 'Invalid credentials' } });
         }
 
