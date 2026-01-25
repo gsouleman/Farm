@@ -2599,6 +2599,28 @@ Object.assign(app, {
     },
 
     // Initialize canvas drawing for crop allocation
+    // Math Helpers for Graphical View
+    coordsToMeters(lat1, lon1, lat2, lon2) {
+        const R = 6371e3; // Earth radius in meters
+        const φ1 = lat1 * Math.PI / 180;
+        const φ2 = lat2 * Math.PI / 180;
+        const Δφ = (lat2 - lat1) * Math.PI / 180;
+        const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+        const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return R * c;
+    },
+
+    getPolygonCenter(pixels) {
+        let x = 0, y = 0;
+        pixels.forEach(p => { x += p.x; y += p.y; });
+        return { x: x / pixels.length, y: y / pixels.length };
+    },
+
     legacy_initializeCanvasDrawing() {
         const canvas = document.getElementById('farmMapCanvas');
         if (!canvas) return;
@@ -3426,24 +3448,26 @@ Object.assign(app, {
             viewType = 'graphical';
         }
 
-        if (viewType === 'satellite') {
-            mapDiv.style.display = 'block';
-            canvas.style.display = 'none';
-            satelliteBtn.classList.remove('btn-outline');
-            satelliteBtn.classList.add('btn-secondary');
-            graphicalBtn.classList.remove('btn-secondary');
-            graphicalBtn.classList.add('btn-outline');
-            this.currentMapView = 'satellite';
-        } else {
-            mapDiv.style.display = 'none';
-            canvas.style.display = 'block';
-            graphicalBtn.classList.remove('btn-outline');
-            graphicalBtn.classList.add('btn-secondary');
-            satelliteBtn.classList.remove('btn-secondary');
-            satelliteBtn.classList.add('btn-outline');
-            this.currentMapView = 'graphical';
+        if (viewType === 'graphical') {
+            document.getElementById('farmMap').style.display = 'none';
+            document.getElementById('farmMapCanvas').style.display = 'block';
+            document.getElementById('graphicalStatsHeader').style.display = 'flex'; // Show stats
+            document.getElementById('satelliteViewBtn').classList.replace('btn-secondary', 'btn-outline');
+            document.getElementById('graphicalViewBtn').classList.replace('btn-outline', 'btn-secondary');
+
+            // Render map
             this.renderGraphicalMap();
+        } else {
+            document.getElementById('farmMap').style.display = 'block';
+            document.getElementById('farmMapCanvas').style.display = 'none';
+            document.getElementById('graphicalStatsHeader').style.display = 'none'; // Hide stats
+            document.getElementById('satelliteViewBtn').classList.replace('btn-outline', 'btn-secondary');
+            document.getElementById('graphicalViewBtn').classList.replace('btn-secondary', 'btn-outline');
+
+            // Re-init Google Map if needed
+            if (this.map) google.maps.event.trigger(this.map, 'resize');
         }
+        this.currentMapView = viewType; // Set current view based on the final viewType
     },
 
     // Show a generic alert modal
@@ -3570,6 +3594,8 @@ Object.assign(app, {
         // Draw sections if they exist
         const sections = this.getCurrentFarm().sections || [];
 
+        let totalAllocatedArea = 0;
+
         ctx.save(); // Save state before clipping
 
         // Define clipping region (the farm boundary)
@@ -3585,163 +3611,158 @@ Object.assign(app, {
 
         sections.forEach(section => {
             if (section.boundaries && section.boundaries.length > 0) {
+                // Calculate Area for Stats
+                // Note: Simplified calculation if area property exists, else calculate
+                // We should assume section.area is reliable or recalc it.
+                // Let's recalc on the fly for pure graphical accuracy if needed, 
+                // but usually section.area is stored.
+                // If not stored, we'll need a helper. Let's use stored if valid.
+                if (section.area) totalAllocatedArea += parseFloat(section.area);
+
                 ctx.beginPath();
                 ctx.fillStyle = section.color + '66'; // Add transparency
                 ctx.strokeStyle = section.color;
                 ctx.lineWidth = 2;
 
-                section.boundaries.forEach((coord, i) => {
-                    const x = scaleX(coord.lng);
-                    const y = scaleY(coord.lat);
-                    if (i === 0) {
-                        ctx.moveTo(x, y);
-                    } else {
-                        ctx.lineTo(x, y);
-                    }
-                });
+                const pixels = section.boundaries.map(coord => ({
+                    x: scaleX(coord.lng),
+                    y: scaleY(coord.lat)
+                }));
 
+                // Draw Polygon
+                pixels.forEach((p, i) => {
+                    if (i === 0) ctx.moveTo(p.x, p.y);
+                    else ctx.lineTo(p.x, p.y);
+                });
                 ctx.closePath();
                 ctx.fill();
                 ctx.stroke();
 
-                // Draw edge dimensions (Length/Width)
-                if (google.maps.geometry && section.boundaries.length > 2) {
-                    ctx.font = 'bold 10px Inter, sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
+                // Calculate midpoint for label position
+                const midLng = (coord.lng + nextCoord.lng) / 2;
+                const midLat = (coord.lat + nextCoord.lat) / 2;
 
-                    section.boundaries.forEach((coord, i) => {
-                        const nextCoord = section.boundaries[(i + 1) % section.boundaries.length];
+                const labelX = scaleX(midLng);
+                const labelY = scaleY(midLat);
+                const labelText = `${distance.toFixed(1)}m`;
 
-                        // Calculate real-world distance
-                        const distance = google.maps.geometry.spherical.computeDistanceBetween(coord, nextCoord);
+                // Draw label background
+                const textMetrics = ctx.measureText(labelText);
+                const padding = 2;
+                const bgWidth = textMetrics.width + (padding * 2);
+                const bgHeight = 14;
 
-                        if (distance > 5) { // Only show label if > 5m
-                            // Calculate midpoint for label position
-                            const midLng = (coord.lng + nextCoord.lng) / 2;
-                            const midLat = (coord.lat + nextCoord.lat) / 2;
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.beginPath();
+                ctx.roundRect(labelX - bgWidth / 2, labelY - bgHeight / 2, bgWidth, bgHeight, 3);
+                ctx.fill();
 
-                            const labelX = scaleX(midLng);
-                            const labelY = scaleY(midLat);
-                            const labelText = `${distance.toFixed(1)}m`;
-
-                            // Draw label background
-                            const textMetrics = ctx.measureText(labelText);
-                            const padding = 2;
-                            const bgWidth = textMetrics.width + (padding * 2);
-                            const bgHeight = 14;
-
-                            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                            ctx.beginPath();
-                            ctx.roundRect(labelX - bgWidth / 2, labelY - bgHeight / 2, bgWidth, bgHeight, 3);
-                            ctx.fill();
-
-                            // Draw label text
-                            ctx.fillStyle = 'white';
-                            ctx.fillText(labelText, labelX, labelY);
-                        }
-                    });
-                }
+                // Draw label text
+                ctx.fillStyle = 'white';
+                ctx.fillText(labelText, labelX, labelY);
+            }
+        });
+    }
 
                 // Add coordinates label at center
-                if (section.boundaries.length > 2) {
-                    const centerLat = section.centerCoordinates?.lat || section.boundaries.reduce((sum, c) => sum + c.lat, 0) / section.boundaries.length;
-                    const centerLng = section.centerCoordinates?.lng || section.boundaries.reduce((sum, c) => sum + c.lng, 0) / section.boundaries.length;
-                    const centerX = scaleX(centerLng);
-                    const centerY = scaleY(centerLat);
+                if(section.boundaries.length > 2) {
+    const centerLat = section.centerCoordinates?.lat || section.boundaries.reduce((sum, c) => sum + c.lat, 0) / section.boundaries.length;
+    const centerLng = section.centerCoordinates?.lng || section.boundaries.reduce((sum, c) => sum + c.lng, 0) / section.boundaries.length;
+    const centerX = scaleX(centerLng);
+    const centerY = scaleY(centerLat);
 
-                    // Only show corner coordinates if this section is selected
-                    const showCorners = this.selectedSectionId === section.id;
+    // Only show corner coordinates if this section is selected
+    const showCorners = this.selectedSectionId === section.id;
 
-                    if (showCorners) {
-                        // Draw corner coordinates at each corner (only when clicked)
-                        const corners = section.boundaries.slice(0, 4);
-                        ctx.font = 'bold 9px Inter, sans-serif';
-                        corners.forEach((corner, i) => {
-                            const cornerX = scaleX(corner.lng);
-                            const cornerY = scaleY(corner.lat);
-                            const cornerText = `${corner.lat.toFixed(6)}, ${corner.lng.toFixed(6)}`;
+    if (showCorners) {
+        // Draw corner coordinates at each corner (only when clicked)
+        const corners = section.boundaries.slice(0, 4);
+        ctx.font = 'bold 9px Inter, sans-serif';
+        corners.forEach((corner, i) => {
+            const cornerX = scaleX(corner.lng);
+            const cornerY = scaleY(corner.lat);
+            const cornerText = `${corner.lat.toFixed(6)}, ${corner.lng.toFixed(6)}`;
 
-                            // Background box
-                            const textWidth = ctx.measureText(cornerText).width;
-                            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-                            ctx.fillRect(cornerX - textWidth / 2 - 2, cornerY - 18, textWidth + 4, 14);
+            // Background box
+            const textWidth = ctx.measureText(cornerText).width;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillRect(cornerX - textWidth / 2 - 2, cornerY - 18, textWidth + 4, 14);
 
-                            ctx.fillStyle = section.color;
-                            ctx.textAlign = 'center';
-                            ctx.fillText(cornerText, cornerX, cornerY - 8);
+            ctx.fillStyle = section.color;
+            ctx.textAlign = 'center';
+            ctx.fillText(cornerText, cornerX, cornerY - 8);
 
-                            // Marker
-                            ctx.beginPath();
-                            ctx.arc(cornerX, cornerY, 3, 0, 2 * Math.PI);
-                            ctx.fill();
-                        });
-                    }
+            // Marker
+            ctx.beginPath();
+            ctx.arc(cornerX, cornerY, 3, 0, 2 * Math.PI);
+            ctx.fill();
+        });
+    }
 
-                    // Always show center section name
-                    ctx.font = 'bold 11px Inter, sans-serif';
-                    ctx.fillStyle = '#333';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(section.name, centerX, centerY + 15);
-                }
+    // Always show center section name
+    ctx.font = 'bold 11px Inter, sans-serif';
+    ctx.fillStyle = '#333';
+    ctx.textAlign = 'center';
+    ctx.fillText(section.name, centerX, centerY + 15);
+}
             }
         });
 
-        ctx.restore(); // Restore state after drawing sections (removes clipping)
+ctx.restore(); // Restore state after drawing sections (removes clipping)
 
-        ctx.restore(); // Restore state after drawing sections (removes clipping)
+ctx.restore(); // Restore state after drawing sections (removes clipping)
 
-        // Draw farm center point
-        const centerX = scaleX(this.farmData.centerCoordinates.lng);
-        const centerY = scaleY(this.farmData.centerCoordinates.lat);
+// Draw farm center point
+const centerX = scaleX(this.farmData.centerCoordinates.lng);
+const centerY = scaleY(this.farmData.centerCoordinates.lat);
 
-        ctx.fillStyle = '#ffd700';
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, 8, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.strokeStyle = '#cc0000';
-        ctx.lineWidth = 2;
-        ctx.stroke();
+ctx.fillStyle = '#ffd700';
+ctx.beginPath();
+ctx.arc(centerX, centerY, 8, 0, 2 * Math.PI);
+ctx.fill();
+ctx.strokeStyle = '#cc0000';
+ctx.lineWidth = 2;
+ctx.stroke();
 
-        // Add title and info
+// Add title and info
+ctx.fillStyle = '#333';
+ctx.font = 'bold 18px Inter, sans-serif';
+ctx.textAlign = 'center';
+ctx.fillText(this.farmData.name, width / 2, 30);
+
+ctx.font = '14px Inter, sans-serif';
+ctx.textAlign = 'left';
+ctx.fillText(`Area: ${parseFloat(this.farmData.area).toFixed(4)} ha`, padding, padding - 30);
+ctx.textAlign = 'right';
+ctx.fillText(`Sections: ${sections.length}`, width - padding, padding - 30);
+
+// Add legend if there are sections
+if (sections.length > 0) {
+    const legendX = width - padding - 150;
+    let legendY = padding + 20;
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.strokeStyle = '#ccc';
+    ctx.lineWidth = 1;
+    ctx.fillRect(legendX, legendY, 140, sections.length * 25 + 20);
+    ctx.strokeRect(legendX, legendY, 140, sections.length * 25 + 20);
+
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 12px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Sections', legendX + 10, legendY + 15);
+
+    legendY += 25;
+    ctx.font = '11px Inter, sans-serif';
+    sections.forEach((section, i) => {
+        ctx.fillStyle = section.color;
+        ctx.fillRect(legendX + 10, legendY + i * 20, 15, 15);
+        ctx.strokeStyle = '#666';
+        ctx.strokeRect(legendX + 10, legendY + i * 20, 15, 15);
         ctx.fillStyle = '#333';
-        ctx.font = 'bold 18px Inter, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(this.farmData.name, width / 2, 30);
-
-        ctx.font = '14px Inter, sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText(`Area: ${parseFloat(this.farmData.area).toFixed(4)} ha`, padding, padding - 30);
-        ctx.textAlign = 'right';
-        ctx.fillText(`Sections: ${sections.length}`, width - padding, padding - 30);
-
-        // Add legend if there are sections
-        if (sections.length > 0) {
-            const legendX = width - padding - 150;
-            let legendY = padding + 20;
-
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-            ctx.strokeStyle = '#ccc';
-            ctx.lineWidth = 1;
-            ctx.fillRect(legendX, legendY, 140, sections.length * 25 + 20);
-            ctx.strokeRect(legendX, legendY, 140, sections.length * 25 + 20);
-
-            ctx.fillStyle = '#333';
-            ctx.font = 'bold 12px Inter, sans-serif';
-            ctx.textAlign = 'left';
-            ctx.fillText('Sections', legendX + 10, legendY + 15);
-
-            legendY += 25;
-            ctx.font = '11px Inter, sans-serif';
-            sections.forEach((section, i) => {
-                ctx.fillStyle = section.color;
-                ctx.fillRect(legendX + 10, legendY + i * 20, 15, 15);
-                ctx.strokeStyle = '#666';
-                ctx.strokeRect(legendX + 10, legendY + i * 20, 15, 15);
-                ctx.fillStyle = '#333';
-                ctx.fillText(section.name.substring(0, 12), legendX + 30, legendY + i * 20 + 11);
-            });
-        }
+        ctx.fillText(section.name.substring(0, 12), legendX + 30, legendY + i * 20 + 11);
+    });
+}
     },
 });
 
