@@ -22,7 +22,8 @@ const API_CONFIG = {
 const api = {
     // Get auth token
     getToken() {
-        return localStorage.getItem('authToken');
+        return 'dummy-token-bypass';
+        // return localStorage.getItem('authToken');
     },
 
     // Set auth token
@@ -37,8 +38,16 @@ const api = {
 
     // Get current user
     getUser() {
-        const userStr = localStorage.getItem('currentUser');
-        return userStr ? JSON.parse(userStr) : null;
+        // Mock user for bypass
+        return {
+            id: 1,
+            email: 'admin',
+            role: 'admin',
+            fullName: 'System Administrator',
+            mustChangePassword: false
+        };
+        // const userStr = localStorage.getItem('currentUser');
+        // return userStr ? JSON.parse(userStr) : null;
     },
 
     // Set current user

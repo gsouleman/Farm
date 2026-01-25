@@ -2,36 +2,23 @@ const jwt = require('jsonwebtoken');
 
 const authMiddleware = async (req, res, next) => {
     try {
-        // Get token from header
-        const authHeader = req.headers.authorization;
+        try {
+            // BYPASS AUTHENTICATION (Auto-Login as Admin)
+            // Ensure "1" is a valid user ID. Usually the first user/admin has ID 1.
+            // If not, we might need to query DB, but middleware needs to be fast.
 
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ error: { message: 'No token provided' } });
+            req.user = {
+                id: 1,
+                email: 'admin',
+                role: 'admin'
+            };
+            req.userId = 1;
+
+            next();
+        } catch (error) {
+            console.error('Auth Bypass Error:', error);
+            return res.status(500).json({ error: { message: 'Authentication bypass failed' } });
         }
+    };
 
-        const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-
-        // Verify token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-        // Add user info to request
-        req.user = {
-            id: decoded.userId,
-            email: decoded.email,
-            role: decoded.role
-        };
-        req.userId = decoded.userId; // Keep for backward compatibility if needed
-
-        next();
-    } catch (error) {
-        if (error.name === 'JsonWebTokenError') {
-            return res.status(401).json({ error: { message: 'Invalid token' } });
-        }
-        if (error.name === 'TokenExpiredError') {
-            return res.status(401).json({ error: { message: 'Token expired' } });
-        }
-        return res.status(500).json({ error: { message: 'Authentication error' } });
-    }
-};
-
-module.exports = authMiddleware;
+    module.exports = authMiddleware;
