@@ -6,6 +6,7 @@ const API_CONFIG = {
         auth: {
             register: '/api/auth/register',
             login: '/api/auth/login',
+            changePassword: '/api/auth/change-password',
             me: '/api/auth/me',
             users: '/api/auth/users'
         },
