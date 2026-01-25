@@ -3228,7 +3228,7 @@ Object.assign(app, {
             } catch (error) {
                 this.showError('Failed to delete section: ' + error.message);
                 // Check if it was a temporary local section (failed save?)
-                if (sectionId.startsWith('section_')) {
+                if (String(sectionId).startsWith('section_')) {
                     farm.sections = farm.sections.filter(s => s.id !== sectionId);
                     this.renderFarmSectionsTable();
                 }
