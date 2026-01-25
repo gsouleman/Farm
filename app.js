@@ -3689,39 +3689,7 @@ Object.assign(app, {
 
         ctx.restore(); // Restore state after drawing sections (removes clipping)
 
-        // Add click event handler to canvas for toggling corner coordinates
-        canvas.onclick = (e) => {
-            if (this.drawingMode) return; // Ignore clicks if drawing
-
-            const rect = canvas.getBoundingClientRect();
-            const scaleFactorX = canvas.width / rect.width;
-            const scaleFactorY = canvas.height / rect.height;
-            const clickX = (e.clientX - rect.left) * scaleFactorX;
-            const clickY = (e.clientY - rect.top) * scaleFactorY;
-
-            // Check if click is inside any section
-            let clickedSection = null;
-            sections.forEach(section => {
-                if (section.boundaries.length >= 3) {
-                    ctx.beginPath();
-                    section.boundaries.forEach((coord, i) => {
-                        const x = scaleX(coord.lng);
-                        const y = scaleY(coord.lat);
-                        if (i === 0) ctx.moveTo(x, y);
-                        else ctx.lineTo(x, y);
-                    });
-                    ctx.closePath();
-                    if (ctx.isPointInPath(clickX, clickY)) {
-                        clickedSection = section;
-                    }
-                }
-            });
-
-            if (clickedSection) {
-                this.selectedSectionId = (this.selectedSectionId === clickedSection.id) ? null : clickedSection.id;
-                this.renderGraphicalMap();
-            }
-        };
+        ctx.restore(); // Restore state after drawing sections (removes clipping)
 
         // Draw farm center point
         const centerX = scaleX(this.farmData.centerCoordinates.lng);
