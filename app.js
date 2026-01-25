@@ -3808,10 +3808,10 @@ Object.assign(app, {
 
                                     frags.forEach(frag => {
                                         const areaSqMeters = turf.area(frag);
-                                        const areaHa = areaSqMeters / 10000;
+                                        // const areaHa = areaSqMeters / 10000; // Deprecated for display
 
-                                        // Only show significant fragments (> 0.005 ha)
-                                        if (areaHa > 0.005) {
+                                        // Only show fragment if > 10 m² (was 0.005 ha = 50 m²)
+                                        if (areaSqMeters > 10) {
                                             // Draw Outline
                                             ctx.beginPath();
                                             ctx.strokeStyle = '#90a4ae'; // Grid cell border color
@@ -3838,7 +3838,8 @@ Object.assign(app, {
                                             ctx.fillStyle = '#455a64';
                                             ctx.font = '10px Inter, sans-serif';
                                             ctx.textAlign = 'center';
-                                            ctx.fillText(`${areaHa.toFixed(3)} ha`, cx, cy);
+                                            // Show integer m² for cleanliness, or 1 decimal
+                                            ctx.fillText(`${areaSqMeters.toFixed(1)} m²`, cx, cy);
                                         }
                                     });
                                 }
@@ -3880,6 +3881,21 @@ Object.assign(app, {
                 ctx.fillText(section.name.substring(0, 12), legendX + 30, legendY + i * 20 + 11);
             });
         }
+
+        // Update DOM Stats (Added for dynamic updates)
+        const totalAreaEl = document.getElementById('graphicalTotalArea');
+        const allocatedAreaEl = document.getElementById('graphicalAllocatedArea');
+        const unallocatedAreaEl = document.getElementById('graphicalUnallocatedArea');
+        const countEl = document.getElementById('graphicalSectionCount');
+
+        const farmTotalArea = parseFloat(this.farmData.area) || 0;
+        const _allocated = sections.reduce((sum, s) => sum + (parseFloat(s.area) || 0), 0);
+        const availableArea = Math.max(0, farmTotalArea - _allocated);
+
+        if (totalAreaEl) totalAreaEl.textContent = farmTotalArea.toFixed(4) + ' ha';
+        if (allocatedAreaEl) allocatedAreaEl.textContent = _allocated.toFixed(4) + ' ha';
+        if (unallocatedAreaEl) unallocatedAreaEl.textContent = (availableArea * 10000).toFixed(2) + ' m²'; // Converted to m²
+        if (countEl) countEl.textContent = sections.length;
     },
 });
 
