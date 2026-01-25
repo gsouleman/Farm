@@ -68,5 +68,30 @@ Object.assign(app, {
         this.renderLandAllocationTable(); // Update land allocation table
 
         this.showSuccess(`Section "${name}" created!\nArea: ${area.toFixed(4)} hectares\nCenter Coordinates: ${centerLat.toFixed(6)}, ${centerLng.toFixed(6)}`);
+    },
+
+    async deleteSection(sectionId) {
+        if (!confirm('Are you sure you want to delete this allocation?')) return;
+
+        const sections = this.getCurrentFarm().sections;
+        const index = sections.findIndex(s => s.id === sectionId);
+        if (index === -1) return;
+
+        try {
+            // Optimistic update
+            sections.splice(index, 1);
+            this.renderGraphicalMap();
+            this.renderLandAllocationTable();
+            if (this.renderFarmSectionsTable) this.renderFarmSectionsTable();
+
+            // API Call
+            await api.sections.delete(sectionId);
+            this.showSuccess('Allocation deleted');
+        } catch (error) {
+            console.error('Delete section error:', error);
+            this.showError('Failed to delete section');
+            // Reload to revert state
+            await this.loadFarmData(this.currentFarmId); // Assuming this function exists or similar
+        }
     }
 });

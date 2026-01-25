@@ -63,6 +63,17 @@ const mockPool = {
             return { rows: user ? [user] : [] };
         }
 
+        // SELECT ALL USERS (Admin List)
+        if (text.trim().toLowerCase().startsWith('select') && text.includes('FROM users') && !text.includes('WHERE')) {
+            // Simple sort implementation if needed, though mostly frontend handles it or order doesn't fail app
+            // The query uses: ORDER BY created_at DESC
+            let resultUsers = [...users];
+            if (text.includes('ORDER BY created_at DESC')) {
+                resultUsers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            }
+            return { rows: resultUsers };
+        }
+
         // INSERT INTO users
         if (text.trim().toLowerCase().startsWith('insert into users')) {
             const newUser = {

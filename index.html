@@ -1165,4 +1165,15 @@ Example:
   <script src="print_functions.js"></script>
 
   <!-- Application Script -->
+  <!-- Map Context Menu -->
+  <div id="mapContextMenu">
+    <div class="map-context-menu-item" onclick="app.editSectionDetails()">
+      ✏️ Edit Details
+    </div>
+    <div class="map-context-menu-divider"></div>
+    <div class="map-context-menu-item delete-option" onclick="app.deleteSelectedSectionFromMenu()">
+      🗑️ Delete Allocation
+    </div>
+  </div>
+
   <script src="app.js"></script>

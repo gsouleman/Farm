@@ -22,11 +22,20 @@
   {
     "id": 3,
     "email": "gsouleman@gmail.com",
-    "password_hash": "$2b$10$1LEkAT0w4GZ17q95zGT7heoR/hx7lOyZk7IHmdDwqeTF1KjcBAtVS",
+    "password_hash": "$2b$10$vDi47EIIPiJGO8iQsTn8zOcJjzA0.A6w5n3xzD6.8mB2vz6CFAwRG",
     "full_name": "G Souleman",
     "role": "admin",
-    "must_change_password": true,
+    "must_change_password": false,
     "created_at": "2026-01-25T05:00:00.000Z",
     "updated_at": "2026-01-25T05:00:00.000Z"
+  },
+  {
+    "id": 4,
+    "email": "hanif@gmail.com",
+    "password_hash": "$2b$10$r5gZQY6rgDeKK7xSepBE.u34O/zrk.I4v.fYahvee.iWkRzM6M1CW",
+    "full_name": "Hanif",
+    "role": "user",
+    "must_change_password": true,
+    "created_at": "2026-01-25T05:34:53.259Z"
   }
 ]
