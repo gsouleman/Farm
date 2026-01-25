@@ -3556,20 +3556,62 @@ Object.assign(app, {
         const scaleY = (lat) => height - padding - ((lat - minLat) / (maxLat - minLat)) * mapHeight;
 
         // Draw grid
+        // Draw grid (Target: 500m² cells -> approx 22.36m side)
+        const targetCellSideMeters = Math.sqrt(500); // ~22.36m
+        const avgLat = (minLat + maxLat) / 2;
+        const R = 6371000; // Earth radius
+        const metersPerLat = (2 * Math.PI * R) / 360; // ~111320m
+        const metersPerLng = metersPerLat * Math.cos(avgLat * Math.PI / 180);
+
+        const latStep = targetCellSideMeters / metersPerLat;
+        const lngStep = targetCellSideMeters / metersPerLng;
+
         ctx.strokeStyle = '#e0e0e0';
-        ctx.lineWidth = 1;
-        for (let i = 0; i <= 10; i++) {
-            const x = padding + (i / 10) * mapWidth;
-            const y = padding + (i / 10) * mapHeight;
-            ctx.beginPath();
-            ctx.moveTo(x, padding);
-            ctx.lineTo(x, height - padding);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(padding, y);
-            ctx.lineTo(width - padding, y);
-            ctx.stroke();
+        ctx.lineWidth = 0.5;
+
+        // Safety limit: if grid is too dense (> 500 lines), fallback to 10x10 to prevent crash
+        const estimatedLinesX = (maxLng - minLng) / lngStep;
+        const estimatedLinesY = (maxLat - minLat) / latStep;
+
+        if (estimatedLinesX < 500 && estimatedLinesY < 500) {
+            // Draw Vertical Lines
+            for (let lng = minLng; lng <= maxLng; lng += lngStep) {
+                const x = scaleX(lng);
+                if (x >= padding && x <= width - padding) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, padding);
+                    ctx.lineTo(x, height - padding);
+                    ctx.stroke();
+                }
+            }
+            // Draw Horizontal Lines
+            for (let lat = minLat; lat <= maxLat; lat += latStep) {
+                const y = scaleY(lat);
+                if (y >= padding && y <= height - padding) {
+                    ctx.beginPath();
+                    ctx.moveTo(padding, y);
+                    ctx.lineTo(width - padding, y);
+                    ctx.stroke();
+                }
+            }
+        } else {
+            console.warn('Farm area too large for 500m² grid visualization. Falling back to simple grid');
+            for (let i = 0; i <= 10; i++) {
+                const x = padding + (i / 10) * mapWidth;
+                const y = padding + (i / 10) * mapHeight;
+                ctx.beginPath();
+                ctx.moveTo(x, padding);
+                ctx.lineTo(x, height - padding);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(width - padding, y);
+                ctx.stroke();
+            }
         }
+
+        // Expose steps for usage in Unallocated Calculation
+        this.gridSteps = { latStep, lngStep, safe: (estimatedLinesX < 500 && estimatedLinesY < 500) };
 
         // Draw farm boundary
         ctx.beginPath();
@@ -3772,19 +3814,34 @@ Object.assign(app, {
                     unallocatedFeatures = farmPoly;
                 }
 
-                // 4. Subdivide by Grid (10x10)
+                // 4. Subdivide by Grid (Dynamic ~500m² cells)
                 this.unallocatedFragments = []; // Reset storage
                 if (unallocatedFeatures) {
-                    const latStep = (maxLat - minLat) / 10;
-                    const lngStep = (maxLng - minLng) / 10;
+                    // Use calculated steps from visual grid, or fallback to 10x10 if not safe/available
+                    let latStep, lngStep;
+                    let safe = false;
 
-                    for (let row = 0; row < 10; row++) {
-                        for (let col = 0; col < 10; col++) {
+                    if (this.gridSteps && this.gridSteps.safe) {
+                        latStep = this.gridSteps.latStep;
+                        lngStep = this.gridSteps.lngStep;
+                        safe = true;
+                    } else {
+                        latStep = (maxLat - minLat) / 10;
+                        lngStep = (maxLng - minLng) / 10;
+                    }
+
+                    // Loop through grid cells based on steps
+                    for (let lat = minLat; lat < maxLat; lat += latStep) {
+                        for (let lng = minLng; lng < maxLng; lng += lngStep) {
+
                             // Define Grid Cell Polygon
-                            const cellMinLng = minLng + (col * lngStep);
-                            const cellMaxLng = cellMinLng + lngStep;
-                            const cellMinLat = minLat + (row * latStep);
-                            const cellMaxLat = cellMinLat + latStep;
+                            const cellMinLng = lng;
+                            const cellMaxLng = Math.min(lng + lngStep, maxLng); // Clip to max
+                            const cellMinLat = lat;
+                            const cellMaxLat = Math.min(lat + latStep, maxLat); // Clip to max
+
+                            // Optimization: Simple bounding box check before Turf polygon creation
+                            // (Skip if strictly outside farm bounds, though loop handles this mostly)
 
                             const cellPoly = turf.polygon([[
                                 [cellMinLng, cellMinLat],
@@ -3810,7 +3867,7 @@ Object.assign(app, {
                                     frags.forEach(frag => {
                                         const areaSqMeters = turf.area(frag);
                                         // Store for interactivity
-                                        if (areaSqMeters > 10) {
+                                        if (areaSqMeters > 5) { // Show slightly smaller fragments too
                                             this.unallocatedFragments.push({
                                                 geometry: frag.geometry,
                                                 areaSqMeters: areaSqMeters
@@ -3818,8 +3875,9 @@ Object.assign(app, {
 
                                             // Draw Outline
                                             ctx.beginPath();
-                                            ctx.strokeStyle = '#90a4ae'; // Grid cell border color
-                                            ctx.lineWidth = 1;
+                                            // Make these slightly distinct
+                                            ctx.strokeStyle = '#90a4ae';
+                                            ctx.lineWidth = 0.5;
 
                                             const rings = frag.geometry.coordinates;
                                             rings.forEach(ring => {
@@ -3839,16 +3897,23 @@ Object.assign(app, {
                                             const cy = scaleY(center.geometry.coordinates[1]);
 
                                             // Only label if space permits (heuristic)
+                                            // Check visual size of fragment
+                                            // const bbox = turf.bbox(frag);
+                                            // const widthPx = scaleX(bbox[2]) - scaleX(bbox[0]);
+                                            // if (widthPx > 20) ... 
+
                                             ctx.fillStyle = '#455a64';
-                                            ctx.font = '10px Inter, sans-serif';
+                                            ctx.font = '9px Inter, sans-serif'; // Smaller font for dense grid
                                             ctx.textAlign = 'center';
-                                            // Show integer m² for cleanliness, or 1 decimal
-                                            ctx.fillText(`${areaSqMeters.toFixed(1)} m²`, cx, cy);
+                                            // Show integer m²
+                                            ctx.fillText(`${areaSqMeters.toFixed(0)}`, cx, cy);
+                                            ctx.font = '7px Inter';
+                                            ctx.fillText('m²', cx, cy + 8);
                                         }
                                     });
                                 }
                             } catch (err) {
-                                // Intersection might fail if no overlap
+                                // Intersection failed
                             }
                         }
                     }

@@ -188,10 +188,7 @@ Object.assign(app, {
 
             // 2. Check if clicking an UNALLOCATED fragment (New Feature)
             if (this.unallocatedFragments && this.unallocatedFragments.length > 0 && typeof turf !== 'undefined') {
-                const clickPoint = turf.point(this.pixelToLatLngTuple(x, y)); // Needs helper
-
-                // We need to convert pixel click to Lat/Lng for Turf check vs Fragment Geometry
-                // Fragments are stored as GeoJSON (Lat/Lng)
+                // Fragment geometry is in Lat/Lng
                 const pointLatLng = this.coordsToLatLng(x, y);
                 const turfPoint = turf.point([pointLatLng.lng, pointLatLng.lat]);
 
