@@ -3773,6 +3773,7 @@ Object.assign(app, {
                 }
 
                 // 4. Subdivide by Grid (10x10)
+                this.unallocatedFragments = []; // Reset storage
                 if (unallocatedFeatures) {
                     const latStep = (maxLat - minLat) / 10;
                     const lngStep = (maxLng - minLng) / 10;
@@ -3808,10 +3809,13 @@ Object.assign(app, {
 
                                     frags.forEach(frag => {
                                         const areaSqMeters = turf.area(frag);
-                                        // const areaHa = areaSqMeters / 10000; // Deprecated for display
-
-                                        // Only show fragment if > 10 m² (was 0.005 ha = 50 m²)
+                                        // Store for interactivity
                                         if (areaSqMeters > 10) {
+                                            this.unallocatedFragments.push({
+                                                geometry: frag.geometry,
+                                                areaSqMeters: areaSqMeters
+                                            });
+
                                             // Draw Outline
                                             ctx.beginPath();
                                             ctx.strokeStyle = '#90a4ae'; // Grid cell border color

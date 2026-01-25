@@ -177,11 +177,48 @@ Object.assign(app, {
             const x = (e.clientX - rect.left) * scaleX;
             const y = (e.clientY - rect.top) * scaleY;
 
+            // 1. Check if clicking an EXISTING section
             const sectionId = this.getSectionAtPoint(x, y);
             if (sectionId) {
                 this.selectedSectionId = sectionId;
                 this.renderGraphicalMap();
                 e.preventDefault();
+                return;
+            }
+
+            // 2. Check if clicking an UNALLOCATED fragment (New Feature)
+            if (this.unallocatedFragments && this.unallocatedFragments.length > 0 && typeof turf !== 'undefined') {
+                const clickPoint = turf.point(this.pixelToLatLngTuple(x, y)); // Needs helper
+
+                // We need to convert pixel click to Lat/Lng for Turf check vs Fragment Geometry
+                // Fragments are stored as GeoJSON (Lat/Lng)
+                const pointLatLng = this.coordsToLatLng(x, y);
+                const turfPoint = turf.point([pointLatLng.lng, pointLatLng.lat]);
+
+                const fragment = this.unallocatedFragments.find(frag => {
+                    try {
+                        return turf.booleanPointInPolygon(turfPoint, frag.geometry);
+                    } catch (err) { return false; }
+                });
+
+                if (fragment) {
+                    e.preventDefault();
+                    // Convert fragment geometry back to our boundary format {lat, lng}
+                    // Fragment geometry coordinates is [[[lng, lat], ...]] (Ring)
+                    const ring = fragment.geometry.coordinates[0];
+                    const boundaries = ring.map(c => ({ lat: c[1], lng: c[0] }));
+                    // Remove last point if it duplicates first (GeoJSON closes ring)
+                    if (boundaries.length > 0 &&
+                        Math.abs(boundaries[0].lat - boundaries[boundaries.length - 1].lat) < 1e-9 &&
+                        Math.abs(boundaries[0].lng - boundaries[boundaries.length - 1].lng) < 1e-9) {
+                        boundaries.pop();
+                    }
+
+                    // Open Modal
+                    const areaHa = fragment.areaSqMeters / 10000;
+                    this.openSectionModalWithArea(areaHa, boundaries);
+                    this.showSuccess('Empty space selected! Add details below.');
+                }
             }
         });
 
