@@ -392,11 +392,30 @@
               <!-- Graphical Map Stats Header -->
               <div id="graphicalStatsHeader"
                 style="display: none; justify-content: space-between; align-items: center; background: white; padding: 10px 20px; border-radius: 8px 8px 0 0; border: 1px solid #ddd; border-bottom: none; margin-bottom: 0;">
-                <h4 style="margin: 0; color: #666; font-size: 1rem;">Area: <span id="graphicalTotalArea"
-                    style="color: #333; font-weight: 600;">0.0000 ha</span></h4>
-                <h3 style="margin: 0; color: #333; font-size: 1.2rem;">Maloure Farm</h3>
-                <h4 style="margin: 0; color: #666; font-size: 1rem;">Sections: <span id="graphicalSectionCount"
-                    style="color: #333; font-weight: 600;">0</span></h4>
+                <div style="display: flex; gap: 1.5rem;">
+                  <div style="text-align: center;">
+                    <span style="font-size: 0.8rem; color: #666; display: block;">Total Farm</span>
+                    <span id="graphicalTotalArea" style="color: #333; font-weight: 600; font-size: 1.1rem;">0.00
+                      ha</span>
+                  </div>
+                  <div style="width: 1px; background: #ddd;"></div>
+                  <div style="text-align: center;">
+                    <span style="font-size: 0.8rem; color: #2e7d32; display: block;">Allocated</span>
+                    <span id="graphicalAllocatedArea" style="color: #2e7d32; font-weight: 600; font-size: 1.1rem;">0.00
+                      ha</span>
+                  </div>
+                  <div style="width: 1px; background: #ddd;"></div>
+                  <div style="text-align: center;">
+                    <span style="font-size: 0.8rem; color: #c62828; display: block;">Empty Space</span>
+                    <span id="graphicalUnallocatedArea"
+                      style="color: #c62828; font-weight: 600; font-size: 1.1rem;">0.00 ha</span>
+                  </div>
+                </div>
+                <h3 style="margin: 0; color: #333; font-size: 1.2rem;">Detailed Map</h3>
+                <div style="text-align: right;">
+                  <span style="font-size: 0.8rem; color: #666; display: block;">Sections</span>
+                  <span id="graphicalSectionCount" style="color: #333; font-weight: 600; font-size: 1.1rem;">0</span>
+                </div>
               </div>
 
               <!-- Graphical Map Canvas -->
