@@ -4140,11 +4140,13 @@ Object.assign(app, {
         }
 
         if (!farm || !farm.boundaries || farm.boundaries.length === 0) {
-            console.trace('Debug: renderGraphicalMap - Showing "No boundaries" message. Farm data:', farm);
+            console.trace(`Debug: renderGraphicalMap - Showing "No boundaries" message for Farm: ${farm ? farm.name : 'Unknown'}. Full data:`, farm);
             ctx.fillStyle = '#666';
             ctx.font = '20px Inter, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('No farm boundaries defined', width / 2, height / 2);
+            ctx.fillText(`No farm boundaries defined for "${farm ? farm.name : 'this farm'}"`, width / 2, height / 2);
+            ctx.font = '14px Inter, sans-serif';
+            ctx.fillText('Edit coordinates to add boundaries', width / 2, height / 2 + 30);
             return;
         }
 

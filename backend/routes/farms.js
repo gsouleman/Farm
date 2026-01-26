@@ -81,8 +81,8 @@ router.post('/', [
                 perimeter || null,
                 centerLat || null,
                 centerLng || null,
-                boundaries,
-                zones
+                boundaries ? JSON.stringify(boundaries) : null,
+                zones ? JSON.stringify(zones) : null
             ]
         );
 
@@ -150,8 +150,8 @@ router.put('/:id', [
                 perimeter,
                 centerLat,
                 centerLng,
-                boundaries, // Pass object directly for JSONB
-                zones,      // Pass object directly for JSONB
+                boundaries ? JSON.stringify(boundaries) : null,
+                zones ? JSON.stringify(zones) : null,
                 req.params.id,
                 req.userId
             ]

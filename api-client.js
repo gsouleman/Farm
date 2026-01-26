@@ -84,10 +84,13 @@ const api = {
                 throw new Error('Authentication required');
             }
 
-            const data = await response.json();
+            // const data = await response.json(); // Moved below the !response.ok check
+
+            const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
-                throw new Error(data.error?.message || 'Request failed');
+                console.error(`Debug: API Error [${endpoint}]:`, data);
+                throw new Error(data.error?.message || `Request failed with status ${response.status}`);
             }
 
             return data;
