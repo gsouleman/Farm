@@ -4697,6 +4697,7 @@ Object.assign(app, {
         // Update DOM Stats (Added for dynamic updates)
         const totalAreaEl = document.getElementById('graphicalTotalArea');
         const allocatedAreaEl = document.getElementById('graphicalAllocatedArea');
+        const selectedAreaEl = document.getElementById('graphicalSelectedArea');
         const unallocatedAreaEl = document.getElementById('graphicalUnallocatedArea');
         const countEl = document.getElementById('graphicalSectionCount');
 
@@ -4704,8 +4705,19 @@ Object.assign(app, {
         const _allocated = sections.reduce((sum, s) => sum + (parseFloat(s.area) || 0), 0);
         const availableArea = Math.max(0, farmTotalArea - _allocated);
 
+        // Calculate Selected Area
+        let selectedArea = 0;
+        if (this.unallocatedFragments && this.selectedUnallocatedIds) {
+            this.unallocatedFragments.forEach(frag => {
+                if (this.selectedUnallocatedIds.has(frag.id)) {
+                    selectedArea += (frag.areaSqMeters / 10000); // Convert sq meters to hectares
+                }
+            });
+        }
+
         if (totalAreaEl) totalAreaEl.textContent = farmTotalArea.toFixed(4) + ' ha';
         if (allocatedAreaEl) allocatedAreaEl.textContent = _allocated.toFixed(4) + ' ha';
+        if (selectedAreaEl) selectedAreaEl.textContent = selectedArea.toFixed(4) + ' ha';
         if (unallocatedAreaEl) unallocatedAreaEl.textContent = availableArea.toFixed(4) + ' ha'; // Reverted to ha
         if (countEl) countEl.textContent = sections.length;
     },
