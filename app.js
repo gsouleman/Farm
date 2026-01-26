@@ -750,6 +750,9 @@ Object.assign(app, {
     },
 
     async parseMomoPDF(file) {
+        // Set worker source to avoid warning
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3/build/pdf.worker.min.js';
+
         try {
             const arrayBuffer = await file.arrayBuffer();
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
