@@ -795,12 +795,27 @@ Object.assign(app, {
                             description = description.replace(/^[\s\-\.|]+|[\s\-\.|]+$/g, '').trim();
                             if (description.length < 3) description = "MOMO Import";
 
+                            // Convert Date
+                            let dateStr = dateMatch[0];
+                            let isoDate;
+                            // Check DD/MM/YYYY
+                            if (/^\d{2}[\/-]\d{2}[\/-]\d{4}/.test(dateStr)) {
+                                const parts = dateStr.split(/[\/-]/);
+                                isoDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                            } else {
+                                try {
+                                    isoDate = new Date(dateStr).toISOString().split('T')[0];
+                                } catch (e) {
+                                    isoDate = new Date().toISOString().split('T')[0];
+                                }
+                            }
+
                             transactions.push({
-                                date: this.formatDateForInput(new Date(dateMatch[0])),
+                                date: isoDate, // Valid YYYY-MM-DD
                                 type: 'expense',
                                 category: 'Other',
                                 description: description,
-                                amount: amount
+                                amount: Math.abs(amount) // Ensure positive
                             });
                         }
                     }
@@ -850,12 +865,37 @@ Object.assign(app, {
                 const amountVal = findVal(row, ['Amount', 'Value', 'Debit', 'Credit']);
 
                 if (dateStr && amountVal) {
-                    // Normalize Amount (remove commas, currency symbols)
-                    let amount = parseFloat(this.sanitizeAmount(amountVal) || amountVal.toString().replace(/[^0-9.-]+/g, ""));
-                    if (isNaN(amount)) amount = 0;
+                    // 1. Robust Date Parsing (Handle DD/MM/YYYY)
+                    let parsedDate;
+                    // Check for DD/MM/YYYY or DD-MM-YYYY
+                    if (typeof dateStr === 'string' && /^\d{1,2}[\/-]\d{1,2}[\/-]\d{4}/.test(dateStr)) {
+                        const parts = dateStr.split(/[\/-]/);
+                        // Assume DD/MM/YYYY -> YYYY-MM-DD construction
+                        // parts[0] = Day, parts[1] = Month, parts[2] = Year
+                        parsedDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+                    } else {
+                        // Fallback to standard parser (works for YYYY-MM-DD or Excel dates if number)
+                        parsedDate = new Date(dateStr);
+                    }
+
+                    // Validate Date
+                    let isoDate;
+                    if (isNaN(parsedDate.getTime())) {
+                        console.warn('Invalid date found, defaulting to today. Original:', dateStr);
+                        isoDate = new Date().toISOString().split('T')[0];
+                    } else {
+                        isoDate = parsedDate.toISOString().split('T')[0];
+                    }
+
+                    // 2. Normalize Amount (Handle negative values)
+                    let rawAmount = parseFloat(this.sanitizeAmount(amountVal) || amountVal.toString().replace(/[^0-9.-]+/g, ""));
+                    if (isNaN(rawAmount)) rawAmount = 0;
+
+                    // Backend expects positive amounts for expenses (type='expense' handles direction)
+                    const amount = Math.abs(rawAmount);
 
                     transactions.push({
-                        date: this.formatDateForInput(new Date(dateStr)), // Ensure YYYY-MM-DD
+                        date: isoDate,
                         type: 'expense',
                         category: 'Other', // Per requirement
                         description: reference, // Per requirement: Description = Reference
