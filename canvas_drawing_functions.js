@@ -330,20 +330,22 @@ Object.assign(app, {
     // --- Interaction Helpers ---
 
     getSectionAtPoint(x, y) {
-        if (!this.farmData.sections) return null;
+        const farm = this.getCurrentFarm ? this.getCurrentFarm() : this.farmData;
+        if (!farm || !farm.sections) {
+            console.log('No farm or sections found in getSectionAtPoint');
+            return null;
+        }
 
-        // Convert screen X/Y to Lat/Lng for checking against section boundaries
-        const pointLatLng = this.coordsToLatLng(x, y);
+        console.log('Testing click at:', x, y, 'against', farm.sections.length, 'sections');
 
-        // Simple point-in-polygon check (using screen coords is easier actually)
-        // Let's use screen coords for hit testing
+        for (const section of farm.sections) {
+            if (!section.boundaries || section.boundaries.length < 3) continue;
 
-        for (const section of this.farmData.sections) {
-            if (!section.boundaries) continue;
+            const polygon = this.latLngToPixels(section.boundaries);
+            const isInside = this.isPointInPolygon({ x, y }, polygon);
 
-            const polygon = this.latLngToPixels(section.boundaries); // Helper to get screen coords for a section
-
-            if (this.isPointInPolygon({ x, y }, polygon)) {
+            if (isInside) {
+                console.log('Click is INSIDE section:', section.id, section.name);
                 return section.id;
             }
         }
@@ -483,17 +485,25 @@ Object.assign(app, {
     },
 
     latLngToPixels(boundaries) {
-        // Reuse existing logic but centralized
-        // This is a duplication of logic inside renderGraphicalMap functions
-        // Ideally should refactor common "getScale()" function
+        // Use active map bounds if available (preferred)
+        if (this.activeMapBounds) {
+            const b = this.activeMapBounds;
+            return boundaries.map(coord => {
+                const x = b.padding + ((coord.lng - b.minLng) / (b.maxLng - b.minLng)) * b.mapWidth;
+                const y = b.height - b.padding - ((coord.lat - b.minLat) / (b.maxLat - b.minLat)) * b.mapHeight;
+                return { x, y };
+            });
+        }
 
         const canvas = document.getElementById('farmMapCanvas');
+        if (!canvas) return [];
         const width = canvas.width;
         const height = canvas.height;
         const padding = 60;
 
-        const farmBoundaries = this.farmData.boundaries;
-        if (!farmBoundaries) return []; // Should not happen if rendering
+        const farm = this.getCurrentFarm ? this.getCurrentFarm() : this.farmData;
+        const farmBoundaries = farm ? farm.boundaries : null;
+        if (!farmBoundaries || farmBoundaries.length === 0) return [];
 
         const lats = farmBoundaries.map(b => b.lat);
         const lngs = farmBoundaries.map(b => b.lng);
@@ -507,7 +517,7 @@ Object.assign(app, {
 
         return boundaries.map(coord => {
             const x = padding + ((coord.lng - minLng) / (maxLng - minLng)) * mapWidth;
-            const y = padding + ((maxLat - coord.lat) / (maxLat - minLat)) * mapHeight;
+            const y = height - padding - ((coord.lat - minLat) / (maxLat - minLat)) * mapHeight;
             return { x, y };
         });
     },
