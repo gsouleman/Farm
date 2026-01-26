@@ -598,7 +598,7 @@ Object.assign(app, {
         console.log('Debug: loadData - Fetching farms...');
         try {
             const farms = await api.farms.getAll();
-            console.log(`Debug: loadData - Received ${farms.length} farms`);
+            console.log(`Debug: loadData - Received ${farms.length} farms:`, farms.map(f => f.name));
             console.log('Debug: loadData - Raw farms data:', farms); // Log raw farm details
 
             this.farms = farms.map(f => this.sanitizeFarmData(f));
@@ -4144,13 +4144,20 @@ Object.assign(app, {
         }
 
         if (!farm || !farm.boundaries || farm.boundaries.length === 0) {
+            const user = api.getUser();
             console.trace(`Debug: renderGraphicalMap - Showing "No boundaries" message for Farm: ${farm ? farm.name : 'Unknown'}. Full data:`, farm);
+
             ctx.fillStyle = '#666';
             ctx.font = '20px Inter, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(`No farm boundaries defined for "${farm ? farm.name : 'this farm'}"`, width / 2, height / 2);
+            ctx.fillText(`No farm boundaries defined for "${farm ? farm.name : 'this farm'}"`, width / 2, height / 2 - 20);
+
             ctx.font = '14px Inter, sans-serif';
-            ctx.fillText('Edit coordinates to add boundaries', width / 2, height / 2 + 30);
+            ctx.fillText('Edit coordinates to add boundaries', width / 2, height / 2 + 20);
+
+            ctx.fillStyle = '#999';
+            ctx.font = '12px Inter, sans-serif';
+            ctx.fillText(`User ID: ${user ? user.id : '?'}, Farm ID: ${this.currentFarmId || '?'}, Total Farms: ${this.farms.length}`, width / 2, height / 2 + 50);
             return;
         }
 

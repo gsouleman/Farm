@@ -5,8 +5,10 @@ const API_CONFIG = {
         const localURL = 'http://localhost:3000';
         const remoteURL = 'https://farm-backend-uq2z.onrender.com';
 
-        // If running on localhost or 127.0.0.1, default to local backend
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '') {
+        const host = window.location.hostname;
+        // Detect local environments (localhost, 127.0.0.1, LAN IPs)
+        if (host === 'localhost' || host === '127.0.0.1' || host === '::1' || host === '' ||
+            host.startsWith('192.168.') || host.startsWith('10.') || host.startsWith('172.')) {
             return localURL;
         }
         return remoteURL;
