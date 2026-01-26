@@ -596,7 +596,7 @@ Object.assign(app, {
             ]);
 
             // Attach to farm object in memory
-            farm.transactions = transactions;
+            this.transactions = transactions;
             console.log(`Debug: Fetched ${transactions.length} transactions for Farm ${farmId}`);
 
             // Split crops into fruit trees and cash crops
@@ -610,8 +610,7 @@ Object.assign(app, {
             }));
             farm.employees = employees;
 
-            // Set current farm data for globally accessible this.farmData
-            this.farmData = farm;
+            // REMOVED: this.farmData = farm; (Shadows getter)
 
             // Update UI
             this.renderFarmDetails();
@@ -2542,6 +2541,7 @@ Object.assign(app, {
 
         return {
             ...farm,
+            id: parseInt(farm.id),
             area: parseFloat(farm.area) || 0,
             perimeter: parseFloat(farm.perimeter) || 0,
             centerCoordinates: {
