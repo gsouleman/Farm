@@ -2098,7 +2098,8 @@ Object.assign(app, {
                 this.updateMapViews();
                 this.renderFarmDetails();
                 this.renderFarmSectionsTable();
-                this.renderGraphicalMap();
+                this.renderFarmSectionsTable();
+                this.renderGraphicalMap(currentFarm);
 
                 // Close modal
                 this.closeModal('coordinateEditorModal');
@@ -2168,7 +2169,8 @@ Object.assign(app, {
             this.renderFarmMap();
         } else if (currentView === 'graphical') {
             // Re-render graphical canvas
-            this.renderGraphicalMap();
+            const farm = this.getCurrentFarm();
+            this.renderGraphicalMap(farm);
         }
     },
 
@@ -3381,14 +3383,16 @@ Object.assign(app, {
             if (this.isDrawing) {
                 this.isDrawing = false;
                 this.currentDrawing = [];
-                this.renderGraphicalMap();
+                const farm = this.getCurrentFarm();
+                this.renderGraphicalMap(farm);
             }
         });
     },
 
     // Render map with current drawing overlay
     renderGraphicalMapWithDrawing() {
-        this.renderGraphicalMap(); // Draw base map
+        const farm = this.getCurrentFarm();
+        this.renderGraphicalMap(farm); // Draw base map
 
         if (this.currentDrawing.length === 0) return;
 
@@ -3551,7 +3555,8 @@ Object.assign(app, {
 
         // Clear drawing
         this.currentDrawing = [];
-        this.renderGraphicalMap();
+        const farm = this.getCurrentFarm();
+        this.renderGraphicalMap(farm);
     },
 
     // Create section from drawing data
@@ -3586,7 +3591,8 @@ Object.assign(app, {
 
             this.renderFarmSectionsTable();
             this.renderLandAllocationTable();
-            this.renderGraphicalMap();
+            const farm = this.getCurrentFarm();
+            this.renderGraphicalMap(farm);
 
             this.showSuccess(`Section "${name}" created successfully!\nArea: ${area.toFixed(4)} ha`);
         } catch (error) {
@@ -3603,7 +3609,8 @@ Object.assign(app, {
         btn.textContent = 'Crop Allocation';
         btn.classList.remove('btn-danger');
         btn.classList.add('btn-primary');
-        this.renderGraphicalMap();
+        const farm = this.getCurrentFarm();
+        this.renderGraphicalMap(farm);
         this.showError('Drawing cancelled');
     },
 
@@ -3639,7 +3646,8 @@ Object.assign(app, {
                 btn.classList.add('btn-primary');
             }
             this.currentDrawing = [];
-            this.renderGraphicalMap();
+            const farm = this.getCurrentFarm();
+            this.renderGraphicalMap(farm);
         }
     },
 
@@ -4124,7 +4132,8 @@ Object.assign(app, {
             document.getElementById('graphicalViewBtn').classList.replace('btn-outline', 'btn-secondary');
 
             // Render map
-            this.renderGraphicalMap();
+            const farm = this.getCurrentFarm();
+            this.renderGraphicalMap(farm); // Pass explicit farm
         } else {
             document.getElementById('farmMap').style.display = 'block';
             document.getElementById('farmMapCanvas').style.display = 'none';
