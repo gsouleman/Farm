@@ -82,14 +82,17 @@ Object.assign(app, {
 
             // 3. Check if clicking an existing ALLOCATED section
             const sectionId = this.getSectionAtPoint(x, y);
+            console.log('Mousedown at pixels:', x, y, 'Selected SectionID found:', sectionId);
             if (sectionId) {
                 this.selectedSectionId = sectionId;
+                console.log('Set selectedSectionId to:', this.selectedSectionId);
                 this.renderGraphicalMap();
                 return;
             }
 
             // 4. Clicked empty space - Clear selection
             if (this.selectedSectionId || (this.selectedUnallocatedIds && this.selectedUnallocatedIds.size > 0)) {
+                console.log('Clearing selection');
                 this.selectedSectionId = null;
                 if (this.selectedUnallocatedIds) this.selectedUnallocatedIds.clear();
                 this.renderGraphicalMap();
