@@ -2829,7 +2829,11 @@ Object.assign(app, {
                 lat: parseFloat(farm.center_lat || farm.centerCoordinates?.lat || 0),
                 lng: parseFloat(farm.center_lng || farm.centerCoordinates?.lng || 0)
             },
-            boundaries: typeof farm.boundaries === 'string' ? JSON.parse(farm.boundaries) : (farm.boundaries || []),
+            boundaries: (Array.isArray(farm.boundaries) ? farm.boundaries :
+                (typeof farm.boundaries === 'string' ? JSON.parse(farm.boundaries) : [])).map(b => ({
+                    lat: parseFloat(b.lat),
+                    lng: parseFloat(b.lng)
+                })),
             zones: typeof farm.zones === 'string' ? JSON.parse(farm.zones) : (farm.zones || {
                 fruitTrees: { area: 0, percentage: 0 },
                 cashCrops: { area: 0, percentage: 0 },

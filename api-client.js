@@ -1,7 +1,16 @@
 // API Configuration
 const API_CONFIG = {
-    // baseURL: 'http://10.62.241.36:3000', // Local backend URL (LAN Access)
-    baseURL: 'https://farm-backend-uq2z.onrender.com', // Production backend URL
+    // Automatically detect environment
+    get baseURL() {
+        const localURL = 'http://localhost:3000';
+        const remoteURL = 'https://farm-backend-uq2z.onrender.com';
+
+        // If running on localhost or 127.0.0.1, default to local backend
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '') {
+            return localURL;
+        }
+        return remoteURL;
+    },
     endpoints: {
         auth: {
             register: '/api/auth/register',
