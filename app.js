@@ -709,7 +709,12 @@ Object.assign(app, {
                 }
 
                 if (transactions.length === 0) {
-                    this.showInfo('No matching "MOMO USER" transactions found.\nPlease check:\n1. Your file has a "Payment Type" column.\n2. The values contain "MOMO USER".\nCheck the browser console (F12) for detailed logs.');
+                    let msg = 'No matching "MOMO USER" transactions found.\n';
+                    if (transactions.debugHeaders) {
+                        msg += '\nDetected Columns:\n' + transactions.debugHeaders.join(', ') + '\n';
+                    }
+                    msg += '\nTroubleshooting:\n1. Check if "Payment Type" column exists.\n2. Ensure "MOMO USER" is present in the row.\n3. Check detected columns above.';
+                    this.showInfo(msg);
                     this.hideLoading();
                     return;
                 }
@@ -811,10 +816,6 @@ Object.assign(app, {
     processMomoData(rows) {
         const transactions = [];
         console.log(`Processing ${rows.length} rows for MOMO import.`);
-        if (rows.length > 0) {
-            console.log('Sample row keys:', Object.keys(rows[0]));
-            console.log('Sample row:', rows[0]);
-        }
 
         // Helper to find column loosely, prioritizing search keys order
         const findVal = (row, keys) => {
@@ -827,13 +828,21 @@ Object.assign(app, {
 
         let matchCount = 0;
         rows.forEach((row, index) => {
-            // Check condition: Payment Type = "MOMO USER"
-            // We look for a column that might be "Payment Type" or just "Type"
-            const paymentType = findVal(row, ['Payment Type', 'Type']) || "";
+            let isMomo = false;
 
-            if (index < 5) console.log(`Row ${index} Payment TypeToCheck: "${paymentType}"`);
-
+            // 1. Try specific column lookup
+            const paymentType = findVal(row, ['Payment Type', 'Type']);
             if (paymentType && paymentType.toString().toUpperCase().includes('MOMO USER')) {
+                isMomo = true;
+            }
+            // 2. Deep Scan Fallback: Check ALL values in the row
+            else {
+                isMomo = Object.values(row).some(val => val && val.toString().toUpperCase().includes('MOMO USER'));
+            }
+
+            if (index < 5) console.log(`Row ${index} IsMomo: ${isMomo}`, row);
+
+            if (isMomo) {
                 matchCount++;
                 const dateStr = findVal(row, ['Date & Time', 'Date']);
                 // Strict mapping: Description comes from Reference column
@@ -859,6 +868,13 @@ Object.assign(app, {
         });
 
         console.log(`Found ${matchCount} matching MOMO USER rows. Created ${transactions.length} transactions.`);
+
+        // Attach debug info to array
+        if (rows.length > 0) {
+            transactions.debugHeaders = Object.keys(rows[0]);
+            transactions.debugRow = JSON.stringify(rows[0], null, 2);
+        }
+
         return transactions;
     },
 
