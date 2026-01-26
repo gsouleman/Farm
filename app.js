@@ -4268,12 +4268,16 @@ Object.assign(app, {
         const mapWidth = width - 2 * padding;
         const mapHeight = height - 2 * padding;
 
+        // Store active bounds for hit testing consistency
+        this.activeMapBounds = {
+            minLat, maxLat, minLng, maxLng,
+            mapWidth, mapHeight, padding,
+            width, height
+        };
+
         // Scale functions
         const scaleX = (lng) => padding + ((lng - minLng) / (maxLng - minLng)) * mapWidth;
         const scaleY = (lat) => height - padding - ((lat - minLat) / (maxLat - minLat)) * mapHeight;
-
-        // Draw grid
-        // Draw grid (Target: 500m² cells -> approx 22.36m side)
         const targetCellSideMeters = Math.sqrt(500); // ~22.36m
         const avgLat = (minLat + maxLat) / 2;
         const R = 6371000; // Earth radius

@@ -439,6 +439,14 @@ Object.assign(app, {
 
     // Inverse of pixelsToLatLng logic
     coordsToLatLng(x, y) {
+        // Use active map bounds if available (Ensures 1:1 match with Render)
+        if (this.activeMapBounds) {
+            const b = this.activeMapBounds;
+            const lng = b.minLng + ((x - b.padding) / b.mapWidth) * (b.maxLng - b.minLng);
+            const lat = b.maxLat - ((y - b.padding) / b.mapHeight) * (b.maxLat - b.minLat);
+            return { lat, lng };
+        }
+
         const canvas = document.getElementById('farmMapCanvas');
         if (!canvas) return { lat: 0, lng: 0 };
 
