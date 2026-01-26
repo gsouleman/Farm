@@ -4224,12 +4224,9 @@ Object.assign(app, {
                 // Calculate Area for Stats
                 if (section.area) totalAllocatedArea += parseFloat(section.area);
 
-                let baseColor = section.color || '#4CAF50';
-                if (!baseColor.startsWith('#')) baseColor = '#' + baseColor;
-
                 ctx.beginPath();
-                ctx.fillStyle = baseColor + '66'; // Add transparency (assumes #RRGGBB)
-                ctx.strokeStyle = baseColor;
+                ctx.fillStyle = section.color + '66'; // Add transparency
+                ctx.strokeStyle = section.color;
                 ctx.lineWidth = 2;
 
                 const pixels = section.boundaries.map(coord => ({
