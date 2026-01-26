@@ -643,7 +643,8 @@ Object.assign(app, {
 
                 // Force an explicit map render to ensure canvas is drawn
                 setTimeout(() => {
-                    this.renderGraphicalMap();
+                    const farm = this.getCurrentFarm();
+                    this.renderGraphicalMap(farm); // Pass explicit farm
                 }, 500);
             } else {
                 console.warn('Debug: loadData - No farms found for user account');
