@@ -3455,132 +3455,7 @@ Object.assign(app, {
         }
     },
 
-    // Calculate area from canvas coordinates
-    calculateDrawnArea() {
-        if (this.currentDrawing.length < 3) return 0;
 
-        const canvas = document.getElementById('farmMapCanvas');
-        const width = canvas.width;
-        const height = canvas.height;
-        const padding = 60;
-
-        // Get farm boundaries for scaling
-        if (!this.farmData.boundaries || this.farmData.boundaries.length === 0) return 0;
-
-        const lats = this.farmData.boundaries.map(b => b.lat);
-        const lngs = this.farmData.boundaries.map(b => b.lng);
-        const minLat = Math.min(...lats);
-        const maxLat = Math.max(...lats);
-        const minLng = Math.min(...lngs);
-        const maxLng = Math.max(...lngs);
-
-        const mapWidth = width - 2 * padding;
-        const mapHeight = height - 2 * padding;
-
-        // Reverse scale functions - convert canvas coords to lat/lng
-        const toLatLng = (x, y) => {
-            const lng = minLng + ((x - padding) / mapWidth) * (maxLng - minLng);
-            const lat = maxLat - ((y - padding) / mapHeight) * (maxLat - minLat);
-            return { lat, lng };
-        };
-
-        // Convert canvas points to lat/lng
-        const coordinates = this.currentDrawing.map(p => toLatLng(p.x, p.y));
-
-        // Calculate area using shoelace formula (in hectares)
-        const avgLat = coordinates.reduce((sum, c) => sum + c.lat, 0) / coordinates.length;
-        const latInRadians = avgLat * Math.PI / 180;
-        const mPerDegreeLat = 111320; // meters per degree latitude
-        const mPerDegreeLng = 111320 * Math.cos(latInRadians); // meters per degree longitude
-
-        let area = 0;
-        for (let i = 0; i < coordinates.length; i++) {
-            const j = (i + 1) % coordinates.length;
-            const xi = coordinates[i].lng * mPerDegreeLng;
-            const yi = coordinates[i].lat * mPerDegreeLat;
-            const xj = coordinates[j].lng * mPerDegreeLng;
-            const yj = coordinates[j].lat * mPerDegreeLat;
-            area += (xi * yj - xj * yi);
-        }
-
-        area = Math.abs(area) / 2;
-        return area / 10000; // Convert square meters to hectares
-    },
-
-    // Convert pixels to lat/lng coordinates
-    pixelsToLatLng(pixels) {
-        const canvas = document.getElementById('farmMapCanvas');
-        const width = canvas.width;
-        const height = canvas.height;
-        const padding = 60;
-
-        if (!this.farmData.boundaries || this.farmData.boundaries.length === 0) return [];
-
-        const lats = this.farmData.boundaries.map(b => b.lat);
-        const lngs = this.farmData.boundaries.map(b => b.lng);
-        const minLat = Math.min(...lats);
-        const maxLat = Math.max(...lats);
-        const minLng = Math.min(...lngs);
-        const maxLng = Math.max(...lngs);
-
-        const mapWidth = width - 2 * padding;
-        const mapHeight = height - 2 * padding;
-
-        return pixels.map(p => {
-            const lng = minLng + ((p.x - padding) / mapWidth) * (maxLng - minLng);
-            const lat = maxLat - ((p.y - padding) / mapHeight) * (maxLat - minLat);
-            return { lat, lng };
-        });
-    },
-
-    // Finish drawing and create section
-    finishDrawing() {
-        if (this.currentDrawing.length < 3) { // Changed from this.canvasCoords
-            this.showError('Please draw at least 3 points to create a section');
-            return;
-        }
-
-        const calculatedArea = this.calculateDrawnArea();
-
-        // Store the drawn coordinates
-        this.drawnCoordinates = this.pixelsToLatLng(this.currentDrawing);
-
-        // Turn off drawing mode
-        this.drawingMode = false;
-        const btn = document.getElementById('drawSectionBtn');
-        btn.textContent = 'Crop Allocation';
-        btn.classList.remove('btn-danger');
-        btn.classList.add('btn-primary');
-
-        // Create section directly with calculated data
-        this.createSectionFromDrawing(calculatedArea, this.drawnCoordinates);
-
-        // Clear drawing
-        this.currentDrawing = [];
-        const farm = this.getCurrentFarm();
-        this.renderGraphicalMap(farm);
-    },
-
-    // Create section from drawing data
-    createSectionFromDrawing(area, boundaries) {
-        // Instead of prompt, open the sectionModal but pre-fill it
-        this.openModal('sectionModal');
-
-        // Reset and pre-fill form
-        const form = document.getElementById('sectionForm');
-        if (form) form.reset();
-
-        document.getElementById('sectionName').value = `Section ${(this.getCurrentFarm().sections?.length || 0) + 1}`;
-        document.getElementById('sectionArea').value = area.toFixed(4);
-        document.getElementById('sectionPercentage').value = ((area / (this.getCurrentFarm().area || 1)) * 100).toFixed(1);
-
-        // Store the drawn boundaries in our temp coordinates or pass them to the save logic
-        this.drawnSectionBoundaries = boundaries;
-
-        // Update modal title
-        const title = document.querySelector('#sectionModal .modal-title');
-        if (title) title.textContent = 'Add Drawn Section';
-    },
 
     async createSectionAsync(sectionData, name, area, centerLat, centerLng, cornerCoords) {
         try {
@@ -3603,18 +3478,7 @@ Object.assign(app, {
         }
     },
 
-    // Cancel drawing
-    cancelDrawing() {
-        this.drawingMode = false;
-        this.currentDrawing = [];
-        const btn = document.getElementById('drawSectionBtn');
-        btn.textContent = 'Crop Allocation';
-        btn.classList.remove('btn-danger');
-        btn.classList.add('btn-primary');
-        const farm = this.getCurrentFarm();
-        this.renderGraphicalMap(farm);
-        this.showError('Drawing cancelled');
-    },
+
 
     // Toggle crop allocation drawing mode
     toggleDrawingMode() {

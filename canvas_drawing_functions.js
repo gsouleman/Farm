@@ -582,17 +582,28 @@ Object.assign(app, {
     openSectionModalWithArea(area, boundaries) {
         const modal = document.getElementById('sectionModal');
         const form = document.getElementById('sectionForm');
-        form.reset();
-        document.getElementById('sectionArea').value = area.toFixed(4);
-        // document.getElementById('sectionArea').readOnly = true; // Already set in HTML
+        if (form) form.reset();
+
+        // Update modal title to match user's screenshot
+        const title = document.querySelector('#sectionModal .modal-title');
+        if (title) title.textContent = 'Add Drawn Section';
+
+        const areaInput = document.getElementById('sectionArea');
+        if (areaInput) {
+            areaInput.value = area.toFixed(4);
+        }
 
         // Calculate Percentage
-        const totalFarmArea = parseFloat(this.farmData.area) || 0;
-        if (totalFarmArea > 0) {
-            const pct = (area / totalFarmArea) * 100;
-            document.getElementById('sectionPercentage').value = pct.toFixed(2);
-        } else {
-            document.getElementById('sectionPercentage').value = '0';
+        const farm = this.getCurrentFarm ? this.getCurrentFarm() : this.farmData;
+        const totalFarmArea = (farm && farm.area) ? parseFloat(farm.area) : 0;
+        const pctInput = document.getElementById('sectionPercentage');
+        if (pctInput) {
+            if (totalFarmArea > 0) {
+                const pct = (area / totalFarmArea) * 100;
+                pctInput.value = pct.toFixed(1);
+            } else {
+                pctInput.value = '0';
+            }
         }
 
         this.pendingSectionBoundaries = boundaries;
