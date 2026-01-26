@@ -699,10 +699,10 @@ Object.assign(app, {
             // Update UI
             this.renderFarmDetails();
             this.renderGraphicalMap(farm); // Pass explicit farm to bypass state issues
-            setTimeout(() => this.renderFarmMap(), 200); // Small delay for Google Maps to init
+            setTimeout(() => this.renderFarmMap(farm), 200); // Small delay for Google Maps to init
             this.renderTransactions();
             this.renderCrops();
-            this.renderFarmMap(); // Re-render satellite map
+            this.renderFarmMap(farm); // Re-render satellite map
             // DIV: renderGraphicalMap() was redundant and dangerous here
 
             // Re-render employees if table exists (it's in the employees tab)
@@ -1175,7 +1175,7 @@ Object.assign(app, {
     },
 
     // Render farm map using Google Maps
-    renderFarmMap() {
+    renderFarmMap(explicitFarm = null) {
         const mapDiv = document.getElementById('farmMap');
         if (!mapDiv) return;
 
@@ -1200,8 +1200,9 @@ Object.assign(app, {
         }
 
         // Initialize map centered on farm
-        const center = this.farmData && this.farmData.centerCoordinates ?
-            this.farmData.centerCoordinates : { lat: 0, lng: 0 };
+        const farm = explicitFarm || this.farmData;
+        const center = farm && farm.centerCoordinates ?
+            farm.centerCoordinates : { lat: 0, lng: 0 };
 
         const map = new google.maps.Map(mapDiv, {
             center: center,
@@ -1218,9 +1219,9 @@ Object.assign(app, {
         });
 
         // Draw farm boundaries if they exist
-        if (this.farmData.boundaries && this.farmData.boundaries.length > 0) {
+        if (farm.boundaries && farm.boundaries.length > 0) {
             const polygon = new google.maps.Polygon({
-                paths: this.farmData.boundaries,
+                paths: farm.boundaries,
                 strokeColor: '#cc0000',
                 strokeOpacity: 0.8,
                 strokeWeight: 3,
@@ -1231,9 +1232,9 @@ Object.assign(app, {
 
             // Add center marker
             const marker = new google.maps.Marker({
-                position: this.farmData.centerCoordinates,
+                position: farm.centerCoordinates,
                 map: map,
-                title: `${this.farmData.name} - Center`,
+                title: `${farm.name} - Center`,
                 icon: {
                     path: google.maps.SymbolPath.CIRCLE,
                     scale: 10,
@@ -1247,12 +1248,12 @@ Object.assign(app, {
             // Add info window with farm details
             const infoContent = `
                 <div style="padding: 0.5rem; font-family: Inter, sans-serif;">
-                    <h3 style="margin: 0 0 0.5rem 0; color: #cc0000;">${this.farmData.name}</h3>
-                    <p style="margin: 0.25rem 0;"><strong>Location:</strong> ${this.farmData.location}</p>
-                    <p style="margin: 0.25rem 0;"><strong>Area:</strong> ${this.farmData.area} hectares</p>
-                    <p style="margin: 0.25rem 0;"><strong>Perimeter:</strong> ${this.farmData.perimeter} meters</p>
-                    <p style="margin: 0.25rem 0;"><strong>Coordinates:</strong> ${this.farmData.centerCoordinates.lat.toFixed(6)}, ${this.farmData.centerCoordinates.lng.toFixed(6)}</p>
-                    <p style="margin: 0.25rem 0;"><strong>Boundary Points:</strong> ${this.farmData.boundaries.length}</p>
+                    <h3 style="margin: 0 0 0.5rem 0; color: #cc0000;">${farm.name}</h3>
+                    <p style="margin: 0.25rem 0;"><strong>Location:</strong> ${farm.location}</p>
+                    <p style="margin: 0.25rem 0;"><strong>Area:</strong> ${farm.area} hectares</p>
+                    <p style="margin: 0.25rem 0;"><strong>Perimeter:</strong> ${farm.perimeter} meters</p>
+                    <p style="margin: 0.25rem 0;"><strong>Coordinates:</strong> ${farm.centerCoordinates.lat.toFixed(6)}, ${farm.centerCoordinates.lng.toFixed(6)}</p>
+                    <p style="margin: 0.25rem 0;"><strong>Boundary Points:</strong> ${farm.boundaries.length}</p>
                 </div>
             `;
 
@@ -1267,7 +1268,7 @@ Object.assign(app, {
 
             // Fit map to show all boundaries
             const bounds = new google.maps.LatLngBounds();
-            this.farmData.boundaries.forEach(coord => {
+            farm.boundaries.forEach(coord => {
                 bounds.extend(coord);
             });
             map.fitBounds(bounds);
@@ -2166,7 +2167,8 @@ Object.assign(app, {
         // Update satellite view (Google Maps)
         if (currentView === 'satellite') {
             // Re-render the entire map
-            this.renderFarmMap();
+            const farm = this.getCurrentFarm();
+            this.renderFarmMap(farm);
         } else if (currentView === 'graphical') {
             // Re-render graphical canvas
             const farm = this.getCurrentFarm();
@@ -5019,7 +5021,7 @@ app.showTab = function (tabName) {
                 const farm = this.getCurrentFarm();
                 console.log(`Debug: showTab('farm-info') - Triggering map render with farm: ${farm ? farm.name : 'NULL'}`);
                 this.renderGraphicalMap(farm); // Pass explicit farm
-                this.renderFarmMap();
+                this.renderFarmMap(farm);
             }, 100);
         }
     }
