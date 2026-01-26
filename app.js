@@ -261,42 +261,52 @@ Object.assign(app, {
 
     // Helper to get transactions (for backward compatibility)
     get transactions() {
-        return this.getCurrentFarm().transactions;
+        const farm = this.getCurrentFarm();
+        return farm ? (farm.transactions || []) : [];
     },
     set transactions(val) {
-        this.getCurrentFarm().transactions = val;
+        const farm = this.getCurrentFarm();
+        if (farm) farm.transactions = val;
     },
 
     // Helper to get fruit trees (for backward compatibility)
     get fruitTrees() {
-        return this.getCurrentFarm().fruitTrees;
+        const farm = this.getCurrentFarm();
+        return farm ? (farm.fruitTrees || []) : [];
     },
     set fruitTrees(val) {
-        this.getCurrentFarm().fruitTrees = val;
+        const farm = this.getCurrentFarm();
+        if (farm) farm.fruitTrees = val;
     },
 
     // Helper to get cash crops (for backward compatibility)
     get cashCrops() {
-        return this.getCurrentFarm().cashCrops;
+        const farm = this.getCurrentFarm();
+        return farm ? (farm.cashCrops || []) : [];
     },
     set cashCrops(val) {
-        this.getCurrentFarm().cashCrops = val;
+        const farm = this.getCurrentFarm();
+        if (farm) farm.cashCrops = val;
     },
 
     // Helper to get custom expense categories (for backward compatibility)
     get customExpenseCategories() {
-        return this.getCurrentFarm().customExpenseCategories;
+        const farm = this.getCurrentFarm();
+        return farm ? (farm.customExpenseCategories || []) : [];
     },
     set customExpenseCategories(val) {
-        this.getCurrentFarm().customExpenseCategories = val;
+        const farm = this.getCurrentFarm();
+        if (farm) farm.customExpenseCategories = val;
     },
 
     // Helper to get custom income categories (for backward compatibility)
     get customIncomeCategories() {
-        return this.getCurrentFarm().customIncomeCategories;
+        const farm = this.getCurrentFarm();
+        return farm ? (farm.customIncomeCategories || []) : [];
     },
     set customIncomeCategories(val) {
-        this.getCurrentFarm().customIncomeCategories = val;
+        const farm = this.getCurrentFarm();
+        if (farm) farm.customIncomeCategories = val;
     },
 
     // Check for forced password change
@@ -1034,10 +1044,10 @@ Object.assign(app, {
         const areaPerimeterEl = document.getElementById('areaPerimeter');
 
         if (totalAreaEl) {
-            totalAreaEl.textContent = `${(parseFloat(farm.area) || 0).toFixed(4)} ha`;
+            totalAreaEl.textContent = `${farm ? (parseFloat(farm.area) || 0).toFixed(4) : '0.0000'} ha`;
         }
         if (areaPerimeterEl) {
-            areaPerimeterEl.textContent = `${(parseFloat(farm.perimeter) || 0).toFixed(2)} m perimeter`;
+            areaPerimeterEl.textContent = `${farm ? (parseFloat(farm.perimeter) || 0).toFixed(2) : '0.00'} m perimeter`;
         }
     },
 
