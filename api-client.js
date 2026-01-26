@@ -176,7 +176,9 @@ const api = {
         },
 
         async getOne(id) {
-            return await api.request(`${API_CONFIG.endpoints.farms}/${id}`);
+            const response = await api.request(`${API_CONFIG.endpoints.farms}/${id}`);
+            console.log(`Debug: API - getOne(${id}) returned farm: ${response ? response.name : 'NULL'}`);
+            return response;
         },
 
         async create(farmData) {
