@@ -640,6 +640,11 @@ Object.assign(app, {
 
                 console.log(`Debug: loadData - Resolved currentFarmId: ${this.currentFarmId} (Final Type: ${typeof this.currentFarmId})`);
                 await this.loadFarmDetails(this.currentFarmId);
+
+                // Force an explicit map render to ensure canvas is drawn
+                setTimeout(() => {
+                    this.renderGraphicalMap();
+                }, 500);
             } else {
                 console.warn('Debug: loadData - No farms found for user account');
                 this.renderDashboard();
