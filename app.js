@@ -4179,8 +4179,9 @@ Object.assign(app, {
         if (!canvas) return;
 
         const ctx = canvas.getContext('2d');
-        const width = canvas.width;
-        const height = canvas.height;
+        // Use intrinsic attributes if offset is 0 (hidden)
+        const width = canvas.width || 1200;
+        const height = canvas.height || 700;
 
         // Clear canvas
         ctx.clearRect(0, 0, width, height);
