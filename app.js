@@ -246,7 +246,7 @@ Object.assign(app, {
     // Helper to get current farm
     getCurrentFarm() {
         const defaultFarm = {
-            name: '',
+            name: 'Default Farm',
             area: 0,
             perimeter: 0,
             boundaries: [],
@@ -259,19 +259,22 @@ Object.assign(app, {
             centerCoordinates: { lat: 0, lng: 0 }
         };
 
-        if (!this.farms || this.farms.length === 0) return defaultFarm;
-
-        // Try to find the specific farm
-        const farm = this.farms.find(f => f.id == this.currentFarmId);
-        if (farm) return farm;
-
-        // Fallback to first farm if list not empty
-        if (this.farms.length > 0) {
-            console.log(`Debug: getCurrentFarm - Farm ID ${this.currentFarmId} not found, falling back to first farm: ${this.farms[0].id}`);
-            return this.farms[0];
+        if (!this.farms || this.farms.length === 0) {
+            console.log('Debug: getCurrentFarm - No farms loaded in memory, returning default.');
+            return defaultFarm;
         }
 
-        return defaultFarm;
+        // Try to find the specific farm
+        const searchId = parseInt(this.currentFarmId);
+        const farm = this.farms.find(f => parseInt(f.id) === searchId);
+
+        if (farm) {
+            return farm;
+        }
+
+        // Fallback to first farm if list not empty
+        console.log(`Debug: getCurrentFarm - Farm ID ${this.currentFarmId} not found in ${this.farms.length} loaded farms. Falling back to first: ${this.farms[0].id}`);
+        return this.farms[0];
     },
     get farmData() {
         return this.getCurrentFarm();
