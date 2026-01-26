@@ -77,11 +77,22 @@ Object.assign(app, {
                     this.renderGraphicalMap();
                     return;
                 } else {
-                    // Clicked empty space (no fragment) - Clear Selection
-                    if (this.selectedUnallocatedIds && this.selectedUnallocatedIds.size > 0) {
-                        this.selectedUnallocatedIds.clear();
-                        this.renderGraphicalMap();
-                    }
+                    // Clicked empty space (no fragment) - DO NOT Clear Selection
+                    // This allows double-click (which starts with mousedown) to work for allocation
+                    // Selection clearing is now handled by Escape key or explicit toggle
+                }
+            }
+        });
+
+        // Global Keyboard Handler (Escape to clear)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (this.drawingMode) {
+                    this.cancelDrawing();
+                } else if (this.selectedUnallocatedIds && this.selectedUnallocatedIds.size > 0) {
+                    this.selectedUnallocatedIds.clear();
+                    this.renderGraphicalMap();
+                    this.showInfo('Selection cleared');
                 }
             }
         });
