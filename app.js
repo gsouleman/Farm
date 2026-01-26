@@ -639,6 +639,7 @@ Object.assign(app, {
             } else {
                 console.warn('Debug: loadData - No farms found for user account');
                 this.renderDashboard();
+                this.renderLandAllocationTable();
             }
 
             this.updateFarmSelector();
@@ -698,6 +699,10 @@ Object.assign(app, {
             // Re-render employees if table exists (it's in the employees tab)
             this.renderEmployees();
 
+            // Refresh financial metrics and allocations
+            this.renderDashboard();
+            this.renderLandAllocationTable();
+
         } catch (error) {
             console.error('Failed to load farm details:', error);
         }
@@ -748,12 +753,17 @@ Object.assign(app, {
     },
 
     // Calculate financial metrics
-    calculateMetrics() {
-        const income = this.transactions
+    calculateMetrics(sectionId = null) {
+        let transactions = this.transactions;
+        if (sectionId) {
+            transactions = transactions.filter(t => t.section_id == sectionId || t.sectionId == sectionId);
+        }
+
+        const income = transactions
             .filter(t => t.type === 'income')
             .reduce((sum, t) => sum + parseFloat(t.amount), 0);
 
-        const expenses = this.transactions
+        const expenses = transactions
             .filter(t => t.type === 'expense')
             .reduce((sum, t) => sum + parseFloat(t.amount), 0);
 
@@ -1751,6 +1761,14 @@ Object.assign(app, {
         const btn = document.getElementById('saveTransactionBtn');
         if (btn) btn.textContent = 'Add Transaction';
 
+        // Populate section dropdown
+        const sectionSelect = document.getElementById('transactionSection');
+        if (sectionSelect) {
+            const sections = this.getCurrentFarm().sections || [];
+            sectionSelect.innerHTML = '<option value="">Link to section...</option>' +
+                sections.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+        }
+
         this.openModal('addTransactionModal');
     },
 
@@ -2207,7 +2225,8 @@ Object.assign(app, {
             type: document.getElementById('transactionType').value,
             category: document.getElementById('transactionCategory').value,
             amount: parseFloat(document.getElementById('transactionAmount').value),
-            description: document.getElementById('transactionDescription').value
+            description: document.getElementById('transactionDescription').value,
+            sectionId: document.getElementById('transactionSection').value || null
         };
 
         if (this.currentEditingId) {
@@ -2921,9 +2940,8 @@ Object.assign(app, {
     async switchFarm(farmId) {
         // Find existing farm object or wait to load?
         // Usually assume it's in the list
-        const farm = this.farms.find(f => f.id === parseInt(farmId)); // Ensure type match (backend uses numeric IDs)
-        // Wait, localStorage uses string if API returns number?
-        // Let's coerce both to string for comparison or standardise on number.
+        const farm = this.farms.find(f => String(f.id) === String(farmId));
+        // Coerce both to string for robust matching
         // Farms list from API likely has numeric IDs.
 
         if (!farm) {

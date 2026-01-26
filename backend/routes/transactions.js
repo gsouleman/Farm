@@ -56,13 +56,13 @@ router.post('/farm/:farmId', [
             return res.status(404).json({ error: { message: 'Farm not found' } });
         }
 
-        const { date, type, category, description, amount } = req.body;
+        const { date, type, category, description, amount, sectionId } = req.body;
 
         const result = await db.query(
-            `INSERT INTO transactions (farm_id, date, type, category, description, amount)
-       VALUES ($1, $2, $3, $4, $5, $6)
+            `INSERT INTO transactions (farm_id, date, type, category, description, amount, section_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
-            [req.params.farmId, date, type, category, description || null, amount]
+            [req.params.farmId, date, type, category, description || null, amount, sectionId || null]
         );
 
         res.status(201).json(result.rows[0]);
@@ -103,7 +103,7 @@ router.put('/:id', [
             return res.status(404).json({ error: { message: 'Transaction not found' } });
         }
 
-        const { date = null, type = null, category = null, description = null, amount = null } = req.body;
+        const { date = null, type = null, category = null, description = null, amount = null, sectionId = null } = req.body;
 
         const result = await db.query(
             `UPDATE transactions
@@ -111,10 +111,11 @@ router.put('/:id', [
            type = COALESCE($2, type),
            category = COALESCE($3, category),
            description = COALESCE($4, description),
-           amount = COALESCE($5, amount)
-       WHERE id = $6
+           amount = COALESCE($5, amount),
+           section_id = COALESCE($6, section_id)
+       WHERE id = $7
        RETURNING *`,
-            [date, type, category, description, amount, req.params.id]
+            [date, type, category, description, amount, sectionId, req.params.id]
         );
 
         res.json(result.rows[0]);

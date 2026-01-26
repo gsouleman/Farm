@@ -353,6 +353,9 @@
                         <th>SECTION</th>
                         <th>AREA (HA)</th>
                         <th>PERCENTAGE</th>
+                        <th>REVENUE</th>
+                        <th>EXPENSES</th>
+                        <th>NET FLOW</th>
                       </tr>
                     </thead>
                     <tbody id="landAllocationBody">
@@ -846,6 +849,13 @@
         <div class="form-group">
           <label class="form-label" for="transactionDescription">Description</label>
           <input type="text" class="form-control" id="transactionDescription" required placeholder="Brief description">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="transactionSection">Farm Section (Optional)</label>
+          <select class="form-control" id="transactionSection">
+            <option value="">Link to section...</option>
+          </select>
         </div>
 
         <div class="form-group">

@@ -1,23 +1,31 @@
 Object.assign(app, {
     // Function to update Land Allocation table from crop allocation sections
     renderLandAllocationTable() {
-        const tbody = document.getElementById('landAllocationTable');
+        const tbody = document.getElementById('landAllocationBody');
         if (!tbody) return;
 
-        const sections = this.getCurrentFarm().sections || [];
+        const sections = this.getCurrentFarm()?.sections || [];
 
         if (sections.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #999;">No allocations yet</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">No allocations yet</td></tr>';
             return;
         }
 
-        tbody.innerHTML = sections.map(section => `
-            <tr>
-                <td><strong>${section.name}</strong></td>
-                <td>${(parseFloat(section.area) || 0).toFixed(2)}</td>
-                <td>${(parseFloat(section.percentage) || 0).toFixed(1)}%</td>
-            </tr>
-        `).join('');
+        tbody.innerHTML = sections.map(section => {
+            const { income, expenses, netCashFlow } = this.calculateMetrics(section.id);
+            return `
+                <tr>
+                    <td><strong>${section.name}</strong></td>
+                    <td>${(parseFloat(section.area) || 0).toFixed(2)}</td>
+                    <td>${(parseFloat(section.percentage) || 0).toFixed(1)}%</td>
+                    <td class="text-success">${this.formatCurrency(income)}</td>
+                    <td class="text-danger">${this.formatCurrency(expenses)}</td>
+                    <td style="font-weight: bold; color: ${netCashFlow >= 0 ? 'var(--color-primary)' : 'var(--color-accent)'};">
+                        ${this.formatCurrency(netCashFlow)}
+                    </td>
+                </tr>
+            `;
+        }).join('');
     },
 
     // Add coordinates to section creation
