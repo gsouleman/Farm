@@ -79,6 +79,10 @@
         </ul>
       </div>
       <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="display: flex; flex-direction: column; align-items: flex-end;">
+          <span id="currentUserEmail" style="color: white; font-size: 0.85rem; font-weight: 500;"></span>
+          <span id="backendStatus" style="color: rgba(255,255,255,0.6); font-size: 0.7rem;"></span>
+        </div>
         <button class="nav-btn-logout" onclick="app.logout()">
           Logout
         </button>
@@ -555,11 +559,13 @@
                     <th style="cursor: pointer; user-select: none;" onclick="app.sortTransactions('type')">Type <span
                         id="sort-type">↕</span></th>
                     <th style="cursor: pointer; user-select: none;" onclick="app.sortTransactions('category')">Category
-                      <span id="sort-category">↕</span></th>
+                      <span id="sort-category">↕</span>
+                    </th>
                     <th style="cursor: pointer; user-select: none;" onclick="app.sortTransactions('description')">
                       Description <span id="sort-description">↕</span></th>
                     <th style="cursor: pointer; user-select: none;" onclick="app.sortTransactions('amount')">Amount
-                      <span id="sort-amount">↕</span></th>
+                      <span id="sort-amount">↕</span>
+                    </th>
                     <th>Actions</th>
                   </tr>
                 </thead>

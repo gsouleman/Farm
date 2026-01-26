@@ -550,6 +550,16 @@ Object.assign(app, {
         const currentUser = api.getUser();
         console.log('Debug: Logged in as:', currentUser ? `${currentUser.email} (ID: ${currentUser.id})` : 'NOT LOGGED IN');
 
+        // Display current user in UI
+        const emailDisplay = document.getElementById('currentUserEmail');
+        if (emailDisplay && currentUser) emailDisplay.textContent = currentUser.email;
+
+        // Display backend connection in UI
+        const backendStatus = document.getElementById('backendStatus');
+        if (backendStatus) {
+            backendStatus.textContent = API_CONFIG.baseURL.includes('localhost') ? '📡 Local Backend' : '🌐 Production Backend';
+        }
+
         // Load data from API
         await this.loadData();
 
