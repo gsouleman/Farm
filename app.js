@@ -4535,6 +4535,9 @@ Object.assign(app, {
                 this.unallocatedFragments = []; // Reset storage
                 if (unallocatedFeatures) {
                     // Use calculated steps from visual grid, or fallback to 10x10 if not safe/available
+                    let latStep, lngStep;
+                    let safe = false;
+
                     if (this.gridSteps && this.gridSteps.safe) {
                         latStep = this.gridSteps.latStep;
                         lngStep = this.gridSteps.lngStep;
