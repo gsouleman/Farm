@@ -4211,19 +4211,12 @@ Object.assign(app, {
         ctx.fillStyle = '#f8faf9';
         ctx.fillRect(0, 0, width, height);
 
-        const farm = explicitFarm || this.farmData;
+        // Ensure we always use the freshest farm data available
+        const farm = explicitFarm || (this.getCurrentFarm && this.getCurrentFarm()) || this.farmData;
         const boundariesCount = farm && farm.boundaries ? farm.boundaries.length : 0;
 
-        console.log(`Debug: renderGraphicalMap - Direct farm passed? ${explicitFarm ? 'YES' : 'NO'}`);
-        console.log(`Debug: renderGraphicalMap - Current Farm ID: ${this.currentFarmId}, Name: ${farm ? farm.name : 'NONE'}, Boundaries Count: ${boundariesCount}`);
-
-        if (boundariesCount > 0) {
-            console.log(`Debug: First Boundary Point:`, farm.boundaries[0]);
-        }
-
         if (!farm || !farm.boundaries || farm.boundaries.length === 0) {
-            const user = api.getUser();
-            console.trace(`Debug: renderGraphicalMap - Showing "No boundaries" message for Farm: ${farm ? farm.name : 'Unknown'}. Full data:`, farm);
+            const user = (typeof api !== 'undefined' && api.getUser) ? api.getUser() : null;
 
             ctx.fillStyle = '#666';
             ctx.font = '20px Inter, sans-serif';
@@ -4232,16 +4225,6 @@ Object.assign(app, {
 
             ctx.font = '14px Inter, sans-serif';
             ctx.fillText('Edit coordinates to add boundaries', width / 2, height / 2 + 20);
-
-            ctx.fillStyle = '#999';
-            ctx.font = '12px Inter, sans-serif';
-            ctx.fillText(`User ID: ${user ? user.id : '?'}, Farm ID: ${this.currentFarmId || '?'}, Total Farms: ${this.farms.length}`, width / 2, height / 2 + 50);
-
-            // Raw debug dump on canvas
-            ctx.fillStyle = 'red';
-            ctx.font = '10px monospace';
-            const debugText = `Raw Boundaries: ${JSON.stringify(farm.boundaries).substring(0, 100)}...`;
-            ctx.fillText(debugText, width / 2, height / 2 + 80);
             return;
         }
 
@@ -4550,7 +4533,6 @@ Object.assign(app, {
                         latStep = (maxLat - minLat) / 10;
                         lngStep = (maxLng - minLng) / 10;
                     }
-                    console.log('Debug Grid:', { latStep, lngStep, safe, steps: this.gridSteps });
 
                     // Loop through grid cells based on steps
                     for (let lat = minLat; lat < maxLat; lat += latStep) {

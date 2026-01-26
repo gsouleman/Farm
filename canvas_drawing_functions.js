@@ -54,18 +54,14 @@ Object.assign(app, {
             // 2. Check if clicking an UNALLOCATED fragment (Multi-Select Feature)
             if (this.unallocatedFragments && this.unallocatedFragments.length > 0 && typeof turf !== 'undefined') {
                 const pointLatLng = this.coordsToLatLng(x, y);
-                console.log('Debug Click:', { x, y, pointLatLng });
                 const turfPoint = turf.point([pointLatLng.lng, pointLatLng.lat]);
 
                 const fragment = this.unallocatedFragments.find(frag => {
                     try {
                         const isInside = turf.booleanPointInPolygon(turfPoint, frag.geometry);
-                        if (isInside) console.log('Fragment Hit:', frag.id);
                         return isInside;
                     } catch (err) { return false; }
                 });
-
-                console.log('Found Fragment?', fragment ? fragment.id : 'No');
 
                 if (fragment) {
                     e.preventDefault();
