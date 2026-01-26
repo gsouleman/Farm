@@ -4985,6 +4985,11 @@ app.showTab = function (tabName) {
         // Trigger specific renders if needed
         if (tabName === 'employees') {
             this.renderEmployees();
+        } else if (tabName === 'farm-info') {
+            setTimeout(() => {
+                this.renderGraphicalMap();
+                this.renderFarmMap();
+            }, 100);
         }
     }
 
