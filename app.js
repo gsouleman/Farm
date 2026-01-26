@@ -4121,7 +4121,11 @@ Object.assign(app, {
         ctx.fillRect(0, 0, width, height);
 
         const farm = this.farmData;
-        console.log(`Debug: renderGraphicalMap - Current Farm ID: ${this.currentFarmId}, Name: ${farm ? farm.name : 'NONE'}, Boundaries: ${farm && farm.boundaries ? farm.boundaries.length : 'UNDEFINED'}`);
+        const boundariesCount = farm && farm.boundaries ? farm.boundaries.length : 0;
+        console.log(`Debug: renderGraphicalMap - Farm ID: ${this.currentFarmId}, Name: ${farm ? farm.name : 'NONE'}, Boundaries Count: ${boundariesCount}`);
+        if (boundariesCount > 0) {
+            console.log(`Debug: First Boundary Point:`, farm.boundaries[0]);
+        }
 
         if (!farm || !farm.boundaries || farm.boundaries.length === 0) {
             ctx.fillStyle = '#666';

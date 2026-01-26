@@ -156,7 +156,9 @@ const api = {
     // Farm APIs
     farms: {
         async getAll() {
-            return await api.request(API_CONFIG.endpoints.farms);
+            const response = await api.request(API_CONFIG.endpoints.farms);
+            console.log(`Debug: API - getAll() returned ${response.length} farms`);
+            return response;
         },
 
         async getOne(id) {
