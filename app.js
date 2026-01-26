@@ -2488,17 +2488,25 @@ Object.assign(app, {
         const reportContent = document.getElementById('reportContent');
         const reportPreview = document.getElementById('reportPreview');
 
+        // Get current farm and prepare zones data with defaults
+        const farm = this.farmData;
+        const zones = farm.zones || {};
+        const fruitTrees = zones.fruitTrees || { area: 0, percentage: 0 };
+        const cashCrops = zones.cashCrops || { area: 0, percentage: 0 };
+        const farmHouse = zones.farmHouse || { area: 0, percentage: 0 };
+        const residential = zones.residential || { area: 0, percentage: 0 };
+
         reportContent.innerHTML = `
       <div style="max-width: 800px; margin: 0 auto;">
         <h1 style="text-align: center; color: var(--color-primary);">Operations Report</h1>
         <h3 style="text-align: center; color: var(--color-gray-600); margin-bottom: 2rem;">
-          Maloure Farm - ${new Date().toLocaleDateString()}
+          ${farm.name || 'Maloure Farm'} - ${new Date().toLocaleDateString()}
         </h3>
         
         <h3>Farm Overview</h3>
-        <p><strong>Total Area:</strong> ${this.farmData.area} hectares</p>
-        <p><strong>Location:</strong> ${this.farmData.location}</p>
-        <p><strong>Coordinates:</strong> ${this.farmData.centerCoordinates.lat}, ${this.farmData.centerCoordinates.lng}</p>
+        <p><strong>Total Area:</strong> ${farm.area || 0} hectares</p>
+        <p><strong>Location:</strong> ${farm.location || 'N/A'}</p>
+        <p><strong>Coordinates:</strong> ${farm.centerCoordinates?.lat || 0}, ${farm.centerCoordinates?.lng || 0}</p>
         
         <h3 style="margin-top: 2rem;">Land Utilization</h3>
         <div class="table-container">
@@ -2511,10 +2519,10 @@ Object.assign(app, {
               </tr>
             </thead>
             <tbody>
-              <tr><td>Fruit Trees</td><td>${this.farmData.zones.fruitTrees.area}</td><td>${this.farmData.zones.fruitTrees.percentage}%</td></tr>
-              <tr><td>Cash Crops</td><td>${this.farmData.zones.cashCrops.area}</td><td>${this.farmData.zones.cashCrops.percentage}%</td></tr>
-              <tr><td>Farm House</td><td>${this.farmData.zones.farmHouse.area}</td><td>${this.farmData.zones.farmHouse.percentage}%</td></tr>
-              <tr><td>Residential</td><td>${this.farmData.zones.residential.area}</td><td>${this.farmData.zones.residential.percentage}%</td></tr>
+              <tr><td>Fruit Trees</td><td>${fruitTrees.area}</td><td>${fruitTrees.percentage}%</td></tr>
+              <tr><td>Cash Crops</td><td>${cashCrops.area}</td><td>${cashCrops.percentage}%</td></tr>
+              <tr><td>Farm House</td><td>${farmHouse.area}</td><td>${farmHouse.percentage}%</td></tr>
+              <tr><td>Residential</td><td>${residential.area}</td><td>${residential.percentage}%</td></tr>
             </tbody>
           </table>
         </div>
@@ -2542,20 +2550,25 @@ Object.assign(app, {
         const reportContent = document.getElementById('reportContent');
         const reportPreview = document.getElementById('reportPreview');
 
+        // Get current farm and prepare zones data with defaults
+        const farm = this.farmData;
+        const zones = farm.zones || {};
+        const fruitTrees = zones.fruitTrees || { area: 0, percentage: 0 };
+        const cashCrops = zones.cashCrops || { area: 0, percentage: 0 };
+
         reportContent.innerHTML = `
       <div style="max-width: 800px; margin: 0 auto;">
         <h1 style="text-align: center; color: var(--color-primary); font-size: 2.5rem;">
           Investment Opportunity
         </h1>
         <h2 style="text-align: center; color: var(--color-secondary); margin-bottom: 3rem;">
-          Maloure Farm, Njimoun Subdivision
+          ${farm.name || 'Maloure Farm'}, ${farm.location || 'Njimoun Subdivision'}
         </h2>
         
         <div class="card-glass" style="padding: 2rem; margin-bottom: 2rem;">
           <h3 style="color: var(--color-primary);">Executive Summary</h3>
           <p style="font-size: 1.1rem; line-height: 1.8;">
-            Maloure Farm is a ${this.farmData.area}-hectare agricultural enterprise located in the fertile 
-            Maloure village of Njimoun subdivision, Foumban. With strategic crop diversification 
+            ${farm.name || 'Maloure Farm'} is a ${farm.area || 0}-hectare agricultural enterprise located in ${farm.location || 'the fertile Maloure village of Njimoun subdivision, Foumban'}. With strategic crop diversification 
             spanning fruit trees and high-value cash crops, the farm presents a compelling 
             investment opportunity in sustainable agriculture.
           </p>
@@ -2564,15 +2577,15 @@ Object.assign(app, {
         <h3 style="color: var(--color-primary);">Key Investment Highlights</h3>
         <div class="grid grid-2" style="margin-bottom: 2rem;">
           <div class="stat-card">
-            <div class="stat-card-icon">ðŸ“</div>
+            <div class="stat-card-icon">📍</div>
             <div class="stat-card-label">Prime Location</div>
-            <div class="stat-card-value">${this.farmData.area} ha</div>
+            <div class="stat-card-value">${farm.area || 0} ha</div>
             <p class="text-muted" style="margin-top: 0.5rem; font-size: 0.9rem;">
-              Strategic location in Foumban's agricultural heartland
+              Strategic location in agricultural heartland
             </p>
           </div>
           <div class="stat-card">
-            <div class="stat-card-icon">ðŸ’°</div>
+            <div class="stat-card-icon">💰</div>
             <div class="stat-card-label">Financial Performance</div>
             <div class="stat-card-value">${this.formatCurrency(netCashFlow)}</div>
             <p class="text-muted" style="margin-top: 0.5rem; font-size: 0.9rem;">
@@ -2583,8 +2596,8 @@ Object.assign(app, {
         
         <h3 style="color: var(--color-primary);">Crop Portfolio</h3>
         <ul style="font-size: 1.1rem; line-height: 2;">
-          <li><strong>Fruit Trees:</strong> Premium avocado and lemon cultivation (${this.farmData.zones.fruitTrees.area} ha)</li>
-          <li><strong>Cash Crops:</strong> High-demand cassava, ginger, and pepper (${this.farmData.zones.cashCrops.area} ha)</li>
+          <li><strong>Fruit Trees:</strong> Premium avocado and lemon cultivation (${fruitTrees.area} ha)</li>
+          <li><strong>Cash Crops:</strong> High-demand cassava, ginger, and pepper (${cashCrops.area} ha)</li>
           <li><strong>Infrastructure:</strong> Modern farm house and residential facilities</li>
         </ul>
         
@@ -2609,7 +2622,7 @@ Object.assign(app, {
         <h3 style="color: var(--color-primary); margin-top: 2rem;">Why Invest?</h3>
         <div class="grid grid-2">
           <div>
-            <h4>âœ… Strategic Advantages</h4>
+            <h4>✅ Strategic Advantages</h4>
             <ul>
               <li>Prime agricultural land</li>
               <li>Established infrastructure</li>
@@ -2618,7 +2631,7 @@ Object.assign(app, {
             </ul>
           </div>
           <div>
-            <h4>ðŸ“ˆ Growth Potential</h4>
+            <h4>📈 Growth Potential</h4>
             <ul>
               <li>Expanding market demand</li>
               <li>Scalable operations</li>
@@ -2631,9 +2644,9 @@ Object.assign(app, {
         <div class="card-glass" style="padding: 2rem; margin-top: 2rem; text-align: center;">
           <h3 style="color: var(--color-primary);">Contact Information</h3>
           <p style="font-size: 1.1rem;">
-            <strong>Maloure Farm</strong><br>
-            Maloure Village, Njimoun Subdivision, Foumban<br>
-            Coordinates: ${this.farmData.centerCoordinates.lat}, ${this.farmData.centerCoordinates.lng}
+            <strong>${farm.name || 'Maloure Farm'}</strong><br>
+            ${farm.location || 'Maloure Village, Njimoun Subdivision, Foumban'}<br>
+            Coordinates: ${farm.centerCoordinates?.lat || 0}, ${farm.centerCoordinates?.lng || 0}
           </p>
         </div>
       </div>
