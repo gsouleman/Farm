@@ -98,7 +98,7 @@ router.put('/:id', [
             return res.status(404).json({ error: { message: 'Transaction not found' } });
         }
 
-        const { date, type, category, description, amount } = req.body;
+        const { date = null, type = null, category = null, description = null, amount = null } = req.body;
 
         const result = await db.query(
             `UPDATE transactions

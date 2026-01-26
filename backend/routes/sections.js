@@ -111,7 +111,7 @@ router.put('/:id', [
             return res.status(404).json({ error: { message: 'Section not found' } });
         }
 
-        const { name, type, cropType, area, percentage, color, boundaries, notes } = req.body;
+        const { name = null, type = null, cropType = null, area = null, percentage = null, color = null, boundaries = null, notes = null } = req.body;
 
         const result = await db.query(
             `UPDATE sections

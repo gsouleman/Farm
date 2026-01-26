@@ -112,7 +112,7 @@ router.put('/:id', [
             return res.status(404).json({ error: { message: 'Farm not found' } });
         }
 
-        const { name, location, area, perimeter, centerLat, centerLng, boundaries, zones } = req.body;
+        const { name = null, location = null, area = null, perimeter = null, centerLat = null, centerLng = null, boundaries = null, zones = null } = req.body;
 
         const result = await db.query(
             `UPDATE farms 

@@ -111,7 +111,7 @@ router.put('/:id', [
             return res.status(404).json({ error: { message: 'Employee not found' } });
         }
 
-        const { name, role, type, status, phone, pay_frequency, pay_rate } = req.body;
+        const { name = null, role = null, type = null, status = null, phone = null, pay_frequency = null, pay_rate = null } = req.body;
 
         const result = await db.query(
             `UPDATE employees
