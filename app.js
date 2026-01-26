@@ -1252,8 +1252,16 @@ Object.assign(app, {
         <td>${t.category}</td>
         <td>${t.description}</td>
         <td><strong>${this.formatCurrency(t.amount)}</strong></td>
-        <td>
-          <button class="btn btn-danger btn-sm" onclick="app.deleteTransaction(${index})">ðŸ—‘ï¸</button>
+        <td style="white-space: nowrap;">
+            <button class="btn btn-outline-info btn-sm" style="margin-right: 4px;" onclick="app.viewTransaction(${index})" title="View Details">
+                <i class="fas fa-eye"></i>
+            </button>
+            <button class="btn btn-outline-primary btn-sm" style="margin-right: 4px;" onclick="app.editTransaction(${index})" title="Edit">
+                <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-outline-danger btn-sm" onclick="app.deleteTransaction(${index})" title="Delete">
+                <i class="fas fa-trash"></i>
+            </button>
         </td>
       </tr>
     `).join('');
@@ -2016,6 +2024,32 @@ Object.assign(app, {
                 this.showError('Failed to delete transaction: ' + error.message);
             }
         });
+    },
+
+    viewTransaction(index) {
+        // Use sorted list to find correct transaction
+        const sorted = [...this.transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+        const t = sorted[index];
+        if (!t) return;
+
+        const info = `
+            <div style="text-align: left;">
+                <h4 style="border-bottom: 1px solid #ccc; padding-bottom: 5px;">Transaction Details</h4>
+                <p><strong>Date:</strong> ${this.formatDate(t.date)}</p>
+                <p><strong>Type:</strong> <span class="badge ${t.type === 'income' ? 'badge-success' : 'badge-warning'}">${t.type}</span></p>
+                <p><strong>Category:</strong> ${t.category}</p>
+                <p><strong>Amount:</strong> ${this.formatCurrency(t.amount)}</p>
+                <p><strong>Description:</strong> ${t.description || '-'}</p>
+                <hr>
+                <p class="text-muted" style="font-size: 0.8rem;">Internal ID: ${t.id}</p>
+                <button class="btn btn-primary btn-sm mt-2" onclick="app.closeModal('infoModal')">Close</button>
+            </div>
+        `;
+        this.showInfo(info);
+    },
+
+    editTransaction(index) {
+        this.showInfo('Edit functionality is coming soon!');
     },
 
     // Add crop
