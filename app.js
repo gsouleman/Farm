@@ -1565,8 +1565,17 @@ Object.assign(app, {
 
     // Modal management
     openAddTransactionModal() {
+        this.currentEditingId = null;
         document.getElementById('transactionForm').reset();
         document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
+
+        // Reset dynamic elements
+        const title = document.getElementById('transactionModalTitle');
+        if (title) title.textContent = 'Add New Transaction';
+
+        const btn = document.getElementById('saveTransactionBtn');
+        if (btn) btn.textContent = 'Add Transaction';
+
         this.openModal('addTransactionModal');
     },
 
@@ -1978,26 +1987,44 @@ Object.assign(app, {
             date: document.getElementById('transactionDate').value,
             type: document.getElementById('transactionType').value,
             category: document.getElementById('transactionCategory').value,
-            description: document.getElementById('transactionDescription').value,
-            amount: parseFloat(document.getElementById('transactionAmount').value)
+            amount: parseFloat(document.getElementById('transactionAmount').value),
+            description: document.getElementById('transactionDescription').value
         };
 
-        try {
-            const newTransaction = await api.transactions.create(this.currentFarmId, transactionData);
+        if (this.currentEditingId) {
+            try {
+                await api.transactions.update(this.currentEditingId, transactionData);
 
-            // Add to local array and update UI
-            this.transactions.push(newTransaction);
-            // Re-sort
-            this.transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+                // Update local array
+                const index = this.transactions.findIndex(t => t.id === this.currentEditingId);
+                if (index !== -1) {
+                    this.transactions[index] = { ...this.transactions[index], ...transactionData };
+                }
 
-            this.renderDashboard();
-            this.renderTransactions();
-            this.updateCurrentMonth();
-            this.initializeCharts();
-            this.closeModal('addTransactionModal');
-            this.showSuccess('Transaction added successfully!');
-        } catch (error) {
-            this.showError('Failed to add transaction: ' + error.message);
+                this.closeModal('addTransactionModal');
+                this.renderDashboard();
+                this.renderTransactions();
+                this.updateCurrentMonth();
+                this.initializeCharts();
+                this.showSuccess('Transaction updated successfully!');
+                this.currentEditingId = null;
+            } catch (error) {
+                this.showError('Failed to update transaction: ' + error.message);
+            }
+        } else {
+            try {
+                const newTransaction = await api.transactions.create(this.currentFarmId, transactionData);
+                this.transactions.push(newTransaction);
+
+                this.closeModal('addTransactionModal');
+                this.renderDashboard();
+                this.renderTransactions();
+                this.updateCurrentMonth();
+                this.initializeCharts();
+                this.showSuccess('Transaction added successfully!');
+            } catch (error) {
+                this.showError('Failed to add transaction: ' + error.message);
+            }
         }
     },
 
@@ -2049,7 +2076,32 @@ Object.assign(app, {
     },
 
     editTransaction(index) {
-        this.showInfo('Edit functionality is coming soon!');
+        const sorted = [...this.transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+        const t = sorted[index];
+        if (!t) return;
+
+        this.currentEditingId = t.id;
+
+        // Populate form
+        document.getElementById('transactionDate').value = t.date.split('T')[0];
+        document.getElementById('transactionType').value = t.type;
+
+        // Trigger type change to populate categories
+        this.updateCategoryOptions();
+
+        // Set other fields (after options populated)
+        document.getElementById('transactionCategory').value = t.category;
+        document.getElementById('transactionAmount').value = t.amount;
+        document.getElementById('transactionDescription').value = t.description;
+
+        // Update modal title and button
+        const title = document.getElementById('transactionModalTitle');
+        if (title) title.textContent = 'Edit Transaction';
+
+        const btn = document.getElementById('saveTransactionBtn');
+        if (btn) btn.textContent = 'Update Transaction';
+
+        this.openModal('addTransactionModal');
     },
 
     // Add crop

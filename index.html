@@ -780,7 +780,7 @@
   <div class="modal-overlay" id="addTransactionModal">
     <div class="modal">
       <div class="modal-header">
-        <h3 class="modal-title">Add Transaction</h3>
+        <h3 class="modal-title" id="transactionModalTitle">Add Transaction</h3>
         <button class="modal-close" onclick="app.closeModal('addTransactionModal')"><i
             class="fas fa-times"></i></button>
       </div>
@@ -818,7 +818,7 @@
 
         <div class="flex" style="justify-content: flex-end; gap: 1rem;">
           <button type="button" class="btn btn-outline" onclick="app.closeModal('addTransactionModal')">Cancel</button>
-          <button type="submit" class="btn btn-primary">Add Transaction</button>
+          <button type="submit" class="btn btn-primary" id="saveTransactionBtn">Add Transaction</button>
         </div>
       </form>
     </div>
