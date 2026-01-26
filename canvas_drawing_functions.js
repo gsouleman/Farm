@@ -77,11 +77,22 @@ Object.assign(app, {
                     }
                     this.renderGraphicalMap();
                     return;
-                } else {
-                    // Clicked empty space (no fragment) - DO NOT Clear Selection
-                    // This allows double-click (which starts with mousedown) to work for allocation
-                    // Selection clearing is now handled by Escape key or explicit toggle
                 }
+            }
+
+            // 3. Check if clicking an existing ALLOCATED section
+            const section = this.getSectionAtPoint(x, y);
+            if (section) {
+                this.selectedSectionId = section.id;
+                this.renderGraphicalMap();
+                return;
+            }
+
+            // 4. Clicked empty space - Clear selection
+            if (this.selectedSectionId || (this.selectedUnallocatedIds && this.selectedUnallocatedIds.size > 0)) {
+                this.selectedSectionId = null;
+                if (this.selectedUnallocatedIds) this.selectedUnallocatedIds.clear();
+                this.renderGraphicalMap();
             }
         });
 
@@ -603,6 +614,14 @@ Object.assign(app, {
                 pctInput.value = pct.toFixed(1);
             } else {
                 pctInput.value = '0';
+            }
+        }
+
+        const colorInput = document.getElementById('sectionColor');
+        if (colorInput) {
+            // Set a default color if not already set or if opening new section
+            if (!colorInput.value || colorInput.value === '#000000') {
+                colorInput.value = '#4CAF50';
             }
         }
 
