@@ -245,8 +245,15 @@ Object.assign(app, {
 
     // Helper to get current farm
     getCurrentFarm() {
-        if (this.farms.length === 0) return { name: '', area: 0, perimeter: 0, boundaries: [], sections: [], transactions: [], fruitTrees: [], cashCrops: [], customExpenseCategories: [], customIncomeCategories: [] };
-        return this.farms.find(f => f.id === this.currentFarmId) || this.farms[0];
+        if (!this.farms || this.farms.length === 0) return null;
+
+        // Try to find the specific farm
+        const farm = this.farms.find(f => f.id == this.currentFarmId);
+        if (farm) return farm;
+
+        // If not found (e.g. ID changed), fallback to first but don't just return it blindly
+        // Only fallback if we explicitly have at least one farm
+        return this.farms[0];
     },
     get farmData() {
         return this.getCurrentFarm();
@@ -556,8 +563,11 @@ Object.assign(app, {
             return;
         }
 
+        console.log('Debug: loadData - Fetching farms...');
         try {
             const farms = await api.farms.getAll();
+            console.log(`Debug: loadData - Received ${farms.length} farms`);
+
             this.farms = farms.map(f => this.sanitizeFarmData(f));
 
             if (this.farms.length > 0) {
@@ -566,10 +576,10 @@ Object.assign(app, {
                 const farmExists = this.farms.find(f => f.id === savedFarmId);
 
                 this.currentFarmId = farmExists ? savedFarmId : this.farms[0].id;
-                console.log(`Debug: loadData - Current Farm ID: ${this.currentFarmId}`);
+                console.log(`Debug: loadData - Resolved currentFarmId: ${this.currentFarmId}`);
                 await this.loadFarmDetails(this.currentFarmId);
             } else {
-                // No farms found
+                console.warn('Debug: loadData - No farms found for user');
                 this.renderDashboard();
             }
 
@@ -1745,6 +1755,11 @@ Object.assign(app, {
 
     // Open coordinate editor modal
     openCoordinateEditorModal() {
+        if (!this.farmData || !this.farmData.id) {
+            this.showError('Please select or create a farm before editing coordinates.');
+            return;
+        }
+
         // Copy current boundaries to temp storage
         this.tempCoordinates = JSON.parse(JSON.stringify(this.farmData.boundaries || []));
 
@@ -1999,7 +2014,14 @@ Object.assign(app, {
         const centerLat = this.tempCoordinates.reduce((sum, coord) => sum + coord.lat, 0) / this.tempCoordinates.length;
         const centerLng = this.tempCoordinates.reduce((sum, coord) => sum + coord.lng, 0) / this.tempCoordinates.length;
 
-        // Update farm data
+        // Safety check for farm ID
+        const currentFarm = this.farmData;
+        if (!currentFarm || !currentFarm.id) {
+            this.showError('Cannot save coordinates: Missing Farm ID. Please refresh and try again.');
+            console.error('Debug: Attempted to save coordinates with missing farmData.id', { farmData: currentFarm });
+            return;
+        }
+
         // Update farm data payload
         const updateData = {
             boundaries: this.tempCoordinates,
@@ -2008,11 +2030,12 @@ Object.assign(app, {
         };
 
         try {
-            await api.farms.update(this.farmData.id, updateData);
+            console.log(`Debug: Saving coordinates to Farm ${currentFarm.id}...`);
+            await api.farms.update(currentFarm.id, updateData);
 
             // Update local memory
-            this.farmData.boundaries = JSON.parse(JSON.stringify(this.tempCoordinates));
-            this.farmData.centerCoordinates = {
+            currentFarm.boundaries = JSON.parse(JSON.stringify(this.tempCoordinates));
+            currentFarm.centerCoordinates = {
                 lat: centerLat,
                 lng: centerLng
             };

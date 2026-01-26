@@ -86,6 +86,11 @@ router.put('/:id', [
             return res.status(400).json({ error: { message: 'Validation failed', details: errors.array() } });
         }
 
+        // Validate ID
+        if (isNaN(parseInt(req.params.id)) || req.params.id === 'undefined') {
+            return res.status(400).json({ error: { message: 'Invalid or missing ID' } });
+        }
+
         // Verify ownership through farm
         const ownershipCheck = await db.query(
             `SELECT t.id FROM transactions t
