@@ -750,27 +750,59 @@ Object.assign(app, {
     },
 
     async parseMomoPDF(file) {
-        // Basic PDF text extraction
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-        let fullText = '';
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let transactions = [];
 
-        for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const textContent = await page.getTextContent();
-            const pageText = textContent.items.map(item => item.str).join(' ');
-            fullText += pageText + '\n';
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+
+                // Group text items by Y-coordinate to reconstruct lines
+                const lines = {};
+                textContent.items.forEach(item => {
+                    const y = Math.round(item.transform[5]);
+                    if (!lines[y]) lines[y] = [];
+                    lines[y].push(item);
+                });
+
+                Object.keys(lines).forEach(y => {
+                    lines[y].sort((a, b) => a.transform[4] - b.transform[4]);
+                    const lineText = lines[y].map(item => item.str).join(' ').trim();
+
+                    if (lineText.toUpperCase().includes('MOMO USER')) {
+                        const dateMatch = lineText.match(/(\d{2}[/-]\d{2}[/-]\d{4}|\d{4}[/-]\d{2}[/-]\d{2})/);
+                        const amountMatches = lineText.match(/[0-9,]+\.[0-9]{2}|[0-9,]{3,}/g);
+
+                        if (dateMatch && amountMatches) {
+                            let rawAmount = amountMatches[amountMatches.length - 1];
+                            let amount = parseFloat(this.sanitizeAmount(rawAmount));
+                            let description = lineText
+                                .replace(dateMatch[0], '')
+                                .replace(/MOMO USER/i, '')
+                                .replace(rawAmount, '')
+                                .replace(/\s+/g, ' ')
+                                .trim();
+                            description = description.replace(/^[\s\-\.|]+|[\s\-\.|]+$/g, '').trim();
+                            if (description.length < 3) description = "MOMO Import";
+
+                            transactions.push({
+                                date: this.formatDateForInput(new Date(dateMatch[0])),
+                                type: 'expense',
+                                category: 'Other',
+                                description: description,
+                                amount: amount
+                            });
+                        }
+                    }
+                });
+            }
+            return transactions;
+        } catch (error) {
+            console.error("PDF Parsing Error:", error);
+            throw new Error("Failed to parse PDF: " + error.message);
         }
-
-        // PDF parsing is tricky without fixed structure. 
-        // Attempting to match specific MOMO pattern if possible, 
-        // but given the variability, extracting from text line by line is hard.
-        // For now, alerting user about PDF limitation or trying a simple regex if pattern is known.
-        // Since I don't have the PDF structure, I will attempt to look for "MOMO USER" and surrounding data.
-        // This is highly experimental.
-
-        console.warn("PDF parsing is experimental. Prefer Excel for accuracy.");
-        throw new Error("PDF import is currently limited. Please convert your statement to Excel for best results.");
     },
 
     processMomoData(rows) {
