@@ -1218,53 +1218,149 @@ Object.assign(app, {
 
     // Render transactions
     renderTransactions() {
-        console.log(`Debug: renderTransactions - Total transactions: ${this.transactions.length}`);
-        // Recent transactions (last 5)
-        const recentBody = document.getElementById('recentTransactionsBody');
-        const allBody = document.getElementById('allTransactionsBody');
+        // Initialize state if missing
+        if (!this.currentFilters) this.currentFilters = { search: '', type: '', category: '' };
+        if (!this.currentSort) this.currentSort = { field: 'date', direction: 'desc' };
 
-        if (this.transactions.length === 0) {
-            recentBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No transactions yet</td></tr>';
-            allBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No transactions yet</td></tr>';
-            return;
+        // Recent transactions (Global - always newest 5)
+        const recentBody = document.getElementById('recentTransactionsBody');
+        const sortedGlobal = [...this.transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        if (recentBody) {
+            const recent = sortedGlobal.slice(0, 5);
+            if (recent.length === 0) {
+                recentBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No transactions yet</td></tr>';
+            } else {
+                recentBody.innerHTML = recent.map(t => `
+                      <tr>
+                        <td>${this.formatDate(t.date)}</td>
+                        <td><span class="badge ${t.type === 'income' ? 'badge-success' : 'badge-warning'}">${t.type}</span></td>
+                        <td>${t.category}</td>
+                        <td>${t.description}</td>
+                        <td><strong>${this.formatCurrency(t.amount)}</strong></td>
+                      </tr>
+                  `).join('');
+            }
         }
 
-        // Sort by date (newest first)
-        const sorted = [...this.transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+        // Filter and Sort for "All Transactions" Table
+        const allBody = document.getElementById('allTransactionsBody');
+        if (!allBody) return;
 
-        // Recent transactions
-        const recent = sorted.slice(0, 5);
-        recentBody.innerHTML = recent.map(t => `
-      <tr>
-        <td>${this.formatDate(t.date)}</td>
-        <td><span class="badge ${t.type === 'income' ? 'badge-success' : 'badge-warning'}">${t.type}</span></td>
-        <td>${t.category}</td>
-        <td>${t.description}</td>
-        <td><strong>${this.formatCurrency(t.amount)}</strong></td>
-      </tr>
-    `).join('');
+        let filtered = this.transactions.filter(t => {
+            const search = (this.currentFilters.search || '').toLowerCase();
+            const matchesSearch = !search ||
+                (t.description || '').toLowerCase().includes(search) ||
+                (t.category || '').toLowerCase().includes(search);
+            const matchesType = !this.currentFilters.type || t.type === this.currentFilters.type;
+            const matchesCategory = !this.currentFilters.category || t.category === this.currentFilters.category;
+            return matchesSearch && matchesType && matchesCategory;
+        });
 
-        // All transactions
-        allBody.innerHTML = sorted.map((t, index) => `
-      <tr>
-        <td>${this.formatDate(t.date)}</td>
-        <td><span class="badge ${t.type === 'income' ? 'badge-success' : 'badge-warning'}">${t.type}</span></td>
-        <td>${t.category}</td>
-        <td>${t.description}</td>
-        <td><strong>${this.formatCurrency(t.amount)}</strong></td>
-        <td style="white-space: nowrap;">
-            <button class="btn btn-outline-info btn-sm" style="margin-right: 4px;" onclick="app.viewTransaction(${index})" title="View Details">
-                <i class="fas fa-eye"></i>
-            </button>
-            <button class="btn btn-outline-primary btn-sm" style="margin-right: 4px;" onclick="app.editTransaction(${index})" title="Edit">
-                <i class="fas fa-edit"></i>
-            </button>
-            <button class="btn btn-outline-danger btn-sm" onclick="app.deleteTransaction(${index})" title="Delete">
-                <i class="fas fa-trash"></i>
-            </button>
-        </td>
-      </tr>
-    `).join('');
+        // Sort
+        filtered.sort((a, b) => {
+            const field = this.currentSort.field;
+            let valA = a[field];
+            let valB = b[field];
+
+            if (field === 'date') {
+                valA = new Date(valA || 0); valB = new Date(valB || 0);
+            } else if (field === 'amount') {
+                valA = parseFloat(valA || 0); valB = parseFloat(valB || 0);
+            } else {
+                valA = (valA || '').toString().toLowerCase();
+                valB = (valB || '').toString().toLowerCase();
+            }
+
+            if (valA < valB) return this.currentSort.direction === 'asc' ? -1 : 1;
+            if (valA > valB) return this.currentSort.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        // Update Sort Icons
+        ['date', 'type', 'category', 'description', 'amount'].forEach(f => {
+            const span = document.getElementById(`sort-${f}`);
+            if (span) {
+                span.textContent = '↕';
+                span.style.color = '#ccc';
+                if (this.currentSort.field === f) {
+                    span.textContent = this.currentSort.direction === 'asc' ? '↑' : '↓';
+                    span.style.color = '#007bff';
+                }
+            }
+        });
+
+        // Render
+        if (filtered.length === 0) {
+            allBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No matching transactions</td></tr>';
+        } else {
+            allBody.innerHTML = filtered.map(t => {
+                // Safe ID passing 
+                const infoBtn = `<button class="btn btn-outline-info btn-sm" style="margin-right: 4px;" onclick='app.viewTransaction("${t.id}")' title="View Details"><i class="fas fa-eye"></i></button>`;
+                const editBtn = `<button class="btn btn-outline-primary btn-sm" style="margin-right: 4px;" onclick='app.editTransaction("${t.id}")' title="Edit"><i class="fas fa-edit"></i></button>`;
+                const deleteBtn = `<button class="btn btn-outline-danger btn-sm" onclick='app.deleteTransaction("${t.id}")' title="Delete"><i class="fas fa-trash"></i></button>`;
+
+                return `
+                  <tr>
+                    <td>${this.formatDate(t.date)}</td>
+                    <td><span class="badge ${t.type === 'income' ? 'badge-success' : 'badge-warning'}">${t.type}</span></td>
+                    <td>${t.category}</td>
+                    <td>${t.description}</td>
+                    <td><strong>${this.formatCurrency(t.amount)}</strong></td>
+                    <td style="white-space: nowrap;">
+                        ${infoBtn}
+                        ${editBtn}
+                        ${deleteBtn}
+                    </td>
+                  </tr>
+                `;
+            }).join('');
+        }
+
+        // Update Filter Categories (lazy load once)
+        const catSelect = document.getElementById('filterCategory');
+        if (catSelect && catSelect.options.length <= 1) {
+            this.updateFilterCategories();
+        }
+    },
+
+    applyFilters() {
+        this.currentFilters = {
+            search: document.getElementById('filterSearch').value.toLowerCase(),
+            type: document.getElementById('filterType').value,
+            category: document.getElementById('filterCategory').value
+        };
+        this.renderTransactions();
+    },
+
+    clearFilters() {
+        document.getElementById('filterSearch').value = '';
+        document.getElementById('filterType').value = '';
+        document.getElementById('filterCategory').value = '';
+        this.currentFilters = { search: '', type: '', category: '' };
+        this.renderTransactions();
+    },
+
+    sortTransactions(field) {
+        if (!this.currentSort) this.currentSort = { field: 'date', direction: 'desc' };
+
+        if (this.currentSort.field === field) {
+            this.currentSort.direction = this.currentSort.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.currentSort.field = field;
+            this.currentSort.direction = ['date', 'amount'].includes(field) ? 'desc' : 'asc';
+        }
+        this.renderTransactions();
+    },
+
+    updateFilterCategories() {
+        const categories = [...new Set(this.transactions.map(t => t.category))].filter(Boolean).sort();
+        const select = document.getElementById('filterCategory');
+        if (!select) return;
+        const currentVal = select.value;
+        select.innerHTML = '<option value="">All Categories</option>' +
+            categories.map(c => `<option value="${c}">${c}</option>`).join('');
+        select.value = currentVal;
     },
 
     // Render crops
@@ -2029,17 +2125,16 @@ Object.assign(app, {
     },
 
     // Delete transaction
-    async deleteTransaction(index) {
-        // Sort to get the correct object (UI uses sorted list)
-        const sorted = [...this.transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
-        const transaction = sorted[index];
+    async deleteTransaction(id) {
+        const transaction = this.transactions.find(t => t.id === id);
+        if (!transaction) return;
 
         this.showConfirmation('Are you sure you want to delete this transaction?', async () => {
             try {
-                await api.transactions.delete(transaction.id);
+                await api.transactions.delete(id);
 
                 // Remove from local array
-                this.transactions = this.transactions.filter(t => t.id !== transaction.id);
+                this.transactions = this.transactions.filter(t => t.id !== id);
 
                 this.renderDashboard();
                 this.renderTransactions();
@@ -2053,10 +2148,8 @@ Object.assign(app, {
         });
     },
 
-    viewTransaction(index) {
-        // Use sorted list to find correct transaction
-        const sorted = [...this.transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
-        const t = sorted[index];
+    viewTransaction(id) {
+        const t = this.transactions.find(tr => tr.id === id);
         if (!t) return;
 
         const info = `
@@ -2075,9 +2168,8 @@ Object.assign(app, {
         this.showInfo(info);
     },
 
-    editTransaction(index) {
-        const sorted = [...this.transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
-        const t = sorted[index];
+    editTransaction(id) {
+        const t = this.transactions.find(tr => tr.id === id);
         if (!t) return;
 
         this.currentEditingId = t.id;

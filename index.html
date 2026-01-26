@@ -524,15 +524,42 @@
             </div>
           </div>
           <div class="card-body">
+            <!-- Filter Bar -->
+            <div class="mb-3 p-2 bg-light rounded"
+              style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 200px;">
+                <input type="text" id="filterSearch" class="form-control" placeholder="Search transactions..."
+                  onkeyup="app.applyFilters()">
+              </div>
+              <div style="width: 150px;">
+                <select id="filterType" class="form-control" onchange="app.applyFilters()">
+                  <option value="">All Types</option>
+                  <option value="income">Income</option>
+                  <option value="expense">Expense</option>
+                </select>
+              </div>
+              <div style="width: 180px;">
+                <select id="filterCategory" class="form-control" onchange="app.applyFilters()">
+                  <option value="">All Categories</option>
+                </select>
+              </div>
+              <button class="btn btn-outline-secondary btn-sm" onclick="app.clearFilters()">Clear</button>
+            </div>
+
             <div class="table-container">
               <table class="table" id="allTransactionsTable">
                 <thead>
                   <tr>
-                    <th>Date</th>
-                    <th>Type</th>
-                    <th>Category</th>
-                    <th>Description</th>
-                    <th>Amount</th>
+                    <th style="cursor: pointer; user-select: none;" onclick="app.sortTransactions('date')">Date <span
+                        id="sort-date">↕</span></th>
+                    <th style="cursor: pointer; user-select: none;" onclick="app.sortTransactions('type')">Type <span
+                        id="sort-type">↕</span></th>
+                    <th style="cursor: pointer; user-select: none;" onclick="app.sortTransactions('category')">Category
+                      <span id="sort-category">↕</span></th>
+                    <th style="cursor: pointer; user-select: none;" onclick="app.sortTransactions('description')">
+                      Description <span id="sort-description">↕</span></th>
+                    <th style="cursor: pointer; user-select: none;" onclick="app.sortTransactions('amount')">Amount
+                      <span id="sort-amount">↕</span></th>
                     <th>Actions</th>
                   </tr>
                 </thead>
