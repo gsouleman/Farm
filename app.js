@@ -245,15 +245,28 @@ Object.assign(app, {
 
     // Helper to get current farm
     getCurrentFarm() {
-        if (!this.farms || this.farms.length === 0) return null;
+        const defaultFarm = {
+            name: '',
+            area: 0,
+            perimeter: 0,
+            boundaries: [],
+            sections: [],
+            transactions: [],
+            fruitTrees: [],
+            cashCrops: [],
+            customExpenseCategories: [],
+            customIncomeCategories: [],
+            centerCoordinates: { lat: 0, lng: 0 }
+        };
+
+        if (!this.farms || this.farms.length === 0) return defaultFarm;
 
         // Try to find the specific farm
         const farm = this.farms.find(f => f.id == this.currentFarmId);
         if (farm) return farm;
 
-        // If not found (e.g. ID changed), fallback to first but don't just return it blindly
-        // Only fallback if we explicitly have at least one farm
-        return this.farms[0];
+        // Fallback to first farm if list not empty
+        return this.farms[0] || defaultFarm;
     },
     get farmData() {
         return this.getCurrentFarm();
@@ -1135,8 +1148,11 @@ Object.assign(app, {
         }
 
         // Initialize map centered on farm
+        const center = this.farmData && this.farmData.centerCoordinates ?
+            this.farmData.centerCoordinates : { lat: 0, lng: 0 };
+
         const map = new google.maps.Map(mapDiv, {
-            center: this.farmData.centerCoordinates,
+            center: center,
             zoom: 17,
             mapTypeId: 'satellite',
             tilt: 0,
@@ -2025,7 +2041,7 @@ Object.assign(app, {
         const centerLng = this.tempCoordinates.reduce((sum, coord) => sum + coord.lng, 0) / this.tempCoordinates.length;
 
         // Safety check for farm ID
-        const currentFarm = this.farmData;
+        const currentFarm = this.getCurrentFarm();
         if (!currentFarm || !currentFarm.id) {
             this.showError('Cannot save coordinates: Missing Farm ID. Please refresh and try again.');
             console.error('Debug: Attempted to save coordinates with missing farmData.id', { farmData: currentFarm });
@@ -4068,7 +4084,8 @@ Object.assign(app, {
         ctx.fillStyle = '#f8faf9';
         ctx.fillRect(0, 0, width, height);
 
-        if (!this.farmData.boundaries || this.farmData.boundaries.length === 0) {
+        const farm = this.farmData;
+        if (!farm || !farm.boundaries || farm.boundaries.length === 0) {
             ctx.fillStyle = '#666';
             ctx.font = '20px Inter, sans-serif';
             ctx.textAlign = 'center';
