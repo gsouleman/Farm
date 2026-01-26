@@ -2126,7 +2126,8 @@ Object.assign(app, {
 
     // Delete transaction
     async deleteTransaction(id) {
-        const transaction = this.transactions.find(t => t.id === id);
+        // Use loose equality (==) to handle string/number mismatch from HTML
+        const transaction = this.transactions.find(t => t.id == id);
         if (!transaction) return;
 
         this.showConfirmation('Are you sure you want to delete this transaction?', async () => {
@@ -2134,7 +2135,7 @@ Object.assign(app, {
                 await api.transactions.delete(id);
 
                 // Remove from local array
-                this.transactions = this.transactions.filter(t => t.id !== id);
+                this.transactions = this.transactions.filter(t => t.id != id);
 
                 this.renderDashboard();
                 this.renderTransactions();
@@ -2149,7 +2150,7 @@ Object.assign(app, {
     },
 
     viewTransaction(id) {
-        const t = this.transactions.find(tr => tr.id === id);
+        const t = this.transactions.find(tr => tr.id == id);
         if (!t) return;
 
         const info = `
@@ -2169,7 +2170,7 @@ Object.assign(app, {
     },
 
     editTransaction(id) {
-        const t = this.transactions.find(tr => tr.id === id);
+        const t = this.transactions.find(tr => tr.id == id);
         if (!t) return;
 
         this.currentEditingId = t.id;
