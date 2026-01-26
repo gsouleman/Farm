@@ -4535,9 +4535,6 @@ Object.assign(app, {
                 this.unallocatedFragments = []; // Reset storage
                 if (unallocatedFeatures) {
                     // Use calculated steps from visual grid, or fallback to 10x10 if not safe/available
-                    let latStep, lngStep;
-                    let safe = false;
-
                     if (this.gridSteps && this.gridSteps.safe) {
                         latStep = this.gridSteps.latStep;
                         lngStep = this.gridSteps.lngStep;
@@ -4546,6 +4543,7 @@ Object.assign(app, {
                         latStep = (maxLat - minLat) / 10;
                         lngStep = (maxLng - minLng) / 10;
                     }
+                    console.log('Debug Grid:', { latStep, lngStep, safe, steps: this.gridSteps });
 
                     // Loop through grid cells based on steps
                     for (let lat = minLat; lat < maxLat; lat += latStep) {
@@ -4599,6 +4597,7 @@ Object.assign(app, {
                                                 id: fragId,
                                                 center: centerCoords
                                             });
+                                            // console.log('Fragment Added:', fragId, areaSqMeters);
 
                                             // Check if selected
                                             const isSelected = this.selectedUnallocatedIds && this.selectedUnallocatedIds.has(fragId);
