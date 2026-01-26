@@ -703,6 +703,10 @@ Object.assign(app, {
             this.renderDashboard();
             this.renderLandAllocationTable();
 
+            // Refresh financial section reports
+            this.updateCurrentMonth();
+            this.initializeCharts();
+
         } catch (error) {
             console.error('Failed to load farm details:', error);
         }
