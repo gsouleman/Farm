@@ -81,9 +81,9 @@ Object.assign(app, {
             }
 
             // 3. Check if clicking an existing ALLOCATED section
-            const section = this.getSectionAtPoint(x, y);
-            if (section) {
-                this.selectedSectionId = section.id;
+            const sectionId = this.getSectionAtPoint(x, y);
+            if (sectionId) {
+                this.selectedSectionId = sectionId;
                 this.renderGraphicalMap();
                 return;
             }

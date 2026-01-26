@@ -4210,7 +4210,7 @@ Object.assign(app, {
 
         // Define clipping region (the farm boundary)
         ctx.beginPath();
-        this.farmData.boundaries.forEach((coord, i) => {
+        farm.boundaries.forEach((coord, i) => { // Use 'farm' instead of 'this.farmData'
             const x = scaleX(coord.lng);
             const y = scaleY(coord.lat);
             if (i === 0) ctx.moveTo(x, y);
@@ -4281,7 +4281,8 @@ Object.assign(app, {
                 const center = this.getPolygonCenter(pixels);
 
                 // Show Corner Coordinates if Selected
-                if (this.selectedSectionId === section.id) {
+                if (String(this.selectedSectionId) === String(section.id)) {
+                    console.log('Rendering coordinates for section:', section.id);
                     const corners = section.boundaries;
                     ctx.font = 'bold 9px Inter, sans-serif';
                     corners.forEach((corner, i) => {
@@ -4316,9 +4317,7 @@ Object.assign(app, {
             }
         });
 
-        ctx.restore(); // Restore state after drawing sections (removes clipping)
-
-        ctx.restore(); // Restore state after drawing sections (removes clipping)
+        ctx.restore(); // Restore state after drawing sections (removes clipping AND restores save from 4209)
 
         // Draw farm center point
         const centerX = scaleX(farm.centerCoordinates.lng);
