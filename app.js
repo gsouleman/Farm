@@ -566,6 +566,7 @@ Object.assign(app, {
                 const farmExists = this.farms.find(f => f.id === savedFarmId);
 
                 this.currentFarmId = farmExists ? savedFarmId : this.farms[0].id;
+                console.log(`Debug: loadData - Current Farm ID: ${this.currentFarmId}`);
                 await this.loadFarmDetails(this.currentFarmId);
             } else {
                 // No farms found
@@ -581,6 +582,7 @@ Object.assign(app, {
 
     // Load details for a specific farm
     async loadFarmDetails(farmId) {
+        console.log(`Debug: loadFarmDetails called for Farm ID: ${farmId}`);
         try {
             const farm = this.farms.find(f => f.id === farmId);
             if (!farm) return;
@@ -595,6 +597,7 @@ Object.assign(app, {
 
             // Attach to farm object in memory
             farm.transactions = transactions;
+            console.log(`Debug: Fetched ${transactions.length} transactions for Farm ${farmId}`);
 
             // Split crops into fruit trees and cash crops
             farm.fruitTrees = crops.filter(c => c.category === 'fruit');
@@ -920,6 +923,7 @@ Object.assign(app, {
 
     async saveImportedTransactions(transactions) {
         this.showLoading(`Saving ${transactions.length} transactions...`);
+        console.log(`Debug: Saving transactions to Farm ID: ${this.currentFarmId}`);
         let savedCount = 0;
         let errors = 0;
 
@@ -1213,6 +1217,7 @@ Object.assign(app, {
 
     // Render transactions
     renderTransactions() {
+        console.log(`Debug: renderTransactions - Total transactions: ${this.transactions.length}`);
         // Recent transactions (last 5)
         const recentBody = document.getElementById('recentTransactionsBody');
         const allBody = document.getElementById('allTransactionsBody');
