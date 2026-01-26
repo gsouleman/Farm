@@ -808,12 +808,11 @@ Object.assign(app, {
     processMomoData(rows) {
         const transactions = [];
 
-        // Helper to find column loosely
+        // Helper to find column loosely, prioritizing search keys order
         const findVal = (row, keys) => {
-            for (let k of Object.keys(row)) {
-                for (let searchKey of keys) {
-                    if (k.toLowerCase().includes(searchKey.toLowerCase())) return row[k];
-                }
+            for (let searchKey of keys) {
+                const rowKey = Object.keys(row).find(k => k.toLowerCase().includes(searchKey.toLowerCase()));
+                if (rowKey) return row[rowKey];
             }
             return null;
         };
