@@ -4204,10 +4204,20 @@ Object.assign(app, {
         // Calculate bounds
         const lats = this.farmData.boundaries.map(b => b.lat);
         const lngs = this.farmData.boundaries.map(b => b.lng);
-        const minLat = Math.min(...lats);
-        const maxLat = Math.max(...lats);
-        const minLng = Math.min(...lngs);
-        const maxLng = Math.max(...lngs);
+        let minLat = Math.min(...lats);
+        let maxLat = Math.max(...lats);
+        let minLng = Math.min(...lngs);
+        let maxLng = Math.max(...lngs);
+
+        // Prevent division by zero if single point or line
+        if (maxLat === minLat) {
+            maxLat += 0.0001;
+            minLat -= 0.0001;
+        }
+        if (maxLng === minLng) {
+            maxLng += 0.0001;
+            minLng -= 0.0001;
+        }
 
         // Add padding
         const padding = 60;
