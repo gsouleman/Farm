@@ -623,9 +623,10 @@ Object.assign(app, {
 
     // Load details for a specific farm
     async loadFarmDetails(farmId) {
-        console.log(`Debug: loadFarmDetails called for Farm ID: ${farmId}`);
+        console.log(`Debug: loadFarmDetails called for Farm ID: ${farmId} (type: ${typeof farmId})`);
         try {
-            const farm = this.farms.find(f => f.id === farmId);
+            const numericId = parseInt(farmId);
+            const farm = this.farms.find(f => f.id === numericId);
             if (!farm) return;
 
             // Fetch related data in parallel
@@ -2777,7 +2778,7 @@ Object.assign(app, {
                 const sanitizedFarm = this.sanitizeFarmData(updatedFarm);
 
                 // Update local array
-                const index = this.farms.findIndex(f => f.id === this.editingFarmId);
+                const index = this.farms.findIndex(f => f.id == this.editingFarmId);
                 if (index !== -1) {
                     this.farms[index] = { ...this.farms[index], ...sanitizedFarm };
                 }
