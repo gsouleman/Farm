@@ -1537,7 +1537,7 @@ Object.assign(app, {
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            callback: (value) => 'XAF ' + value.toLocaleString()
+                            callback: (value) => value.toLocaleString() + ' Xaf'
                         }
                     }
                 }
@@ -1653,7 +1653,7 @@ Object.assign(app, {
             data: {
                 labels: categories.length > 0 ? categories : ['No income yet'],
                 datasets: [{
-                    label: 'Income (XAF)',
+                    label: 'Income (Xaf)',
                     data: amounts.length > 0 ? amounts : [0],
                     backgroundColor: '#4caf50'
                 }]
@@ -1670,7 +1670,7 @@ Object.assign(app, {
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            callback: (value) => 'XAF ' + value.toLocaleString()
+                            callback: (value) => value.toLocaleString() + ' Xaf'
                         }
                     }
                 }
@@ -2656,10 +2656,10 @@ Object.assign(app, {
 
     // Utility functions
     formatCurrency(amount) {
-        return parseFloat(amount).toLocaleString('fr-FR', {
+        return parseFloat(amount).toLocaleString('en-US', {
             minimumFractionDigits: 0,
             maximumFractionDigits: 0
-        }) + ' XAF';
+        }) + ' Xaf';
     },
 
     formatDate(dateString) {
@@ -2954,11 +2954,10 @@ Object.assign(app, {
         const selector = document.getElementById('farmSelector');
         if (!selector) return;
 
-        // Build options: placeholder, farms, then create option
-        const options = ['<option value="">Select Farm</option>'];
-        options.push(...this.farms.map(farm =>
+        // Build options: farms, then create option
+        const options = this.farms.map(farm =>
             `<option value="${farm.id}" ${farm.id === this.currentFarmId ? 'selected' : ''}>${farm.name}</option>`
-        ));
+        );
         options.push('<option value="create-new">Create New Farm</option>');
 
         selector.innerHTML = options.join('');
