@@ -697,7 +697,8 @@ Object.assign(app, {
 
             // Update UI
             this.renderFarmDetails();
-            this.renderDashboard();
+            this.renderGraphicalMap();
+            setTimeout(() => this.renderFarmMap(), 200); // Small delay for Google Maps to init
             this.renderTransactions();
             this.renderCrops();
             this.renderFarmMap(); // Re-render satellite map
