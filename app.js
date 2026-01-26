@@ -2352,11 +2352,14 @@ Object.assign(app, {
     },
 
     formatDate(dateString) {
+        if (!dateString) return '-';
         const date = new Date(dateString);
+        // Use UTC to avoid timezone rollback (since inputs are YYYY-MM-DD)
         return date.toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'short',
-            day: 'numeric'
+            day: 'numeric',
+            timeZone: 'UTC'
         });
     },
 
