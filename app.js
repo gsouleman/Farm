@@ -4177,6 +4177,8 @@ Object.assign(app, {
     // Render graphical representation on canvas
     renderGraphicalMap() {
         const canvas = document.getElementById('farmMapCanvas');
+        if (!canvas) return;
+
         const ctx = canvas.getContext('2d');
         // Use intrinsic attributes if offset is 0 (hidden)
         const width = canvas.width || 1200;
