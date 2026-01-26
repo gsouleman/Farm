@@ -709,11 +709,11 @@ Object.assign(app, {
                 }
 
                 if (transactions.length === 0) {
-                    let msg = 'No matching "MOMO USER" transactions found.\n';
+                    let msg = 'No matching "MOMO" transactions found.\n';
                     if (transactions.debugHeaders) {
                         msg += '\nDetected Columns:\n' + transactions.debugHeaders.join(', ') + '\n';
                     }
-                    msg += '\nTroubleshooting:\n1. Check if "Payment Type" column exists.\n2. Ensure "MOMO USER" is present in the row.\n3. Check detected columns above.';
+                    msg += '\nTroubleshooting:\n1. Check if "Payment Type" or "Payment" column exists.\n2. Ensure "MOMO" or "MOMO USER" is present in the row.\n3. Check detected columns above.';
                     this.showInfo(msg);
                     this.hideLoading();
                     return;
@@ -779,7 +779,7 @@ Object.assign(app, {
                     lines[y].sort((a, b) => a.transform[4] - b.transform[4]);
                     const lineText = lines[y].map(item => item.str).join(' ').trim();
 
-                    if (lineText.toUpperCase().includes('MOMO USER')) {
+                    if (lineText.toUpperCase().includes('MOMO')) {
                         const dateMatch = lineText.match(/(\d{2}[/-]\d{2}[/-]\d{4}|\d{4}[/-]\d{2}[/-]\d{2})/);
                         const amountMatches = lineText.match(/[0-9,]+\.[0-9]{2}|[0-9,]{3,}/g);
 
@@ -788,7 +788,7 @@ Object.assign(app, {
                             let amount = parseFloat(this.sanitizeAmount(rawAmount));
                             let description = lineText
                                 .replace(dateMatch[0], '')
-                                .replace(/MOMO USER/i, '')
+                                .replace(/MOMO( USER)?/i, '')
                                 .replace(rawAmount, '')
                                 .replace(/\s+/g, ' ')
                                 .trim();
@@ -831,13 +831,13 @@ Object.assign(app, {
             let isMomo = false;
 
             // 1. Try specific column lookup
-            const paymentType = findVal(row, ['Payment Type', 'Type']);
-            if (paymentType && paymentType.toString().toUpperCase().includes('MOMO USER')) {
+            const paymentType = findVal(row, ['Payment Type', 'Payment', 'Type']);
+            if (paymentType && paymentType.toString().toUpperCase().includes('MOMO')) {
                 isMomo = true;
             }
             // 2. Deep Scan Fallback: Check ALL values in the row
             else {
-                isMomo = Object.values(row).some(val => val && val.toString().toUpperCase().includes('MOMO USER'));
+                isMomo = Object.values(row).some(val => val && val.toString().toUpperCase().includes('MOMO'));
             }
 
             if (index < 5) console.log(`Row ${index} IsMomo: ${isMomo}`, row);
@@ -862,12 +862,12 @@ Object.assign(app, {
                         amount: amount
                     });
                 } else {
-                    console.warn('Row matched MOMO USER but missing Date or Amount:', row);
+                    console.warn('Row matched MOMO but missing Date or Amount:', row);
                 }
             }
         });
 
-        console.log(`Found ${matchCount} matching MOMO USER rows. Created ${transactions.length} transactions.`);
+        console.log(`Found ${matchCount} matching MOMO rows. Created ${transactions.length} transactions.`);
 
         // Attach debug info to array
         if (rows.length > 0) {
