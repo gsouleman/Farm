@@ -2838,27 +2838,49 @@ Object.assign(app, {
         if (!farm) return null;
         console.log(`Debug: sanitizeFarmData for Farm ${farm.id} (${farm.name}) - Raw boundaries:`, farm.boundaries);
 
-        return {
-            ...farm,
-            id: parseInt(farm.id),
-            area: parseFloat(farm.area) || 0,
-            perimeter: parseFloat(farm.perimeter) || 0,
-            centerCoordinates: {
-                lat: parseFloat(farm.center_lat || farm.centerCoordinates?.lat || 0),
-                lng: parseFloat(farm.center_lng || farm.centerCoordinates?.lng || 0)
-            },
-            boundaries: (Array.isArray(farm.boundaries) ? farm.boundaries :
-                (typeof farm.boundaries === 'string' ? JSON.parse(farm.boundaries) : [])).map(b => ({
-                    lat: parseFloat(b.lat),
-                    lng: parseFloat(b.lng)
-                })),
-            zones: typeof farm.zones === 'string' ? JSON.parse(farm.zones) : (farm.zones || {
-                fruitTrees: { area: 0, percentage: 0 },
-                cashCrops: { area: 0, percentage: 0 },
-                farmHouse: { area: 0, percentage: 0 },
-                residential: { area: 0, percentage: 0 }
-            })
-        };
+        try {
+            const boundaries = (Array.isArray(farm.boundaries) ? farm.boundaries :
+                (typeof farm.boundaries === 'string' ? JSON.parse(farm.boundaries) : []));
+
+            const sanitizedBoundaries = boundaries.map(b => ({
+                lat: parseFloat(b.lat || 0),
+                lng: parseFloat(b.lng || 0)
+            }));
+
+            const zones = typeof farm.zones === 'string' ? JSON.parse(farm.zones) : (farm.zones || {});
+
+            return {
+                ...farm,
+                id: parseInt(farm.id),
+                area: parseFloat(farm.area) || 0,
+                perimeter: parseFloat(farm.perimeter) || 0,
+                centerCoordinates: {
+                    lat: parseFloat(farm.center_lat || farm.centerCoordinates?.lat || 0),
+                    lng: parseFloat(farm.center_lng || farm.centerCoordinates?.lng || 0)
+                },
+                boundaries: sanitizedBoundaries,
+                zones: {
+                    fruitTrees: zones.fruitTrees || { area: 0, percentage: 0 },
+                    cashCrops: zones.cashCrops || { area: 0, percentage: 0 },
+                    farmHouse: zones.farmHouse || { area: 0, percentage: 0 },
+                    residential: zones.residential || { area: 0, percentage: 0 },
+                    ...(zones)
+                }
+            };
+        } catch (err) {
+            console.error(`Debug: sanitizeFarmData ERROR for Farm ${farm.id}:`, err);
+            return {
+                ...farm,
+                id: parseInt(farm.id),
+                boundaries: [],
+                zones: {
+                    fruitTrees: { area: 0, percentage: 0 },
+                    cashCrops: { area: 0, percentage: 0 },
+                    farmHouse: { area: 0, percentage: 0 },
+                    residential: { area: 0, percentage: 0 }
+                }
+            };
+        }
     },
 
     // Handle farm dropdown selection (includes create option)
