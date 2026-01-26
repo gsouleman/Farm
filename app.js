@@ -697,12 +697,12 @@ Object.assign(app, {
 
             // Update UI
             this.renderFarmDetails();
-            this.renderGraphicalMap();
+            this.renderGraphicalMap(farm); // Pass explicit farm to bypass state issues
             setTimeout(() => this.renderFarmMap(), 200); // Small delay for Google Maps to init
             this.renderTransactions();
             this.renderCrops();
             this.renderFarmMap(); // Re-render satellite map
-            this.renderGraphicalMap(); // Ensure graphical map is also updated/rendered
+            // DIV: renderGraphicalMap() was redundant and dangerous here
 
             // Re-render employees if table exists (it's in the employees tab)
             this.renderEmployees();
@@ -4175,7 +4175,8 @@ Object.assign(app, {
     },
 
     // Render graphical representation on canvas
-    renderGraphicalMap() {
+    // Render graphical representation on canvas
+    renderGraphicalMap(explicitFarm = null) {
         const canvas = document.getElementById('farmMapCanvas');
         if (!canvas) return;
 
@@ -4191,9 +4192,12 @@ Object.assign(app, {
         ctx.fillStyle = '#f8faf9';
         ctx.fillRect(0, 0, width, height);
 
-        const farm = this.farmData;
+        const farm = explicitFarm || this.farmData;
         const boundariesCount = farm && farm.boundaries ? farm.boundaries.length : 0;
+
+        console.log(`Debug: renderGraphicalMap - Direct farm passed? ${explicitFarm ? 'YES' : 'NO'}`);
         console.log(`Debug: renderGraphicalMap - Current Farm ID: ${this.currentFarmId}, Name: ${farm ? farm.name : 'NONE'}, Boundaries Count: ${boundariesCount}`);
+
         if (boundariesCount > 0) {
             console.log(`Debug: First Boundary Point:`, farm.boundaries[0]);
         }
