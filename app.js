@@ -544,7 +544,8 @@ Object.assign(app, {
         });
     },
     async init() {
-        console.log('🌾 Initializing Maloure Farm Management System...');
+        const currentUser = api.getUser();
+        console.log('Debug: Logged in as:', currentUser ? `${currentUser.email} (ID: ${currentUser.id})` : 'NOT LOGGED IN');
 
         // Load data from API
         await this.loadData();
@@ -4130,12 +4131,13 @@ Object.assign(app, {
 
         const farm = this.farmData;
         const boundariesCount = farm && farm.boundaries ? farm.boundaries.length : 0;
-        console.log(`Debug: renderGraphicalMap - Farm ID: ${this.currentFarmId}, Name: ${farm ? farm.name : 'NONE'}, Boundaries Count: ${boundariesCount}`);
+        console.log(`Debug: renderGraphicalMap - Current Farm ID: ${this.currentFarmId}, Name: ${farm ? farm.name : 'NONE'}, Boundaries Count: ${boundariesCount}`);
         if (boundariesCount > 0) {
             console.log(`Debug: First Boundary Point:`, farm.boundaries[0]);
         }
 
         if (!farm || !farm.boundaries || farm.boundaries.length === 0) {
+            console.trace('Debug: renderGraphicalMap - Showing "No boundaries" message. Farm data:', farm);
             ctx.fillStyle = '#666';
             ctx.font = '20px Inter, sans-serif';
             ctx.textAlign = 'center';
