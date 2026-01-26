@@ -709,7 +709,7 @@ Object.assign(app, {
                 }
 
                 if (transactions.length === 0) {
-                    this.showInfo('No matching "MOMO USER" transactions found.');
+                    this.showInfo('No matching "MOMO USER" transactions found.\nPlease check:\n1. Your file has a "Payment Type" column.\n2. The values contain "MOMO USER".\nCheck the browser console (F12) for detailed logs.');
                     this.hideLoading();
                     return;
                 }
@@ -807,6 +807,11 @@ Object.assign(app, {
 
     processMomoData(rows) {
         const transactions = [];
+        console.log(`Processing ${rows.length} rows for MOMO import.`);
+        if (rows.length > 0) {
+            console.log('Sample row keys:', Object.keys(rows[0]));
+            console.log('Sample row:', rows[0]);
+        }
 
         // Helper to find column loosely, prioritizing search keys order
         const findVal = (row, keys) => {
@@ -817,12 +822,16 @@ Object.assign(app, {
             return null;
         };
 
-        rows.forEach(row => {
+        let matchCount = 0;
+        rows.forEach((row, index) => {
             // Check condition: Payment Type = "MOMO USER"
             // We look for a column that might be "Payment Type" or just "Type"
             const paymentType = findVal(row, ['Payment Type', 'Type']) || "";
 
+            if (index < 5) console.log(`Row ${index} Payment TypeToCheck: "${paymentType}"`);
+
             if (paymentType && paymentType.toString().toUpperCase().includes('MOMO USER')) {
+                matchCount++;
                 const dateStr = findVal(row, ['Date & Time', 'Date']);
                 // Strict mapping: Description comes from Reference column
                 const reference = findVal(row, ['Reference', 'Refrence']) || "MOMO Import";
@@ -840,10 +849,13 @@ Object.assign(app, {
                         description: reference, // Per requirement: Description = Reference
                         amount: amount
                     });
+                } else {
+                    console.warn('Row matched MOMO USER but missing Date or Amount:', row);
                 }
             }
         });
 
+        console.log(`Found ${matchCount} matching MOMO USER rows. Created ${transactions.length} transactions.`);
         return transactions;
     },
 
