@@ -4212,6 +4212,12 @@ Object.assign(app, {
             ctx.fillStyle = '#999';
             ctx.font = '12px Inter, sans-serif';
             ctx.fillText(`User ID: ${user ? user.id : '?'}, Farm ID: ${this.currentFarmId || '?'}, Total Farms: ${this.farms.length}`, width / 2, height / 2 + 50);
+
+            // Raw debug dump on canvas
+            ctx.fillStyle = 'red';
+            ctx.font = '10px monospace';
+            const debugText = `Raw Boundaries: ${JSON.stringify(farm.boundaries).substring(0, 100)}...`;
+            ctx.fillText(debugText, width / 2, height / 2 + 80);
             return;
         }
 
