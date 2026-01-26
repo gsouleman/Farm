@@ -2819,6 +2819,7 @@ Object.assign(app, {
     // Sanitize farm data from API
     sanitizeFarmData(farm) {
         if (!farm) return null;
+        console.log(`Debug: sanitizeFarmData for Farm ${farm.id} (${farm.name}) - Raw boundaries:`, farm.boundaries);
 
         return {
             ...farm,
