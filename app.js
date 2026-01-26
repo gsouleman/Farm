@@ -623,13 +623,21 @@ Object.assign(app, {
             });
 
             if (this.farms.length > 0) {
-                // Restore current farm from local storage preference or default to first
-                const savedFarmId = localStorage.getItem('currentFarmId');
-                console.log(`Debug: loadData - Saved Farm ID from Storage: ${savedFarmId} (type: ${typeof savedFarmId})`);
+                // If only one farm, force select it
+                if (this.farms.length === 1) {
+                    this.currentFarmId = this.farms[0].id;
+                    localStorage.setItem('currentFarmId', this.currentFarmId);
+                    console.log(`Debug: loadData - Single farm detected, auto-selecting ID: ${this.currentFarmId}`);
+                } else {
+                    // Restore current farm from local storage preference or default to first
+                    const savedFarmId = localStorage.getItem('currentFarmId');
+                    console.log(`Debug: loadData - Saved Farm ID from Storage: ${savedFarmId} (type: ${typeof savedFarmId})`);
 
-                const farmExists = this.farms.find(f => f.id == savedFarmId);
+                    const farmExists = this.farms.find(f => f.id == savedFarmId);
 
-                this.currentFarmId = farmExists ? farmExists.id : this.farms[0].id;
+                    this.currentFarmId = farmExists ? farmExists.id : this.farms[0].id;
+                }
+
                 console.log(`Debug: loadData - Resolved currentFarmId: ${this.currentFarmId} (Final Type: ${typeof this.currentFarmId})`);
                 await this.loadFarmDetails(this.currentFarmId);
             } else {
