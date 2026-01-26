@@ -2643,12 +2643,19 @@ Object.assign(app, {
                     // Render sections table and map when viewing Farm Info
                     if (targetId === '#farm-info') {
                         setTimeout(() => {
+                            const farm = this.getCurrentFarm();
                             this.renderFarmSectionsTable();
-                            this.renderGraphicalMap();
+                            this.renderGraphicalMap(farm);
                         }, 100); // Small delay to ensure DOM is ready
                     }
                 }
             });
+        });
+
+        // Add window resize handler to redraw map
+        window.addEventListener('resize', () => {
+            const farm = this.getCurrentFarm();
+            this.renderGraphicalMap(farm); // Pass explicit farm
         });
     },
 
@@ -4227,8 +4234,8 @@ Object.assign(app, {
         }
 
         // Calculate bounds
-        const lats = this.farmData.boundaries.map(b => b.lat);
-        const lngs = this.farmData.boundaries.map(b => b.lng);
+        const lats = farm.boundaries.map(b => b.lat);
+        const lngs = farm.boundaries.map(b => b.lng);
         let minLat = Math.min(...lats);
         let maxLat = Math.max(...lats);
         let minLng = Math.min(...lngs);
@@ -4317,7 +4324,7 @@ Object.assign(app, {
         ctx.strokeStyle = '#333';
         ctx.lineWidth = 3;
 
-        this.farmData.boundaries.forEach((coord, i) => {
+        farm.boundaries.forEach((coord, i) => {
             const x = scaleX(coord.lng);
             const y = scaleY(coord.lat);
             if (i === 0) {
@@ -4448,8 +4455,8 @@ Object.assign(app, {
         ctx.restore(); // Restore state after drawing sections (removes clipping)
 
         // Draw farm center point
-        const centerX = scaleX(this.farmData.centerCoordinates.lng);
-        const centerY = scaleY(this.farmData.centerCoordinates.lat);
+        const centerX = scaleX(farm.centerCoordinates.lng);
+        const centerY = scaleY(farm.centerCoordinates.lat);
 
         ctx.fillStyle = '#ffd700';
         ctx.beginPath();
@@ -4463,21 +4470,21 @@ Object.assign(app, {
         ctx.fillStyle = '#333';
         ctx.font = 'bold 18px Inter, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(this.farmData.name, width / 2, 30);
+        ctx.fillText(farm.name, width / 2, 30);
 
         ctx.font = '14px Inter, sans-serif';
         ctx.textAlign = 'left';
-        ctx.fillText(`Area: ${parseFloat(this.farmData.area).toFixed(4)} ha`, padding, padding - 30);
+        ctx.fillText(`Area: ${parseFloat(farm.area).toFixed(4)} ha`, padding, padding - 30);
         ctx.textAlign = 'right';
         ctx.fillText(`Sections: ${sections.length}`, width - padding, padding - 30);
 
         // ==========================================
         // UNALLOCATED SPACE VISUALIZATION (GRID-BASED)
         // ==========================================
-        if (typeof turf !== 'undefined' && this.farmData.boundaries && this.farmData.boundaries.length >= 3) {
+        if (typeof turf !== 'undefined' && farm.boundaries && farm.boundaries.length >= 3) {
             try {
                 // 1. Create Farm Polygon
-                const farmCoords = this.farmData.boundaries.map(p => [p.lng, p.lat]);
+                const farmCoords = farm.boundaries.map(p => [p.lng, p.lat]);
                 farmCoords.push(farmCoords[0]); // Close ring
                 const farmPoly = turf.polygon([farmCoords]);
 
@@ -4999,7 +5006,9 @@ app.showTab = function (tabName) {
             this.renderEmployees();
         } else if (tabName === 'farm-info') {
             setTimeout(() => {
-                this.renderGraphicalMap();
+                const farm = this.getCurrentFarm();
+                console.log(`Debug: showTab('farm-info') - Triggering map render with farm: ${farm ? farm.name : 'NULL'}`);
+                this.renderGraphicalMap(farm); // Pass explicit farm
                 this.renderFarmMap();
             }, 100);
         }
