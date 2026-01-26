@@ -612,7 +612,15 @@ Object.assign(app, {
             console.log('Debug: loadData - Raw farms data:', farms); // Log raw farm details
 
             this.farms = farms.map(f => this.sanitizeFarmData(f));
-            console.log(`Debug: loadData - Sanitized ${this.farms.length} farms:`, this.farms.map(f => ({ id: f.id, name: f.name, boundaryCount: f.boundaries ? f.boundaries.length : 'NONE' })));
+            console.log(`Debug: loadData - Sanitized ${this.farms.length} farms:`);
+            this.farms.forEach(f => {
+                console.log(`  > Farm: ${f.name} (ID: ${f.id})`);
+                console.log(`    - Boundaries: ${Array.isArray(f.boundaries) ? f.boundaries.length : 'NOT ARRAY'}`);
+                console.log(`    - Sections: ${Array.isArray(f.sections) ? f.sections.length : 'NOT ARRAY'}`);
+                if (f.boundaries && f.boundaries.length > 0) {
+                    console.log(`    - First Bound: ${JSON.stringify(f.boundaries[0])}`);
+                }
+            });
 
             if (this.farms.length > 0) {
                 // Restore current farm from local storage preference or default to first
@@ -631,8 +639,8 @@ Object.assign(app, {
 
             this.updateFarmSelector();
         } catch (error) {
-            console.error('Failed to load data:', error);
-            // alert('Failed to load farm data. Please check your connection.');
+            console.error('Debug: loadData - ERROR:', error);
+            this.showError('Failed to load farm data: ' + error.message);
         }
     },
 
@@ -640,8 +648,7 @@ Object.assign(app, {
     async loadFarmDetails(farmId) {
         console.log(`Debug: loadFarmDetails called for Farm ID: ${farmId} (type: ${typeof farmId})`);
         try {
-            const numericId = parseInt(farmId);
-            const farm = this.farms.find(f => f.id === numericId);
+            const farm = this.farms.find(f => f.id == farmId);
             if (!farm) return;
 
             // Fetch related data in parallel
