@@ -33,6 +33,9 @@
   <!-- Turf.js for Geospatial Analysis (Area/Difference calculation) -->
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
+  <!-- SheetJS for Excel Parsing -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+
   <!-- API Client -->
   <script src="api-client.js?v=2"></script>
 
@@ -510,6 +513,10 @@
             <div class="flex" style="gap: 1rem;">
               <button class="btn btn-primary btn-sm" onclick="app.openAddTransactionModal()">
                 ➕ Add Transaction
+              </button>
+              <button class="btn btn-info btn-sm" onclick="app.importMomoTransactions()"
+                style="background-color: #ffcc00; color: #000; border: none;">
+                📂 Import MOMO
               </button>
               <button class="btn btn-secondary btn-sm" onclick="app.exportTransactions()">
                 📥 Export

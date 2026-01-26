@@ -686,6 +686,210 @@ Object.assign(app, {
     },
 
     // Render dashboard
+    // Import MOMO Transactions
+    importMomoTransactions() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.xlsx, .xls, .pdf';
+
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            this.showLoading('Processing file...');
+
+            try {
+                let transactions = [];
+                if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+                    transactions = await this.parseMomoExcel(file);
+                } else if (file.name.endsWith('.pdf')) {
+                    transactions = await this.parseMomoPDF(file);
+                } else {
+                    throw new Error('Unsupported file format. Please upload Excel or PDF.');
+                }
+
+                if (transactions.length === 0) {
+                    this.showInfo('No matching "MOMO USER" transactions found.');
+                    this.hideLoading();
+                    return;
+                }
+
+                const confirmMsg = `Found ${transactions.length} MOMO transactions. Import them now?`;
+                this.showConfirmation(confirmMsg, () => this.saveImportedTransactions(transactions));
+
+            } catch (error) {
+                console.error('Import error:', error);
+                this.showError('Failed to import file: ' + error.message);
+            } finally {
+                this.hideLoading();
+            }
+        };
+
+        input.click();
+    },
+
+    async parseMomoExcel(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { defval: "" });
+
+                    const processed = this.processMomoData(jsonData);
+                    resolve(processed);
+                } catch (err) {
+                    reject(err);
+                }
+            };
+            reader.onerror = (err) => reject(err);
+            reader.readAsArrayBuffer(file);
+        });
+    },
+
+    async parseMomoPDF(file) {
+        // Basic PDF text extraction
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let fullText = '';
+
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items.map(item => item.str).join(' ');
+            fullText += pageText + '\n';
+        }
+
+        // PDF parsing is tricky without fixed structure. 
+        // Attempting to match specific MOMO pattern if possible, 
+        // but given the variability, extracting from text line by line is hard.
+        // For now, alerting user about PDF limitation or trying a simple regex if pattern is known.
+        // Since I don't have the PDF structure, I will attempt to look for "MOMO USER" and surrounding data.
+        // This is highly experimental.
+
+        console.warn("PDF parsing is experimental. Prefer Excel for accuracy.");
+        throw new Error("PDF import is currently limited. Please convert your statement to Excel for best results.");
+    },
+
+    processMomoData(rows) {
+        const transactions = [];
+
+        // Helper to find column loosely
+        const findVal = (row, keys) => {
+            for (let k of Object.keys(row)) {
+                for (let searchKey of keys) {
+                    if (k.toLowerCase().includes(searchKey.toLowerCase())) return row[k];
+                }
+            }
+            return null;
+        };
+
+        rows.forEach(row => {
+            // Check condition: Payment Type = "MOMO USER"
+            // We look for a column that might be "Payment Type" or just "Type"
+            const paymentType = findVal(row, ['Payment Type', 'Type']) || "";
+
+            if (paymentType && paymentType.toString().toUpperCase().includes('MOMO USER')) {
+                const dateStr = findVal(row, ['Date & Time', 'Date']);
+                // Strict mapping: Description comes from Reference column
+                const reference = findVal(row, ['Reference', 'Refrence']) || "MOMO Import";
+                const amountVal = findVal(row, ['Amount', 'Value', 'Debit', 'Credit']);
+
+                if (dateStr && amountVal) {
+                    // Normalize Amount (remove commas, currency symbols)
+                    let amount = parseFloat(this.sanitizeAmount(amountVal) || amountVal.toString().replace(/[^0-9.-]+/g, ""));
+                    if (isNaN(amount)) amount = 0;
+
+                    transactions.push({
+                        date: this.formatDateForInput(new Date(dateStr)), // Ensure YYYY-MM-DD
+                        type: 'expense',
+                        category: 'Other', // Per requirement
+                        description: reference, // Per requirement: Description = Reference
+                        amount: amount
+                    });
+                }
+            }
+        });
+
+        return transactions;
+    },
+
+    async saveImportedTransactions(transactions) {
+        this.showLoading(`Saving ${transactions.length} transactions...`);
+        let savedCount = 0;
+        let errors = 0;
+
+        for (const t of transactions) {
+            try {
+                await api.transactions.create(this.currentFarmId, t);
+                savedCount++;
+            } catch (err) {
+                console.error("Failed to save transaction", t, err);
+                errors++;
+            }
+        }
+
+        this.hideLoading();
+        this.showSuccess(`Imported ${savedCount} transactions.${errors > 0 ? ` (${errors} failed)` : ''}`);
+        this.loadData(); // Refresh UI
+    },
+
+    formatDateForInput(date) {
+        if (!date || isNaN(date.getTime())) return new Date().toISOString().split('T')[0];
+        return date.toISOString().split('T')[0];
+    },
+
+    // Add generic helpers if not exists (showLoading, hideLoading are assumed to exist or need impl)
+    // I'll assume showLoading/showSuccess exist in app or I'll implement simple alert based ones if not found.
+    // Based on app.js (lines 665+), I didn't see explicit showLoading, but showSuccess was used in password change.
+
+    sanitizeAmount(val) {
+        if (typeof val === 'number') return val;
+        if (!val) return 0;
+        // Remove currency symbols and commas
+        return parseFloat(val.toString().replace(/[^0-9.-]/g, ''));
+    },
+
+    // UI Helpers
+    showLoading(message) {
+        // Simple loading overlay
+        let loader = document.getElementById('app-loader');
+        if (!loader) {
+            loader = document.createElement('div');
+            loader.id = 'app-loader';
+            loader.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;justify-content:center;align-items:center;color:white;font-size:1.5rem;flex-direction:column;';
+            loader.innerHTML = '<div class="spinner"></div><div id="app-loader-msg" style="margin-top:10px">Loading...</div>';
+            document.body.appendChild(loader);
+        }
+        document.getElementById('app-loader-msg').textContent = message || 'Loading...';
+        loader.style.display = 'flex';
+    },
+
+    hideLoading() {
+        const loader = document.getElementById('app-loader');
+        if (loader) loader.style.display = 'none';
+    },
+
+    showInfo(message) {
+        alert('ℹ️ ' + message);
+    },
+
+    showConfirmation(message, onConfirm) {
+        if (confirm(message)) {
+            onConfirm();
+        }
+    },
+
+    showError(message) {
+        alert('❌ ' + message);
+    },
+
+    showSuccess(message) {
+        alert('✅ ' + message);
+    },
+
     renderDashboard() {
         const { income, expenses, netCashFlow } = this.calculateMetrics();
 
