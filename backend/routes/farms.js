@@ -75,8 +75,8 @@ router.post('/', [
                 perimeter || null,
                 centerLat || null,
                 centerLng || null,
-                boundaries ? JSON.stringify(boundaries) : null,
-                zones ? JSON.stringify(zones) : null
+                boundaries,
+                zones
             ]
         );
 
@@ -121,6 +121,9 @@ router.put('/:id', [
 
         const { name = null, location = null, area = null, perimeter = null, centerLat = null, centerLng = null, boundaries = null, zones = null } = req.body;
 
+        console.log(`Debug: PUT /api/farms/${req.params.id} - Current User: ${req.userId}`);
+        console.log(`Debug: PUT boundaries: ${boundaries ? (Array.isArray(boundaries) ? boundaries.length : 'NOT ARRAY') : 'NULL'}`);
+
         const result = await db.query(
             `UPDATE farms 
        SET name = COALESCE($1, name),
@@ -141,8 +144,8 @@ router.put('/:id', [
                 perimeter,
                 centerLat,
                 centerLng,
-                boundaries ? JSON.stringify(boundaries) : null,
-                zones ? JSON.stringify(zones) : null,
+                boundaries, // Pass object directly for JSONB
+                zones,      // Pass object directly for JSONB
                 req.params.id,
                 req.userId
             ]

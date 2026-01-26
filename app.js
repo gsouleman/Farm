@@ -266,7 +266,12 @@ Object.assign(app, {
         if (farm) return farm;
 
         // Fallback to first farm if list not empty
-        return this.farms[0] || defaultFarm;
+        if (this.farms.length > 0) {
+            console.log(`Debug: getCurrentFarm - Farm ID ${this.currentFarmId} not found, falling back to first farm: ${this.farms[0].id}`);
+            return this.farms[0];
+        }
+
+        return defaultFarm;
     },
     get farmData() {
         return this.getCurrentFarm();
@@ -592,18 +597,20 @@ Object.assign(app, {
             console.log(`Debug: loadData - Received ${farms.length} farms`);
 
             this.farms = farms.map(f => this.sanitizeFarmData(f));
+            console.log(`Debug: loadData - Sanitized ${this.farms.length} farms:`, this.farms.map(f => ({ id: f.id, name: f.name, boundaryCount: f.boundaries ? f.boundaries.length : 'NONE' })));
 
             if (this.farms.length > 0) {
                 // Restore current farm from local storage preference or default to first
-                console.log(`Debug: loadData - Farms list:`, this.farms.map(f => f.id));
                 const savedFarmId = localStorage.getItem('currentFarmId');
+                console.log(`Debug: loadData - Saved Farm ID from Storage: ${savedFarmId} (type: ${typeof savedFarmId})`);
+
                 const farmExists = this.farms.find(f => f.id == savedFarmId);
 
                 this.currentFarmId = farmExists ? farmExists.id : this.farms[0].id;
-                console.log(`Debug: loadData - Resolved currentFarmId: ${this.currentFarmId} (Original Saved: ${savedFarmId})`);
+                console.log(`Debug: loadData - Resolved currentFarmId: ${this.currentFarmId} (Final Type: ${typeof this.currentFarmId})`);
                 await this.loadFarmDetails(this.currentFarmId);
             } else {
-                console.warn('Debug: loadData - No farms found for user');
+                console.warn('Debug: loadData - No farms found for user account');
                 this.renderDashboard();
             }
 
@@ -2008,26 +2015,54 @@ Object.assign(app, {
 
     // Save coordinates and update maps
     async saveCoordinates() {
+        // Check if there are filled inputs that weren't added
+        const pendingLat = document.getElementById('newPointLat').value;
+        const pendingLng = document.getElementById('newPointLng').value;
+        if (pendingLat || pendingLng) {
+            if (confirm('You have coordinate values entered but not added to the list. Do you want to add them before saving?')) {
+                this.addCoordinatePoint();
+                // Continue with save after adding
+            }
+        }
+
         // Allow clearing all coordinates for blank map
         if (this.tempCoordinates.length === 0) {
+            // Confirm explicitly if they are clearing existing boundaries
+            if (this.farmData.boundaries && this.farmData.boundaries.length > 0) {
+                if (!confirm('You are about to clear all farm boundaries and crop allocations. Are you sure?')) {
+                    return;
+                }
+            }
+
             // Clear boundaries and all crop allocations
             this.farmData.boundaries = [];
             this.farmData.sections = []; // Clear all crop allocation sections
             this.farmData.centerCoordinates = { lat: 0, lng: 0 };
 
-            // Save to localStorage
-            this.saveData();
+            try {
+                // Save to Backend
+                const currentFarm = this.getCurrentFarm();
+                if (currentFarm && currentFarm.id) {
+                    await api.farms.update(currentFarm.id, {
+                        boundaries: [],
+                        centerLat: 0,
+                        centerLng: 0
+                    });
+                }
 
-            // Update views
-            this.updateMapViews();
-            this.renderFarmDetails();
-            this.renderFarmSectionsTable();
-            this.renderGraphicalMap();
+                // Update views
+                this.updateMapViews();
+                this.renderFarmDetails();
+                this.renderFarmSectionsTable();
+                this.renderGraphicalMap();
 
-            // Close modal
-            this.closeModal('coordinateEditorModal');
+                // Close modal
+                this.closeModal('coordinateEditorModal');
 
-            this.showSuccess('All coordinates and crop allocations cleared!\n\nMap is now blank. Add new coordinates to define your farm boundaries.');
+                this.showSuccess('All coordinates and crop allocations cleared!\n\nMap is now blank. Add new coordinates to define your farm boundaries.');
+            } catch (err) {
+                this.showError('Failed to clear boundaries: ' + err.message);
+            }
             return;
         }
 
@@ -2057,7 +2092,7 @@ Object.assign(app, {
         };
 
         try {
-            console.log(`Debug: Saving coordinates to Farm ${currentFarm.id}...`);
+            console.log(`Debug: Saving ${this.tempCoordinates.length} coordinates to Farm ${currentFarm.id}...`);
             await api.farms.update(currentFarm.id, updateData);
 
             // Update local memory
@@ -4086,6 +4121,8 @@ Object.assign(app, {
         ctx.fillRect(0, 0, width, height);
 
         const farm = this.farmData;
+        console.log(`Debug: renderGraphicalMap - Current Farm ID: ${this.currentFarmId}, Name: ${farm ? farm.name : 'NONE'}, Boundaries: ${farm && farm.boundaries ? farm.boundaries.length : 'UNDEFINED'}`);
+
         if (!farm || !farm.boundaries || farm.boundaries.length === 0) {
             ctx.fillStyle = '#666';
             ctx.font = '20px Inter, sans-serif';
