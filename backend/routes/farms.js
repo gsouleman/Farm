@@ -18,13 +18,29 @@ router.get('/', async (req, res) => {
         );
 
         console.log(`Debug: GET /api/farms - Found ${result.rows.length} farms for user ${req.userId}`);
-        if (result.rows.length > 0) {
-            result.rows.forEach(f => {
+        const farms = result.rows.map(f => {
+            // Ensure boundaries is always a valid object/array, never a string
+            let boundaries = f.boundaries;
+            if (typeof boundaries === 'string') {
+                try { boundaries = JSON.parse(boundaries); } catch (e) { boundaries = []; }
+            }
+
+            // Ensure zones is always a valid object
+            let zones = f.zones;
+            if (typeof zones === 'string') {
+                try { zones = JSON.parse(zones); } catch (e) { zones = {}; }
+            }
+
+            return { ...f, boundaries, zones };
+        });
+
+        if (farms.length > 0) {
+            farms.forEach(f => {
                 const bCount = f.boundaries ? (Array.isArray(f.boundaries) ? f.boundaries.length : 'NOT_ARRAY') : 'NULL';
                 console.log(`Debug: Farm ${f.id} (${f.name}) - Boundaries in DB: ${bCount}`);
             });
         }
-        res.json(result.rows);
+        res.json(farms);
     } catch (error) {
         console.error('Get farms error:', error);
         res.status(500).json({ error: { message: 'Failed to fetch farms' } });
