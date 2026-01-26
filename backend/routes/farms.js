@@ -18,6 +18,12 @@ router.get('/', async (req, res) => {
         );
 
         console.log(`Debug: GET /api/farms - Found ${result.rows.length} farms for user ${req.userId}`);
+        if (result.rows.length > 0) {
+            result.rows.forEach(f => {
+                const bCount = f.boundaries ? (Array.isArray(f.boundaries) ? f.boundaries.length : 'NOT_ARRAY') : 'NULL';
+                console.log(`Debug: Farm ${f.id} (${f.name}) - Boundaries in DB: ${bCount}`);
+            });
+        }
         res.json(result.rows);
     } catch (error) {
         console.error('Get farms error:', error);

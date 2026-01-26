@@ -595,6 +595,7 @@ Object.assign(app, {
         try {
             const farms = await api.farms.getAll();
             console.log(`Debug: loadData - Received ${farms.length} farms`);
+            console.log('Debug: loadData - Raw farms data:', farms); // Log raw farm details
 
             this.farms = farms.map(f => this.sanitizeFarmData(f));
             console.log(`Debug: loadData - Sanitized ${this.farms.length} farms:`, this.farms.map(f => ({ id: f.id, name: f.name, boundaryCount: f.boundaries ? f.boundaries.length : 'NONE' })));
@@ -653,6 +654,12 @@ Object.assign(app, {
             farm.employees = employees;
 
             // REMOVED: this.farmData = farm; (Shadows getter)
+
+            console.log(`Debug: loadFarmDetails - Farm ${farmId} Metadata:`, {
+                name: farm.name,
+                boundaries: farm.boundaries ? farm.boundaries.length : 'NULL',
+                sections: farm.sections ? farm.sections.length : 'NULL'
+            });
 
             // Update UI
             this.renderFarmDetails();
