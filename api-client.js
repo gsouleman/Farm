@@ -69,7 +69,9 @@ const api = {
         };
 
         try {
-            const response = await fetch(`${API_CONFIG.baseURL}${endpoint}`, config);
+            const url = `${API_CONFIG.baseURL}${endpoint}`;
+            console.log(`Debug: API Request: ${options.method || 'GET'} ${url}`);
+            const response = await fetch(url, config);
 
             if (response.status === 401) {
                 // Token expired or invalid

@@ -11,11 +11,13 @@ router.use(authMiddleware);
 // Get all farms for current user
 router.get('/', async (req, res) => {
     try {
+        console.log(`Debug: GET /api/farms - req.userId: ${req.userId} (type: ${typeof req.userId})`);
         const result = await db.query(
             'SELECT * FROM farms WHERE user_id = $1 ORDER BY created_at DESC',
             [req.userId]
         );
 
+        console.log(`Debug: GET /api/farms - Found ${result.rows.length} farms for user ${req.userId}`);
         res.json(result.rows);
     } catch (error) {
         console.error('Get farms error:', error);

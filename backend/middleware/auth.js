@@ -16,11 +16,12 @@ const authMiddleware = async (req, res, next) => {
 
         // Add user info to request
         req.user = {
-            id: decoded.userId,
+            id: parseInt(decoded.userId),
             email: decoded.email,
             role: decoded.role
         };
-        req.userId = decoded.userId; // Keep for backward compatibility if needed
+        req.userId = parseInt(decoded.userId); // Keep for backward compatibility if needed
+        console.log(`Debug: AuthMiddleware - Token verified for user: ${req.userId}`);
 
         next();
     } catch (error) {

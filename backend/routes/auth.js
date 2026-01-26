@@ -107,6 +107,7 @@ router.post('/login', [
             { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
         );
 
+        console.log(`Debug: Login Success - User: ${user.email}, ID: ${user.id}`);
         res.json({
             user: {
                 id: user.id,
