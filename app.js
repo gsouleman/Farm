@@ -743,7 +743,9 @@ Object.assign(app, {
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { defval: "" });
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { defval: "", raw: false });
+
+                    console.log('Debug: Raw Excel Data First Row:', jsonData[0]);
 
                     const processed = this.processMomoData(jsonData);
                     resolve(processed);
