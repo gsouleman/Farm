@@ -217,7 +217,11 @@ Object.assign(app, {
 
     // --- AUTO ALLOCATION FEATURE ---
     async autoAllocateSections() {
-        if (!confirm('This will automatically generate sections for your farm based on topography and best practices. Continue?')) return;
+        console.log("Debug: Auto-Allocation button clicked. Starting process...");
+        if (!confirm('This will automatically generate sections for your farm based on topography and best practices. Continue?')) {
+            console.log("Debug: Auto-Allocation cancelled by user.");
+            return;
+        }
 
         const farm = this.getCurrentFarm();
         if (!farm || !farm.boundaries || farm.boundaries.length < 3) {
