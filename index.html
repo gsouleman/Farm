@@ -34,6 +34,34 @@
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
   <!-- SheetJS for Excel Parsing -->
+  <!-- Manage Crop Types Modal -->
+  <div class="modal-overlay" id="manageCropTypesModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Manage Crop Types</h3>
+        <button class="modal-close" onclick="app.closeModal('manageCropTypesModal')"><i
+            class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="tabs" style="margin-bottom: 1rem;">
+          <button class="tab-btn active" onclick="app.switchTypeTab('fruit')" id="tabTypeFruit">Fruit Trees</button>
+          <button class="tab-btn" onclick="app.switchTypeTab('cash')" id="tabTypeCash">Cash Crops</button>
+        </div>
+
+        <ul class="list-group" id="cropTypesList" style="max-height: 300px; overflow-y: auto;">
+          <!-- Items injected here -->
+        </ul>
+
+        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #eee;">
+          <p class="text-muted" style="font-size: 0.85rem;">
+            <i class="fas fa-info-circle"></i> Add new types directly from the "Add Crop" dropdown by selecting
+            "New...".
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
 
   <!-- API Client -->
@@ -1278,4 +1306,4 @@ Example:
     </div>
   </div>
 
-  <script src="app.js?v=13"></script>
+  <script src="app.js?v=14"></script>

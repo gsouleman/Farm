@@ -217,6 +217,18 @@ Object.assign(app, {
     // Chart instances
     charts: {},
 
+    // Default fallback types (if DB is empty or offline)
+    defaultCropTypes: {
+        fruit: ['Avocado', 'Lemon', 'Orange', 'Mango', 'Other'],
+        cash: ['Cassava', 'Ginger', 'Pepper', 'Corn', 'Other']
+    },
+
+    // To store user's custom types loaded from DB
+    userCropTypes: {
+        fruit: [],
+        cash: []
+    },
+
     // Categories (shared across all farms)
     expenseCategories: [
         'Seeds & Seedlings',
@@ -590,16 +602,19 @@ Object.assign(app, {
     // Load data from localStorage
     // Load data from API
     async loadData() {
-        if (!isAuthenticated()) {
-            window.location.href = '/login.html';
-            return;
-        }
+        if (!this.state.isLoggedIn) return;
 
-        console.log('Debug: loadData - Fetching farms...');
         try {
+            console.log('Debug: loadData - Fetching farms...');
+
+            // 1. Fetch Farms
             const farms = await api.farms.getAll();
-            console.log(`Debug: loadData - Received ${farms.length} farms:`, farms.map(f => f.name));
-            console.log('Debug: loadData - Raw farms data:', farms); // Log raw farm details
+
+            // 2. Fetch Custom Crop Types (Parallel-ish)
+            this.loadCropTypes(); // Don't await, let it populate available lists
+
+            console.log('Debug: loadData - Received ' + farms.length + ' farms: ', farms.map(f => f.name));
+            console.log('Debug: loadData - Raw farms data: ', farms); // Log raw farm details
 
             this.farms = farms.map(f => this.sanitizeFarmData(f));
             console.log(`Debug: loadData - Sanitized ${this.farms.length} farms:`);
@@ -1794,17 +1809,39 @@ Object.assign(app, {
         const countGroup = document.getElementById('cropCountGroup');
         const areaGroup = document.getElementById('cropAreaGroup');
 
+        // Populate dropdown with Dynamic Types
+        const types = this.userCropTypes[type] && this.userCropTypes[type].length > 0
+            ? this.userCropTypes[type]
+            : this.defaultCropTypes[type]; // Corrected from appConfig
+
+        // Sort: User types first, then defaults if we merge (or just use filtered list)
+        // Actually, let's just use the loaded list. If empty, use default.
+        const optionsHtml = types.map(t => `<option value="${t.name || t}">${t.name || t}</option>`).join('');
+
+        cropTypeSelect.innerHTML = `
+            <option value="">Select type...</option>
+            ${optionsHtml}
+            <option value="__NEW__">➕ New...</option>
+        `;
+
+        // Add "Manage List" link helper
+        const manageLink = document.createElement('small');
+        manageLink.innerHTML = `<a href="#" onclick="app.openManageTypesModal('${type}'); return false;">⚙️ Manage List</a>`;
+        manageLink.style.display = 'block';
+        manageLink.style.marginTop = '0.2rem';
+        manageLink.style.textAlign = 'right';
+
+        // Remove old link if exists
+        const oldLink = cropTypeSelect.parentNode.querySelector('small');
+        if (oldLink) oldLink.remove();
+        cropTypeSelect.parentNode.appendChild(manageLink);
+
+        // Add change listener for "New..."
+        cropTypeSelect.onchange = (e) => this.handleTypeChange(e, type);
+
         if (type === 'fruit') {
             document.getElementById('cropModalTitle').textContent = 'Add Fruit Tree';
-            cropTypeSelect.innerHTML = `
-        <option value="">Select type...</option>
-        <option value="Avocado">Avocado</option>
-        <option value="Lemon">Lemon</option>
-        <option value="Orange">Orange</option>
-        <option value="Mango">Mango</option>
-        <option value="Other">Other</option>
-        <option value="__NEW__">➕ New...</option>
-      `;
+
             countGroup.style.display = 'block';
             areaGroup.style.display = 'none';
             document.getElementById('cropExpectedHarvestGroup').style.display = 'block';
@@ -1815,15 +1852,7 @@ Object.assign(app, {
             document.getElementById('cropArea').required = false;
         } else {
             document.getElementById('cropModalTitle').textContent = 'Add Cash Crop';
-            cropTypeSelect.innerHTML = `
-        <option value="">Select type...</option>
-        <option value="Cassava">Cassava</option>
-        <option value="Ginger">Ginger</option>
-        <option value="Pepper">Pepper</option>
-        <option value="Corn">Corn</option>
-        <option value="Other">Other</option>
-        <option value="__NEW__">➕ New...</option>
-      `;
+
             countGroup.style.display = 'none';
             areaGroup.style.display = 'block';
             document.getElementById('cropExpectedHarvestGroup').style.display = 'none';
@@ -1870,6 +1899,154 @@ Object.assign(app, {
         if (modal) {
             modal.classList.remove('active');
             modal.style.display = 'none';
+        }
+    },
+
+    // ===================================
+    // Crop Configuration Management
+    // ===================================
+
+    async loadCropTypes() {
+        try {
+            const types = await api.cropTypes.getAll();
+
+            // Separate into categories
+            this.userCropTypes.fruit = types.filter(t => t.category === 'fruit');
+            this.userCropTypes.cash = types.filter(t => t.category === 'cash');
+
+            // If empty (first run), populate from defaults? Not strictly necessary, but good UX.
+            // For now, if empty, we fall back to defaults in openAddCropModal via the logic there.
+
+            // However, to make them editable, we should probably persist defaults once.
+            // Let's keep it simple: if list is empty, user sees standard list (hardcoded).
+            // Once they add a custom one, it appears. 
+            // To allow editing "Avocado", they'd need to add it as custom or we seed DB.
+
+        } catch (error) {
+            console.error('Failed to load crop types:', error);
+            // Fallback to empty (will use defaults)
+        }
+    },
+
+    async handleTypeChange(event, category) {
+        if (event.target.value === '__NEW__') {
+            const newName = prompt(`Enter new ${category} type:`);
+            if (newName && newName.trim()) {
+                try {
+                    const saved = await api.cropTypes.create({
+                        category: category,
+                        name: newName.trim()
+                    });
+
+                    // Reload types locally
+                    await this.loadCropTypes();
+
+                    // Re-render modal dropdown
+                    // We need to know which modal called this (Add or Edit)
+                    // For now, assuming Add Modal since that's where we attached listener
+                    // But wait, openAddCropModal destroys/recreates HTML.
+
+                    // Simple refresh of the select
+                    this.refreshCropSelect(category, saved.name);
+
+                } catch (error) {
+                    this.showError('Failed to save new type: ' + error.message);
+                    event.target.value = ''; // Reset
+                }
+            } else {
+                event.target.value = ''; // Reset if cancelled
+            }
+        }
+    },
+
+    refreshCropSelect(category, selectedValue) {
+        const select = document.getElementById('cropType');
+        if (!select) return;
+
+        const types = this.userCropTypes[category] && this.userCropTypes[category].length > 0
+            ? this.userCropTypes[category]
+            : this.defaultCropTypes[category];
+
+        const optionsHtml = types.map(t => `<option value="${t.name || t}">${t.name || t}</option>`).join('');
+
+        select.innerHTML = `
+            <option value="">Select type...</option>
+            ${optionsHtml}
+            <option value="__NEW__">➕ New...</option>
+        `;
+
+        if (selectedValue) select.value = selectedValue;
+
+        // Re-attach listener because innerHTML wipes it? 
+        // Actually onchange is on the element property, not attribute, so it might stay or be wiped if we replace parent.
+        // We replaced innerHTML of select, so select element itself is same. Listener stays?
+        // Let's re-attach to be safe if we replaced the element. We didn't.
+    },
+
+    openManageTypesModal(initialTab = 'fruit') {
+        this.openModal('manageCropTypesModal');
+        this.switchTypeTab(initialTab);
+    },
+
+    switchTypeTab(type) {
+        // Update tabs UI
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        const btn = document.getElementById(type === 'fruit' ? 'tabTypeFruit' : 'tabTypeCash');
+        if (btn) btn.classList.add('active');
+
+        // Render list
+        this.renderCropTypesList(type);
+    },
+
+    renderCropTypesList(category) {
+        const list = document.getElementById('cropTypesList');
+        if (!list) return;
+
+        const types = this.userCropTypes[category] || [];
+
+        if (types.length === 0) {
+            list.innerHTML = `<li class="list-group-item text-center text-muted">No custom types yet. Using defaults.</li>`;
+            return;
+        }
+
+        list.innerHTML = types.map(t => `
+            <li class="list-group-item flex justify-between items-center">
+                <span>${t.name}</span>
+                <div>
+                    <button class="btn btn-outline btn-sm" onclick="app.editCropType('${t.id}', '${category}')">✏️</button>
+                    <button class="btn btn-outline btn-sm text-danger" onclick="app.deleteCropType('${t.id}', '${category}')">🗑️</button>
+                </div>
+            </li>
+        `).join('');
+    },
+
+    async editCropType(id, category) {
+        const typeObj = this.userCropTypes[category].find(t => t.id == id);
+        if (!typeObj) return;
+
+        const newName = prompt('Edit type name:', typeObj.name);
+        if (newName && newName.trim() && newName !== typeObj.name) {
+            try {
+                await api.cropTypes.update(id, newName.trim());
+                await this.loadCropTypes();
+                this.renderCropTypesList(category);
+                this.showSuccess('Updated successfully');
+            } catch (error) {
+                this.showError('Update failed: ' + error.message);
+            }
+        }
+    },
+
+    async deleteCropType(id, category) {
+        if (confirm('Delete this type? It will disappear from the dropdown list.')) {
+            try {
+                await api.cropTypes.delete(id);
+                await this.loadCropTypes();
+                this.renderCropTypesList(category);
+                this.showSuccess('Deleted successfully');
+            } catch (error) {
+                this.showError('Delete failed: ' + error.message);
+            }
         }
     },
 

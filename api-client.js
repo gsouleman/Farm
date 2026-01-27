@@ -24,6 +24,7 @@ const API_CONFIG = {
         farms: '/api/farms',
         transactions: '/api/transactions',
         crops: '/api/crops',
+        cropTypes: '/api/crop-types',
         sections: '/api/sections',
         employees: '/api/employees'
     }
@@ -224,6 +225,30 @@ const api = {
 
         async delete(id) {
             return await api.request(`${API_CONFIG.endpoints.transactions}/${id}`, {
+                method: 'DELETE'
+            });
+        }
+    },
+
+    // Crop Types APIs
+    cropTypes: {
+        async getAll() {
+            return await api.request(API_CONFIG.endpoints.cropTypes);
+        },
+        async create(data) {
+            return await api.request(API_CONFIG.endpoints.cropTypes, {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+        },
+        async update(id, name) {
+            return await api.request(`${API_CONFIG.endpoints.cropTypes}/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({ name })
+            });
+        },
+        async delete(id) {
+            return await api.request(`${API_CONFIG.endpoints.cropTypes}/${id}`, {
                 method: 'DELETE'
             });
         }
