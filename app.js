@@ -668,9 +668,15 @@ Object.assign(app, {
             this.transactions = transactions;
             console.log(`Debug: Fetched ${transactions.length} transactions for Farm ${farmId}`);
 
+
+            console.log(`Debug: loadFarmDetails - Crops raw data:`, crops);
+
             // Split crops into fruit trees and cash crops
             farm.fruitTrees = crops.filter(c => c.category === 'fruit');
             farm.cashCrops = crops.filter(c => c.category === 'cash');
+
+            console.log(`Debug: loadFarmDetails - Filtered Fruit Trees: ${farm.fruitTrees.length}`, farm.fruitTrees);
+            console.log(`Debug: loadFarmDetails - Filtered Cash Crops: ${farm.cashCrops.length}`, farm.cashCrops);
 
             farm.sections = sections.map(s => ({
                 ...s,
@@ -1458,6 +1464,7 @@ Object.assign(app, {
 
     // Render crops
     renderCrops() {
+        console.log(`Debug: renderCrops called. FruitTrees: ${this.fruitTrees.length}, CashCrops: ${this.cashCrops.length}`);
         // Fruit trees
         const fruitBody = document.getElementById('fruitTreesBody');
         if (this.fruitTrees.length === 0) {
