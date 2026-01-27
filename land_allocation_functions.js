@@ -143,7 +143,7 @@ Object.assign(app, {
         }
     },
 
-    saveSectionFromModal() {
+    async saveSectionFromModal() {
         const name = document.getElementById('newSectionName').value;
         const type = document.getElementById('newSectionType').value;
         const cropInput = document.getElementById('newSectionCropType');
@@ -165,8 +165,7 @@ Object.assign(app, {
         const centerLat = boundaries.reduce((sum, c) => sum + c.lat, 0) / boundaries.length;
         const centerLng = boundaries.reduce((sum, c) => sum + c.lng, 0) / boundaries.length;
 
-        const section = {
-            id: 'section-' + Date.now(),
+        const sectionData = {
             name: name,
             type: type,
             cropType: cropType || null,
@@ -178,19 +177,26 @@ Object.assign(app, {
             notes: `Drawn on ${new Date().toLocaleDateString()}`
         };
 
-        if (!farm.sections) {
-            farm.sections = [];
+        try {
+            const savedSection = await api.sections.create(farm.id, sectionData);
+
+            if (!farm.sections) {
+                farm.sections = [];
+            }
+            farm.sections.push(savedSection);
+
+            this.saveData();
+            this.renderFarmSectionsTable();
+            this.renderGraphicalMap();
+            this.renderLandAllocationTable();
+
+            document.getElementById('createSectionModal').remove();
+            this.showSuccess(`Section "${name}" created!`);
+            this.drawingMode = false;
+        } catch (error) {
+            console.error('Failed to save section:', error);
+            this.showError('Failed to save section to database.');
         }
-        farm.sections.push(section);
-
-        this.saveData();
-        this.renderFarmSectionsTable();
-        this.renderGraphicalMap();
-        this.renderLandAllocationTable();
-
-        document.getElementById('createSectionModal').remove();
-        this.showSuccess(`Section "${name}" created!`);
-        this.drawingMode = false;
     },
 
     async deleteSection(sectionId) {
@@ -420,8 +426,7 @@ Object.assign(app, {
                     // Calc center
                     const center = turf.centerOfMass(intersection);
 
-                    farm.sections.push({
-                        id: 'auto-' + Date.now() + Math.random(),
+                    const sectionData = {
                         name: alloc.name + (specificCrop ? ` (${specificCrop})` : ''),
                         type: alloc.type,
                         cropType: specificCrop,
@@ -431,7 +436,10 @@ Object.assign(app, {
                         percentage: alloc.percent * 100,
                         color: alloc.color,
                         notes: `Auto-allocated based on topography. ${specificCrop ? 'Selected ' + specificCrop + ' based on analysis advice.' : ''}`
-                    });
+                    };
+
+                    const savedSection = await api.sections.create(farm.id, sectionData);
+                    farm.sections.push(savedSection);
                 }
             } catch (err) {
                 console.error('Error calculating geometry for ' + alloc.name, err);
