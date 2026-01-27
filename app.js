@@ -3082,6 +3082,83 @@ Object.assign(app, {
                 <li style="margin-bottom: 8px;"><strong>Diversification:</strong> Mixed crop portfolio significantly mitigates single-commodity market risks.</li>
             </ul>
 
+            <!-- Risk Assessment & Mitigation -->
+            <div style="page-break-inside: avoid; margin-bottom: 30px;">
+                <h3 style="border-bottom: 1px solid #ccc; padding-bottom: 5px; font-family: Arial, sans-serif; font-size: 16px; color: #444;">RISK ASSESSMENT & MITIGATION</h3>
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px; border: 1px solid #eee;">
+                    <thead>
+                        <tr style="background-color: #f5f5f5;">
+                            <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd; width: 25%;">Risk Category</th>
+                            <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd; width: 35%;">Potential Impact</th>
+                            <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Mitigation Strategy</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold;">Market Volatility</td>
+                            <td style="padding: 10px; border-bottom: 1px solid #eee;">Fluctuations in crop prices affecting revenue.</td>
+                            <td style="padding: 10px; border-bottom: 1px solid #eee;">Diversified portfolio (Fruit Trees & Cash Crops) to balance seasonal variations; Forward contracting for key produce.</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold;">Environmental / Climate</td>
+                            <td style="padding: 10px; border-bottom: 1px solid #eee;">Drought or erratic rainfall patterns reducing yield.</td>
+                            <td style="padding: 10px; border-bottom: 1px solid #eee;">Investment in efficient irrigation systems; Implementation of drought-resistant crop varieties; Agroforestry practices.</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold;">Operational</td>
+                            <td style="padding: 10px; border-bottom: 1px solid #eee;">Equipment downtime or labor shortages.</td>
+                            <td style="padding: 10px; border-bottom: 1px solid #eee;">Preventive maintenance schedule; Community engagement for reliable labor pool; Training programs.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Unforeseen Circumstances & Contingency -->
+            <div style="page-break-inside: avoid; margin-bottom: 30px; background-color: #f9f9f9; padding: 15px; border-left: 3px solid #757575;">
+                <h4 style="margin-top: 0; color: #333; font-family: Arial, sans-serif;">CONTINGENCY PLANNING (The "Black Swan" Protocol)</h4>
+                <p style="font-size: 13px; margin-bottom: 8px;">
+                    To safeguard investor capital against unforeseen "force majeure" events (e.g., extreme weather events, sudden regulatory changes, or secure transport disruptions):
+                </p>
+                <ul style="font-size: 13px; margin-bottom: 0;">
+                    <li><strong>Emergency Reserve Fund:</strong> 10% of all capital raises are held in a liquid, low-risk liquidity pool reserved strictly for emergency stabilization.</li>
+                    <li><strong>Insurance Coverage:</strong> Comprehensive agricultural insurance covering crop loss and infrastructure damage.</li>
+                    <li><strong>Adaptive Management:</strong> Agile decision-making structure allowing for rapid pivot in crop focus or operational scale within 48 hours of critical incidents.</li>
+                </ul>
+            </div>
+
+            <!-- Capital Allocation -->
+            <div style="page-break-inside: avoid; margin-bottom: 30px;">
+                <h3 style="border-bottom: 1px solid #ccc; padding-bottom: 5px; font-family: Arial, sans-serif; font-size: 16px; color: #444;">PROPOSED CAPITAL ALLOCATION</h3>
+                <div style="display: flex; gap: 20px; align-items: flex-start;">
+                    <div style="flex: 1;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                            <tbody>
+                                <tr>
+                                    <td style="padding: 8px; border-bottom: 1px solid #eee;">Infrastructure Expansion (Irrigation/Storage)</td>
+                                    <td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee; font-weight: bold;">40%</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px; border-bottom: 1px solid #eee;">Crop Diversification & Seed Procurement</td>
+                                    <td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee; font-weight: bold;">30%</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px; border-bottom: 1px solid #eee;">Technology & Operational Efficiency</td>
+                                    <td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee; font-weight: bold;">20%</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px; border-bottom: 1px solid #eee; color: #666;">Contingency Reserve</td>
+                                    <td style="padding: 8px; text-align: right; border-bottom: 1px solid #eee; font-weight: bold; color: #666;">10%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                     <div style="width: 150px; text-align: center; padding: 10px; background: #fffde7; border: 1px solid #ddd;">
+                        <div style="font-size: 32px; font-weight: bold; color: #FBC02D;">100%</div>
+                        <div style="font-size: 11px; text-transform: uppercase;">Direct Investment</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Footer Signatures -->
             <div style="margin-top: 60px; display: flex; justify-content: space-between; page-break-inside: avoid;">
                 <div style="width: 40%; text-align: center;">
