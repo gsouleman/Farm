@@ -744,6 +744,10 @@ Object.assign(app, {
             this.updateCurrentMonth();
             this.initializeCharts();
 
+            // Load Farm Analysis UI state
+            if (this.loadFarmAnalysisUI) {
+                this.loadFarmAnalysisUI();
+            }
         } catch (error) {
             console.error('Failed to load farm details:', error);
         }
@@ -5835,6 +5839,10 @@ app.showTab = function (tabName) {
             this.initAdvancedFeatures();
         } else if (tabName === 'agri-calendar') {
             this.renderAgriCalendar();
+        } else if (tabName === 'analysis') {
+            if (this.loadFarmAnalysisUI) {
+                this.loadFarmAnalysisUI();
+            }
         }
     }
 
