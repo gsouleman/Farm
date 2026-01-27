@@ -602,7 +602,7 @@ Object.assign(app, {
     // Load data from localStorage
     // Load data from API
     async loadData() {
-        if (!this.state.isLoggedIn) return;
+        if (!api.getToken()) return;
 
         try {
             console.log('Debug: loadData - Fetching farms...');
