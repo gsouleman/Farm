@@ -242,9 +242,10 @@ Object.assign(app, {
         let slopeMod = 0;
         let waterMod = false;
         let analysisNote = "Standard Best Practices";
+        let savedAnalysis = null;
 
         try {
-            const savedAnalysis = await api.analysis.get(farm.id).catch(err => {
+            savedAnalysis = await api.analysis.get(farm.id).catch(err => {
                 return null;
             });
 
