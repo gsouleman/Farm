@@ -84,10 +84,40 @@ Object.assign(app, {
                 </div>
 
                 <div class="report-section mb-4">
-                    <h4 style="color: #d35400; border-bottom: 1px solid #eee; padding-bottom: 0.5rem;">🌾 MAIZE PLANTING ADVICE (Integration with Agri Calendar)</h4>
-                    <ul style="list-style: none; padding-left: 0;">
-                        ${analysisData.plantingAdvice.map(a => `<li>• ${a}</li>`).join('')}
-                    </ul>
+                    <h4 style="color: #d35400; border-bottom: 1px solid #eee; padding-bottom: 0.5rem;">🌾 EXPANDED PLANTING ADVICE (Agri Calendar Integration)</h4>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <h5 style="color: #e67e22; margin-bottom: 0.25rem;">🌽 Cereals</h5>
+                            <ul style="list-style: none; padding-left: 0; font-size: 0.9rem; margin-bottom: 0.5rem;">
+                                ${analysisData.plantingAdvice.cereals.map(a => `<li>• ${a}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div>
+                            <h5 style="color: #27ae60; margin-bottom: 0.25rem;">🥜 Legumes</h5>
+                            <ul style="list-style: none; padding-left: 0; font-size: 0.9rem; margin-bottom: 0.5rem;">
+                                ${analysisData.plantingAdvice.legumes.map(a => `<li>• ${a}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div>
+                            <h5 style="color: #8e44ad; margin-bottom: 0.25rem;">🥔 Tubers</h5>
+                            <ul style="list-style: none; padding-left: 0; font-size: 0.9rem; margin-bottom: 0.5rem;">
+                                ${analysisData.plantingAdvice.tubers.map(a => `<li>• ${a}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div>
+                             <h5 style="color: #16a085; margin-bottom: 0.25rem;">🌳 Fruit Trees</h5>
+                            <ul style="list-style: none; padding-left: 0; font-size: 0.9rem; margin-bottom: 0.5rem;">
+                                ${analysisData.plantingAdvice.fruitTrees.map(a => `<li>• ${a}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div style="grid-column: span 2;">
+                             <h5 style="color: #c0392b; margin-bottom: 0.25rem;">💰 Cash Crops</h5>
+                            <ul style="list-style: none; padding-left: 0; font-size: 0.9rem; margin-bottom: 0.5rem;">
+                                ${analysisData.plantingAdvice.cashCrops.map(a => `<li>• ${a}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="report-section mb-4">
@@ -187,11 +217,33 @@ Object.assign(app, {
                 rand() > 0.7 ? "Soil Compaction: Visible on access roads" : null
             ].filter(Boolean),
 
-            plantingAdvice: [
-                "Plant upper slope first (warmer, drains better)",
-                rand() > 0.5 ? "Avoid wet areas (rot risk)" : "Monitor soil moisture",
-                aspect.includes('South') ? "South-facing sections: Plant 1 week earlier" : "North-facing sections: Plant 1 week later"
-            ],
+            plantingAdvice: {
+                cereals: [
+                    aspect.includes('South') ? "Maize: Plant 1 week earlier on South-facing slopes" : "Maize: Wait for soil temperature to rise on North slopes",
+                    slope > 5 ? "Sorghum: Excellent for steeper, well-drained sections" : "Rice: Suitable for lower, wetter areas (if available)",
+                    "Millet: Good drought resistance for upper slopes"
+                ],
+                legumes: [
+                    "Beans: Intercrop with maize for nitrogen fixation",
+                    "Groundnuts: Avoid wet areas to prevent rot",
+                    "Soybeans: Plant on flat terrain for easier harvesting"
+                ],
+                tubers: [
+                    slope > 10 ? "Cassava: Plant on slopes to reduce waterlogging risk" : "Cassava: Suitable for most well-drained soils",
+                    "Yams: Requires deep, loose soil (avoid compacted zones)",
+                    "Potatoes: Hilling required; ensure good drainage"
+                ],
+                fruitTrees: [
+                    "Avocado: Plant on slopes for drainage (root rot sensitive)",
+                    "Mango: Thrives in warmer, south-facing aspects",
+                    "Citrus: Requires consistent water but no waterlogging"
+                ],
+                cashCrops: [
+                    "Coffee: Shade-grown on higher elevation slopes recommended",
+                    "Cocoa: Requires humidity and shade (lower slopes/valleys)",
+                    "Cotton: Needs full sun and flat terrain"
+                ]
+            },
 
             operationalAdvice: [
                 hasWater ? "Stream access: Potential for irrigation" : "Consider rainwater harvesting",
