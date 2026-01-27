@@ -20,7 +20,7 @@
   <link rel="stylesheet" href="report_styles.css">
 
   <!-- Chart.js for Data Visualization -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="assets/libs/js/chart.umd.min.js"></script>
 
 
   <!-- Google Maps JavaScript API -->
@@ -29,13 +29,17 @@
     async defer></script>
 
   <!-- Tesseract.js for OCR (Image Coordinate Extraction) -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+  <script src="assets/libs/js/tesseract.min.js"></script>
 
   <!-- PDF.js for PDF Parsing -->
-  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <script src="assets/libs/js/pdf.min.js"></script>
+  <script>
+    // Configure PDF.js worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'assets/libs/js/pdf.worker.min.js';
+  </script>
 
   <!-- Turf.js for Geospatial Analysis (Area/Difference calculation) -->
-  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+  <script src="assets/libs/js/turf.min.js"></script>
 
   <!-- SheetJS for Excel Parsing -->
 
@@ -67,11 +71,12 @@
       <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; justify-content: center;">
         <ul class="navbar-nav"
           style="display: flex; gap: 0.25rem; margin: 0; padding: 0; list-style: none; align-items: center;">
-          <li><a href="#dashboard" class="nav-link active" onclick="app.showTab('dashboard')">Dashboard</a></li>
+          <li><a href="#dashboard" id="nav-dashboard" class="nav-link active"
+              onclick="app.showTab('dashboard')">Dashboard</a></li>
 
           <!-- Operations Dropdown -->
           <li class="dropdown">
-            <a href="#" class="nav-link" onclick="event.preventDefault()">Operations ▼</a>
+            <a href="#" id="nav-operations" class="nav-link" onclick="event.preventDefault()">Operations ▼</a>
             <div class="dropdown-content">
               <a href="#crops" onclick="app.showTab('crops')">Crops & Harvest</a>
               <a href="#employees" onclick="app.showTab('employees')">Workforce</a>
@@ -79,9 +84,12 @@
             </div>
           </li>
 
-          <li><a href="#financial" class="nav-link" onclick="app.showTab('financial')">Finances</a></li>
-          <li><a href="#reports" class="nav-link" onclick="app.showTab('reports')">Analytics & Reports</a></li>
-          <li><a href="#farm-info" class="nav-link" onclick="app.showTab('farm-info')">Farm Profile</a></li>
+          <li><a href="#financial" id="nav-finances" class="nav-link" onclick="app.showTab('financial')">Finances</a>
+          </li>
+          <li><a href="#reports" id="nav-reports" class="nav-link" onclick="app.showTab('reports')">Analytics &
+              Reports</a></li>
+          <li><a href="#farm-info" id="nav-farm-profile" class="nav-link" onclick="app.showTab('farm-info')">Farm
+              Profile</a></li>
 
           <!-- Dropdown Menu -->
           <li style="display: flex; align-items: center; gap: 0.5rem; position: relative;">

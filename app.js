@@ -13,11 +13,12 @@ const translations = {
         // Navigation
         nav: {
             dashboard: "Dashboard",
-            farmInfo: "Farm Info",
-            financial: "Financial",
+            operations: "Operations",
+            farmInfo: "Farm Profile",
+            financial: "Finances",
             crops: "Crops",
             employees: "Employees",
-            reports: "Reports"
+            reports: "Analytics & Reports"
         },
         // Farm Info
         farmInfo: {
@@ -5166,13 +5167,20 @@ app.t = function (key) {
 // Update all text in the interface
 app.updateAllText = function () {
     // Update navigation
-    const navLinks = document.querySelectorAll('.nav-link');
-    if (navLinks[0]) navLinks[0].textContent = this.t('nav.dashboard');
-    if (navLinks[1]) navLinks[1].textContent = this.t('nav.farmInfo');
-    if (navLinks[2]) navLinks[2].textContent = this.t('nav.financial');
-    if (navLinks[3]) navLinks[3].textContent = this.t('nav.crops');
-    if (navLinks[4]) navLinks[4].textContent = this.t('nav.employees');
-    if (navLinks[5]) navLinks[5].textContent = this.t('nav.reports');
+    const dashLink = document.getElementById('nav-dashboard');
+    if (dashLink) dashLink.textContent = this.t('nav.dashboard');
+
+    const opsLink = document.getElementById('nav-operations');
+    if (opsLink) opsLink.textContent = this.t('nav.operations') + ' ▼';
+
+    const finLink = document.getElementById('nav-finances');
+    if (finLink) finLink.textContent = this.t('nav.financial');
+
+    const reportsLink = document.getElementById('nav-reports');
+    if (reportsLink) reportsLink.textContent = this.t('nav.reports');
+
+    const farmLink = document.getElementById('nav-farm-profile');
+    if (farmLink) farmLink.textContent = this.t('nav.farmInfo');
 
     // Update current section based on active tab
     const activeLink = document.querySelector('.nav-link.active');
