@@ -700,6 +700,98 @@
       </div>
     </section>
 
+    <!-- Risk & Incident Log Section -->
+    <section id="incidents" class="section" style="display: none;">
+      <div class="container">
+        <h2 class="text-center mb-4">Risk & Incident Log</h2>
+
+        <!-- Incident Stats -->
+        <div class="grid grid-4 mb-4">
+          <div class="stat-card">
+            <div class="stat-card-icon">⚠️</div>
+            <div class="stat-card-label">Open Incidents</div>
+            <div class="stat-card-value" id="statsOpenIncidents">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon" style="background: rgba(220, 53, 69, 0.1); color: #dc3545;">🔥</div>
+            <div class="stat-card-label">Critical Risks</div>
+            <div class="stat-card-value text-danger" id="statsCriticalRisks">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon" style="background: rgba(40, 167, 69, 0.1); color: #28a745;">✅</div>
+            <div class="stat-card-label">Resolved (Month)</div>
+            <div class="stat-card-value text-success" id="statsResolvedMonth">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon">💰</div>
+            <div class="stat-card-label">Total Impact (YTD)</div>
+            <div class="stat-card-value" id="statsTotalImpact">₣0</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Incident History</h3>
+            <button class="btn btn-danger btn-sm" onclick="app.openLogIncidentModal()">
+              ⚠️ Log New Incident
+            </button>
+          </div>
+          <div class="card-body">
+            <!-- Filters -->
+            <div class="mb-3 p-2 bg-light rounded"
+              style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 200px;">
+                <input type="text" id="incidentSearch" class="form-control" placeholder="Search incidents..."
+                  onkeyup="app.filterIncidents()">
+              </div>
+              <div style="width: 180px;">
+                <select id="incidentFilterCategory" class="form-control" onchange="app.filterIncidents()">
+                  <option value="">All Categories</option>
+                  <option value="CLIMATE">Climate</option>
+                  <option value="BIOLOGICAL">Biological</option>
+                  <option value="OPERATIONAL">Operational</option>
+                  <option value="SECURITY">Security</option>
+                  <option value="MARKET">Market</option>
+                  <option value="MANAGEMENT">Management</option>
+                  <option value="INFRASTRUCTURE">Infrastructure</option>
+                </select>
+              </div>
+              <div style="width: 150px;">
+                <select id="incidentFilterStatus" class="form-control" onchange="app.filterIncidents()">
+                  <option value="">All Statuses</option>
+                  <option value="Open">Open</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Resolved">Resolved</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="table-container">
+              <table class="table" id="incidentsTable">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Subcategory</th>
+                    <th>Severity</th>
+                    <th>Asset/Area</th>
+                    <th>Impact</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="incidentsTableBody">
+                  <tr>
+                    <td colspan="8" class="text-center text-muted">Loading incidents...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Employees Section -->
     <section id="employees" class="section hidden">
       <div class="container">
