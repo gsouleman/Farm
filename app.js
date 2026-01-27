@@ -1471,9 +1471,7 @@ Object.assign(app, {
           <td><span class="badge badge-${this.getStatusColor(crop.status)}">${crop.status}</span></td>
           <td>${crop.expectedHarvest || 'TBD'}</td>
           <td>
-            <button class="btn btn-info btn-sm" onclick="app.viewCrop('fruit', ${index})" title="View Details">ðŸ‘ï¸</button>
-            <button class="btn btn-primary btn-sm" onclick="app.editCrop('fruit', ${index})" title="Edit">âœï¸</button>
-            <button class="btn btn-danger btn-sm" onclick="app.deleteFruitTree(${index})" title="Delete">ðŸ—‘ï¸</button>
+            <button class="btn btn-danger btn-sm" onclick="app.deleteFruitTree(${index})">ðŸ—‘ï¸</button>
           </td>
         </tr>
       `).join('');
@@ -1493,15 +1491,857 @@ Object.assign(app, {
           <td>${crop.harvestDate ? this.formatDate(crop.harvestDate) : 'TBD'}</td>
           <td>${crop.yield || 0} kg</td>
           <td>
-            <button class="btn btn-info btn-sm" onclick="app.viewCrop('cash', ${index})" title="View Details">ðŸ‘ï¸</button>
-            <button class="btn btn-primary btn-sm" onclick="app.editCrop('cash', ${index})" title="Edit">âœï¸</button>
-            <button class="btn btn-danger btn-sm" onclick="app.deleteCashCrop(${index})" title="Delete">ðŸ—‘ï¸</button>
+            <button class="btn btn-danger btn-sm" onclick="app.deleteCashCrop(${index})">ðŸ—‘ï¸</button>
           </td>
         </tr>
       `).join('');
         }
     },
 
+    // Initialize all charts
+    initializeCharts() {
+        this.initCashFlowChart();
+        this.initLandUtilizationChart();
+        this.initExpenseBreakdownChart();
+        this.initIncomeSourcesChart();
+    },
+
+    // Cash flow trend chart
+    initCashFlowChart() {
+        const ctx = document.getElementById('cashFlowChart');
+        if (!ctx) return;
+
+        // Get monthly data
+        const monthlyData = this.getMonthlyData();
+
+        if (this.charts.cashFlow) {
+            this.charts.cashFlow.destroy();
+        }
+
+        this.charts.cashFlow = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: monthlyData.labels,
+                datasets: [
+                    {
+                        label: 'Income',
+                        data: monthlyData.income,
+                        borderColor: '#4caf50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Expenses',
+                        data: monthlyData.expenses,
+                        borderColor: '#ff9800',
+                        backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: (value) => value.toLocaleString() + ' Xaf'
+                        }
+                    }
+                }
+            }
+        });
+    },
+
+    // Land utilization chart
+    initLandUtilizationChart() {
+        const ctx = document.getElementById('landUtilizationChart');
+        if (!ctx || !this.farmData || !this.farmData.zones) return;
+
+        if (this.charts.landUtilization) {
+            this.charts.landUtilization.destroy();
+        }
+
+        this.charts.landUtilization = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Fruit Trees', 'Cash Crops', 'Farm House', 'Residential'],
+                datasets: [{
+                    data: [
+                        this.farmData.zones.fruitTrees.area,
+                        this.farmData.zones.cashCrops.area,
+                        this.farmData.zones.farmHouse.area,
+                        this.farmData.zones.residential.area
+                    ],
+                    backgroundColor: [
+                        '#90ee90',
+                        '#ffd700',
+                        '#8b4513',
+                        '#2d5016'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+    },
+
+    // Expense breakdown chart
+    initExpenseBreakdownChart() {
+        const ctx = document.getElementById('expenseBreakdownChart');
+        if (!ctx) return;
+
+        const expensesByCategory = {};
+        this.transactions
+            .filter(t => t.type === 'expense')
+            .forEach(t => {
+                expensesByCategory[t.category] = (expensesByCategory[t.category] || 0) + parseFloat(t.amount);
+            });
+
+        const categories = Object.keys(expensesByCategory);
+        const amounts = Object.values(expensesByCategory);
+
+        if (this.charts.expenseBreakdown) {
+            this.charts.expenseBreakdown.destroy();
+        }
+
+        this.charts.expenseBreakdown = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: categories.length > 0 ? categories : ['No expenses yet'],
+                datasets: [{
+                    data: amounts.length > 0 ? amounts : [1],
+                    backgroundColor: [
+                        '#ff6384', '#36a2eb', '#ffce56', '#4bc0c0',
+                        '#9966ff', '#ff9f40', '#ff6384', '#c9cbcf',
+                        '#4bc0c0', '#ff6384'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+    },
+
+    // Income sources chart
+    initIncomeSourcesChart() {
+        const ctx = document.getElementById('incomeSourcesChart');
+        if (!ctx) return;
+
+        const incomeByCategory = {};
+        this.transactions
+            .filter(t => t.type === 'income')
+            .forEach(t => {
+                incomeByCategory[t.category] = (incomeByCategory[t.category] || 0) + parseFloat(t.amount);
+            });
+
+        const categories = Object.keys(incomeByCategory);
+        const amounts = Object.values(incomeByCategory);
+
+        if (this.charts.incomeSources) {
+            this.charts.incomeSources.destroy();
+        }
+
+        this.charts.incomeSources = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: categories.length > 0 ? categories : ['No income yet'],
+                datasets: [{
+                    label: 'Income (Xaf)',
+                    data: amounts.length > 0 ? amounts : [0],
+                    backgroundColor: '#4caf50'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: (value) => value.toLocaleString() + ' Xaf'
+                        }
+                    }
+                }
+            }
+        });
+    },
+
+    // Get monthly data for charts
+    getMonthlyData() {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const currentYear = new Date().getFullYear();
+
+        const income = new Array(12).fill(0);
+        const expenses = new Array(12).fill(0);
+
+        this.transactions.forEach(t => {
+            const date = new Date(t.date);
+            if (date.getFullYear() === currentYear) {
+                const month = date.getMonth();
+                const amount = parseFloat(t.amount);
+                if (t.type === 'income') {
+                    income[month] += amount;
+                } else {
+                    expenses[month] += amount;
+                }
+            }
+        });
+
+        return { labels: months, income, expenses };
+    },
+
+    // Update current month display
+    updateCurrentMonth() {
+        const now = new Date();
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'];
+        const currentMonth = monthNames[now.getMonth()] + ' ' + now.getFullYear();
+
+        document.getElementById('currentMonth').textContent = currentMonth;
+
+        // Calculate monthly totals
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+        let monthlyIncome = 0;
+        let monthlyExpenses = 0;
+
+        this.transactions.forEach(t => {
+            const date = new Date(t.date);
+            if (date >= monthStart && date <= monthEnd) {
+                const amount = parseFloat(t.amount);
+                if (t.type === 'income') {
+                    monthlyIncome += amount;
+                } else {
+                    monthlyExpenses += amount;
+                }
+            }
+        });
+
+        const monthlyNet = monthlyIncome - monthlyExpenses;
+
+        document.getElementById('monthlyIncome').textContent = this.formatCurrency(monthlyIncome);
+        document.getElementById('monthlyExpenses').textContent = this.formatCurrency(monthlyExpenses);
+        document.getElementById('monthlyNet').textContent = this.formatCurrency(monthlyNet);
+        document.getElementById('monthlyNet').className = monthlyNet >= 0 ? 'text-success' : 'text-danger';
+    },
+
+    // Modal management
+    openAddTransactionModal() {
+        this.currentEditingId = null;
+        document.getElementById('transactionForm').reset();
+        document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
+
+        // Reset dynamic elements
+        const title = document.getElementById('transactionModalTitle');
+        if (title) title.textContent = 'Add New Transaction';
+
+        const btn = document.getElementById('saveTransactionBtn');
+        if (btn) btn.textContent = 'Add Transaction';
+
+        // Populate section dropdown
+        const sectionSelect = document.getElementById('transactionSection');
+        if (sectionSelect) {
+            const sections = this.getCurrentFarm().sections || [];
+            sectionSelect.innerHTML = '<option value="">Link to section...</option>' +
+                sections.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+        }
+
+        this.openModal('addTransactionModal');
+    },
+
+    openAddCropModal(type) {
+        this.openModal('addCropModal');
+        document.getElementById('cropForm').reset();
+        document.getElementById('cropCategory').value = type;
+
+        const cropTypeSelect = document.getElementById('cropType');
+        const countGroup = document.getElementById('cropCountGroup');
+        const areaGroup = document.getElementById('cropAreaGroup');
+
+        if (type === 'fruit') {
+            document.getElementById('cropModalTitle').textContent = 'Add Fruit Tree';
+            cropTypeSelect.innerHTML = `
+        <option value="">Select type...</option>
+        <option value="Avocado">Avocado</option>
+        <option value="Lemon">Lemon</option>
+        <option value="Orange">Orange</option>
+        <option value="Mango">Mango</option>
+        <option value="Other">Other</option>
+      `;
+            countGroup.style.display = 'block';
+            areaGroup.style.display = 'none';
+            document.getElementById('cropCount').required = true;
+            document.getElementById('cropArea').required = false;
+        } else {
+            document.getElementById('cropModalTitle').textContent = 'Add Cash Crop';
+            cropTypeSelect.innerHTML = `
+        <option value="">Select type...</option>
+        <option value="Cassava">Cassava</option>
+        <option value="Ginger">Ginger</option>
+        <option value="Pepper">Pepper</option>
+        <option value="Corn">Corn</option>
+        <option value="Other">Other</option>
+      `;
+            countGroup.style.display = 'none';
+            areaGroup.style.display = 'block';
+            document.getElementById('cropCount').required = false;
+            document.getElementById('cropArea').required = true;
+        }
+
+        document.getElementById('cropPlantedDate').value = new Date().toISOString().split('T')[0];
+    },
+
+    openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('active');
+            // Ensure display: flex for the overlay to center content
+            if (modal.classList.contains('modal-overlay')) {
+                modal.style.display = 'flex';
+            }
+        }
+    },
+
+    closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('active');
+            modal.style.display = 'none';
+        }
+    },
+
+    // ===================================
+    // Coordinate Editor Functions
+    // ===================================
+
+    // Temporary coordinates storage for editing
+    tempCoordinates: [],
+
+    // Open coordinate editor modal
+    openCoordinateEditorModal() {
+        if (!this.farmData || !this.farmData.id) {
+            this.showError('Please select or create a farm before editing coordinates.');
+            return;
+        }
+
+        // Copy current boundaries to temp storage
+        this.tempCoordinates = JSON.parse(JSON.stringify(this.farmData.boundaries || []));
+
+        // Open modal
+        this.openModal('coordinateEditorModal');
+
+        // Render coordinates table
+        this.renderCoordinatesTable();
+
+        // Clear input fields
+        document.getElementById('newPointLat').value = '';
+        document.getElementById('newPointLng').value = '';
+        document.getElementById('coordinateError').style.display = 'none';
+
+        // Update validation status
+        this.updateCoordinateValidation();
+    },
+
+    // Render the coordinates table
+    renderCoordinatesTable() {
+        const tbody = document.getElementById('coordinatesTableBody');
+        const countSpan = document.getElementById('coordinateCount');
+
+        countSpan.textContent = this.tempCoordinates.length;
+
+        if (this.tempCoordinates.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">${this.t('coordEditor.noCoordinates')}</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = this.tempCoordinates.map((coord, index) => `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${coord.lat.toFixed(6)}</td>
+                <td>${coord.lng.toFixed(6)}</td>
+                <td>
+                    <button class="btn btn-danger btn-sm" onclick="app.deleteCoordinatePoint(${index})">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+
+        this.updateCoordinateValidation();
+    },
+
+    // Add a new coordinate point
+    addCoordinatePoint() {
+        const latInput = document.getElementById('newPointLat');
+        const lngInput = document.getElementById('newPointLng');
+        const errorDiv = document.getElementById('coordinateError');
+
+        const lat = parseFloat(latInput.value);
+        const lng = parseFloat(lngInput.value);
+
+        // Validation
+        errorDiv.style.display = 'none';
+
+        if (isNaN(lat) || isNaN(lng)) {
+            errorDiv.textContent = 'âš ï¸ Please enter valid numeric values for both latitude and longitude';
+            errorDiv.style.display = 'block';
+            return;
+        }
+
+        if (lat < -90 || lat > 90) {
+            errorDiv.textContent = 'âš ï¸ Latitude must be between -90 and 90';
+            errorDiv.style.display = 'block';
+            return;
+        }
+
+        if (lng < -180 || lng > 180) {
+            errorDiv.textContent = 'âš ï¸ Longitude must be between -180 and 180';
+            errorDiv.style.display = 'block';
+            return;
+        }
+
+        // Add to temp coordinates
+        this.tempCoordinates.push({ lat, lng });
+
+        // Clear inputs
+        latInput.value = '';
+        lngInput.value = '';
+
+        // Re-render table
+        this.renderCoordinatesTable();
+    },
+
+    // Import bulk coordinates from textarea
+    importBulkCoordinates() {
+        const textarea = document.getElementById('bulkCoordinatesInput');
+        const statusSpan = document.getElementById('bulkImportStatus');
+        const errorDiv = document.getElementById('bulkImportError');
+
+        // Clear previous messages
+        statusSpan.style.display = 'none';
+        errorDiv.style.display = 'none';
+
+        const input = textarea.value.trim();
+        if (!input) {
+            errorDiv.textContent = 'âš ï¸ Please paste coordinates in the textarea';
+            errorDiv.style.display = 'block';
+            return;
+        }
+
+        // Split by lines
+        const lines = input.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+
+        const imported = [];
+        const errors = [];
+
+        lines.forEach((line, index) => {
+            // Try different separator formats: comma, space, tab
+            let lat, lng;
+
+            // Try comma-separated
+            if (line.includes(',')) {
+                const parts = line.split(',').map(p => p.trim());
+                if (parts.length >= 2) {
+                    lat = parseFloat(parts[0]);
+                    lng = parseFloat(parts[1]);
+                }
+            }
+            // Try space or tab separated
+            else if (line.includes(' ') || line.includes('\t')) {
+                const parts = line.split(/[\s\t]+/).filter(p => p.length > 0);
+                if (parts.length >= 2) {
+                    lat = parseFloat(parts[0]);
+                    lng = parseFloat(parts[1]);
+                }
+            }
+            // Try as two numbers without separator
+            else {
+                errors.push(`Line ${index + 1}: Invalid format`);
+                return;
+            }
+
+            // Validate
+            if (isNaN(lat) || isNaN(lng)) {
+                errors.push(`Line ${index + 1}: Invalid numbers`);
+                return;
+            }
+
+            if (lat < -90 || lat > 90) {
+                errors.push(`Line ${index + 1}: Latitude must be between -90 and 90`);
+                return;
+            }
+
+            if (lng < -180 || lng > 180) {
+                errors.push(`Line ${index + 1}: Longitude must be between -180 and 180`);
+                return;
+            }
+
+            imported.push({ lat, lng });
+        });
+
+        // Add all valid coordinates
+        if (imported.length > 0) {
+            this.tempCoordinates.push(...imported);
+            this.renderCoordinatesTable();
+
+            // Show success message
+            statusSpan.textContent = `âœ“ Imported ${imported.length} coordinate${imported.length > 1 ? 's' : ''}`;
+            statusSpan.style.display = 'inline';
+
+            // Clear textarea
+            textarea.value = '';
+        }
+
+        // Show errors if any
+        if (errors.length > 0) {
+            errorDiv.innerHTML = `<strong>Skipped ${errors.length} invalid line${errors.length > 1 ? 's' : ''}:</strong><br>` +
+                errors.slice(0, 5).join('<br>') +
+                (errors.length > 5 ? `<br>... and ${errors.length - 5} more` : '');
+            errorDiv.style.display = 'block';
+        }
+
+        // If no coordinates were imported at all
+        if (imported.length === 0) {
+            errorDiv.textContent = 'âš ï¸ No valid coordinates found. Please check your format.';
+            errorDiv.style.display = 'block';
+        }
+    },
+
+    // Delete a coordinate point (Auto-confirmed)
+    deleteCoordinatePoint(index) {
+        this.tempCoordinates.splice(index, 1);
+        this.renderCoordinatesTable();
+    },
+
+    // Clear all coordinate points (Auto-confirmed)
+    clearAllCoordinates() {
+        this.showConfirmation('Are you sure you want to clear all boundary points?', () => {
+            this.tempCoordinates = [];
+            this.renderCoordinatesTable();
+            this.updateCoordinateValidation();
+            this.showSuccess('Boundary points cleared.');
+        });
+    },
+
+    // Update validation message and save button state
+    updateCoordinateValidation() {
+        const validationMsg = document.getElementById('validationMessage');
+        const saveBtn = document.getElementById('saveCoordinatesBtn');
+
+        if (this.tempCoordinates.length < 3) {
+            validationMsg.innerHTML = 'âš ï¸ At least 3 points required';
+            validationMsg.style.color = '#cc0000';
+            saveBtn.disabled = true;
+            saveBtn.style.opacity = '0.5';
+            saveBtn.style.cursor = 'not-allowed';
+        } else {
+            validationMsg.innerHTML = `âœ“ Ready to save (${this.tempCoordinates.length} points)`;
+            validationMsg.style.color = '#4caf50';
+            saveBtn.disabled = false;
+            saveBtn.style.opacity = '1';
+            saveBtn.style.cursor = 'pointer';
+        }
+    },
+
+    // Save coordinates and update maps
+    async saveCoordinates() {
+        // Check if there are filled inputs that weren't added
+        const pendingLat = document.getElementById('newPointLat').value;
+        const pendingLng = document.getElementById('newPointLng').value;
+        if (pendingLat || pendingLng) {
+            if (confirm('You have coordinate values entered but not added to the list. Do you want to add them before saving?')) {
+                this.addCoordinatePoint();
+                // Continue with save after adding
+            }
+        }
+
+        // Allow clearing all coordinates for blank map
+        if (this.tempCoordinates.length === 0) {
+            // Confirm explicitly if they are clearing existing boundaries
+            if (this.farmData.boundaries && this.farmData.boundaries.length > 0) {
+                if (!confirm('You are about to clear all farm boundaries and crop allocations. Are you sure?')) {
+                    return;
+                }
+            }
+
+            // Clear boundaries and all crop allocations
+            this.farmData.boundaries = [];
+            this.farmData.sections = []; // Clear all crop allocation sections
+            this.farmData.centerCoordinates = { lat: 0, lng: 0 };
+
+            try {
+                // Save to Backend
+                const currentFarm = this.getCurrentFarm();
+                if (currentFarm && currentFarm.id) {
+                    await api.farms.update(currentFarm.id, {
+                        boundaries: [],
+                        centerLat: 0,
+                        centerLng: 0
+                    });
+                }
+
+                // Update views
+                this.updateMapViews();
+                this.renderFarmDetails();
+                this.renderFarmSectionsTable();
+                this.renderFarmSectionsTable();
+                this.renderGraphicalMap(currentFarm);
+
+                // Close modal
+                this.closeModal('coordinateEditorModal');
+
+                this.showSuccess('All coordinates and crop allocations cleared!\n\nMap is now blank. Add new coordinates to define your farm boundaries.');
+            } catch (err) {
+                this.showError('Failed to clear boundaries: ' + err.message);
+            }
+            return;
+        }
+
+        // Validate minimum 3 points for a valid polygon
+        if (this.tempCoordinates.length < 3) {
+            this.showError('At least 3 coordinate points are required to form a polygon.');
+            return;
+        }
+
+        // Calculate new center point (average of all coordinates)
+        const centerLat = this.tempCoordinates.reduce((sum, coord) => sum + coord.lat, 0) / this.tempCoordinates.length;
+        const centerLng = this.tempCoordinates.reduce((sum, coord) => sum + coord.lng, 0) / this.tempCoordinates.length;
+
+        // Safety check for farm ID
+        const currentFarm = this.getCurrentFarm();
+        if (!currentFarm || !currentFarm.id) {
+            this.showError('Cannot save coordinates: Missing Farm ID. Please refresh and try again.');
+            console.error('Debug: Attempted to save coordinates with missing farmData.id', { farmData: currentFarm });
+            return;
+        }
+
+        // Update farm data payload
+        const updateData = {
+            boundaries: this.tempCoordinates,
+            centerLat: centerLat,
+            centerLng: centerLng
+        };
+
+        try {
+            console.log(`Debug: Saving ${this.tempCoordinates.length} coordinates to Farm ${currentFarm.id}...`);
+            await api.farms.update(currentFarm.id, updateData);
+
+            // Update local memory
+            currentFarm.boundaries = JSON.parse(JSON.stringify(this.tempCoordinates));
+            currentFarm.centerCoordinates = {
+                lat: centerLat,
+                lng: centerLng
+            };
+
+            this.updateMapViews();
+            this.renderFarmDetails();
+            this.renderFarmSectionsTable();
+            this.closeModal('coordinateEditorModal');
+
+            this.showSuccess(`Coordinates saved successfully!\nBoundary points: ${this.tempCoordinates.length}`);
+
+        } catch (error) {
+            this.showError('Failed to save boundaries: ' + error.message);
+        }
+    },
+
+    // Update map views after coordinate changes
+    updateMapViews() {
+        const currentView = this.currentMapView;
+
+        // Update satellite view (Google Maps)
+        if (currentView === 'satellite') {
+            // Re-render the entire map
+            const farm = this.getCurrentFarm();
+            this.renderFarmMap(farm);
+        } else if (currentView === 'graphical') {
+            // Re-render graphical canvas
+            const farm = this.getCurrentFarm();
+            this.renderGraphicalMap(farm);
+        }
+    },
+
+    // Update Farm Info tab with new boundary count
+
+
+    // Update category options based on transaction type
+    updateCategoryOptions() {
+        const type = document.getElementById('transactionType').value;
+        const categorySelect = document.getElementById('transactionCategory');
+
+        this.currentTransactionType = type;
+
+        if (type === 'income') {
+            const allIncomeCategories = [...this.incomeCategories, ...this.customIncomeCategories];
+            categorySelect.innerHTML = '<option value="">Select category...</option>' +
+                allIncomeCategories.map(cat => `<option value="${cat}">${cat}</option>`).join('') +
+                '<option value="__NEW__">New...</option>';
+        } else if (type === 'expense') {
+            const allExpenseCategories = [...this.expenseCategories, ...this.customExpenseCategories];
+            categorySelect.innerHTML = '<option value="">Select category...</option>' +
+                allExpenseCategories.map(cat => `<option value="${cat}">${cat}</option>`).join('') +
+                '<option value="__NEW__">New...</option>';
+        } else {
+            categorySelect.innerHTML = '<option value="">Select type first...</option>';
+        }
+
+        // Add event listener for 'New...' option
+        categorySelect.onchange = () => {
+            if (categorySelect.value === '__NEW__') {
+                this.openCustomCategoryModal();
+            }
+        };
+    },
+
+    // Add transaction
+    async addTransaction(event) {
+        event.preventDefault();
+
+        const transactionData = {
+            date: document.getElementById('transactionDate').value,
+            type: document.getElementById('transactionType').value,
+            category: document.getElementById('transactionCategory').value,
+            amount: parseFloat(document.getElementById('transactionAmount').value),
+            description: document.getElementById('transactionDescription').value,
+            sectionId: document.getElementById('transactionSection').value || null
+        };
+
+        if (this.currentEditingId) {
+            try {
+                await api.transactions.update(this.currentEditingId, transactionData);
+
+                // Update local array
+                const index = this.transactions.findIndex(t => t.id === this.currentEditingId);
+                if (index !== -1) {
+                    this.transactions[index] = { ...this.transactions[index], ...transactionData };
+                }
+
+                this.closeModal('addTransactionModal');
+                this.renderDashboard();
+                this.renderTransactions();
+                this.updateCurrentMonth();
+                this.initializeCharts();
+                this.showSuccess('Transaction updated successfully!');
+                this.currentEditingId = null;
+            } catch (error) {
+                this.showError('Failed to update transaction: ' + error.message);
+            }
+        } else {
+            try {
+                const newTransaction = await api.transactions.create(this.currentFarmId, transactionData);
+                this.transactions.push(newTransaction);
+
+                this.closeModal('addTransactionModal');
+                this.renderDashboard();
+                this.renderTransactions();
+                this.updateCurrentMonth();
+                this.initializeCharts();
+                this.showSuccess('Transaction added successfully!');
+            } catch (error) {
+                this.showError('Failed to add transaction: ' + error.message);
+            }
+        }
+    },
+
+    // Delete transaction
+    async deleteTransaction(id) {
+        // Use loose equality (==) to handle string/number mismatch from HTML
+        const transaction = this.transactions.find(t => t.id == id);
+        if (!transaction) return;
+
+        this.showConfirmation('Are you sure you want to delete this transaction?', async () => {
+            try {
+                await api.transactions.delete(id);
+
+                // Remove from local array
+                this.transactions = this.transactions.filter(t => t.id != id);
+
+                this.renderDashboard();
+                this.renderTransactions();
+                this.updateCurrentMonth();
+                this.initializeCharts();
+                this.showSuccess('Transaction deleted successfully!');
+            } catch (error) {
+                console.error('Failed to delete transaction:', error);
+                this.showError('Failed to delete transaction: ' + error.message);
+            }
+        });
+    },
+
+    viewTransaction(id) {
+        const t = this.transactions.find(tr => tr.id == id);
+        if (!t) return;
+
+        const info = `
+            <div style="text-align: left;">
+                <h4 style="border-bottom: 1px solid #ccc; padding-bottom: 5px;">Transaction Details</h4>
+                <p><strong>Date:</strong> ${this.formatDate(t.date)}</p>
+                <p><strong>Type:</strong> <span class="badge ${t.type === 'income' ? 'badge-success' : 'badge-warning'}">${t.type}</span></p>
+                <p><strong>Category:</strong> ${t.category}</p>
+                <p><strong>Amount:</strong> ${this.formatCurrency(t.amount)}</p>
+                <p><strong>Description:</strong> ${t.description || '-'}</p>
+                <hr>
+                <p class="text-muted" style="font-size: 0.8rem;">Internal ID: ${t.id}</p>
+                <button class="btn btn-primary btn-sm mt-2" onclick="app.closeModal('infoModal')">Close</button>
+            </div>
+        `;
+        this.showInfo(info);
+    },
+
+    editTransaction(id) {
+        const t = this.transactions.find(tr => tr.id == id);
+        if (!t) return;
+
+        this.currentEditingId = t.id;
+
+        // Populate form
+        document.getElementById('transactionDate').value = t.date.split('T')[0];
+        document.getElementById('transactionType').value = t.type;
+
+        // Trigger type change to populate categories
+        this.updateCategoryOptions();
+
+        // Set other fields (after options populated)
+        document.getElementById('transactionCategory').value = t.category;
+        document.getElementById('transactionAmount').value = t.amount;
+        document.getElementById('transactionDescription').value = t.description;
+
+        // Update modal title and button
+        const title = document.getElementById('transactionModalTitle');
+        if (title) title.textContent = 'Edit Transaction';
+
+        const btn = document.getElementById('saveTransactionBtn');
+        if (btn) btn.textContent = 'Update Transaction';
+
+        this.openModal('addTransactionModal');
+    },
 
     // Add crop
     async addCrop(event) {
@@ -1517,47 +2357,28 @@ Object.assign(app, {
 
         if (category === 'fruit') {
             cropData.count = parseInt(document.getElementById('cropCount').value) || 0;
+            // cropData.expectedHarvest = 'TBD'; // Not in DB schema yet, maybe add to notes? Or status covers it?
         } else {
             cropData.area = parseFloat(document.getElementById('cropArea').value) || 0;
             cropData.yield = 0;
         }
 
         try {
-            // Check if editing existing crop
-            if (this.editingCropIndex !== undefined && this.editingCropCategory) {
-                const crops = this.editingCropCategory === 'fruit' ? this.fruitTrees : this.cashCrops;
-                const existingCrop = crops[this.editingCropIndex];
+            const newCrop = await api.crops.create(this.currentFarmId, cropData);
 
-                // Update via API
-                const updatedCrop = await api.crops.update(existingCrop.id, cropData);
-
-                // Update local array
-                crops[this.editingCropIndex] = { ...existingCrop, ...updatedCrop };
-
-                this.showSuccess('Crop updated successfully!');
-
-                // Clear editing state
-                this.editingCropIndex = undefined;
-                this.editingCropCategory = null;
+            // Add to appropriate local array
+            if (category === 'fruit') {
+                this.fruitTrees.push(newCrop);
             } else {
-                // Create new crop
-                const newCrop = await api.crops.create(this.currentFarmId, cropData);
-
-                // Add to appropriate local array
-                if (category === 'fruit') {
-                    this.fruitTrees.push(newCrop);
-                } else {
-                    this.cashCrops.push(newCrop);
-                }
-
-                this.showSuccess('Crop added successfully!');
+                this.cashCrops.push(newCrop);
             }
 
             this.renderCrops();
             this.closeModal('addCropModal');
+            this.showSuccess('Crop added successfully!');
         } catch (error) {
-            console.error('Failed to save crop:', error);
-            this.showError('Failed to save crop: ' + error.message);
+            console.error('Failed to add crop:', error);
+            this.showError('Failed to add crop: ' + error.message);
         }
     },
 
@@ -1593,56 +2414,6 @@ Object.assign(app, {
                 this.showError('Failed to delete crop: ' + error.message);
             }
         });
-    },
-
-    // View crop details
-    viewCrop(category, index) {
-        const crop = category === 'fruit' ? this.fruitTrees[index] : this.cashCrops[index];
-        if (!crop) return;
-
-        const categoryLabel = category === 'fruit' ? 'Fruit Tree' : 'Cash Crop';
-        const info = `
-            <div style="text-align: left;">
-                <h4 style="border-bottom: 1px solid #ccc; padding-bottom: 5px;">${categoryLabel} Details</h4>
-                <p><strong>Type:</strong> ${crop.type}</p>
-                ${category === 'fruit' ? `<p><strong>Count:</strong> ${crop.count}</p>` : `<p><strong>Area:</strong> ${crop.area} ha</p>`}
-                <p><strong>Planted Date:</strong> ${this.formatDate(crop.plantedDate)}</p>
-                <p><strong>Status:</strong> <span class="badge badge-${this.getStatusColor(crop.status)}">${crop.status}</span></p>
-                ${category === 'fruit' ? `<p><strong>Expected Harvest:</strong> ${crop.expectedHarvest || 'TBD'}</p>` : ''}
-                ${category === 'cash' ? `<p><strong>Harvest Date:</strong> ${crop.harvestDate ? this.formatDate(crop.harvestDate) : 'TBD'}</p>` : ''}
-                ${category === 'cash' ? `<p><strong>Yield:</strong> ${crop.yield || 0} kg</p>` : ''}
-                <hr>
-                <p class="text-muted" style="font-size: 0.8rem;">Internal ID: ${crop.id}</p>
-                <button class="btn btn-primary btn-sm mt-2" onclick="app.closeModal('infoModal')">Close</button>
-            </div>
-        `;
-        this.showInfo(info);
-    },
-
-    // Edit crop
-    editCrop(category, index) {
-        const crop = category === 'fruit' ? this.fruitTrees[index] : this.cashCrops[index];
-        if (!crop) return;
-
-        // Store the editing index and category
-        this.editingCropIndex = index;
-        this.editingCropCategory = category;
-
-        // Populate the modal
-        this.openAddCropModal(category);
-
-        // Update modal title
-        document.getElementById('cropModalTitle').textContent = category === 'fruit' ? 'Edit Fruit Tree' : 'Edit Cash Crop';
-
-        // Fill in the form with existing data
-        document.getElementById('cropType').value = crop.type;
-        if (category === 'fruit') {
-            document.getElementById('cropCount').value = crop.count;
-        } else {
-            document.getElementById('cropArea').value = crop.area;
-        }
-        document.getElementById('cropPlantedDate').value = crop.plantedDate ? crop.plantedDate.split('T')[0] : '';
-        document.getElementById('cropStatus').value = crop.status;
     },
 
     // Export transactions
