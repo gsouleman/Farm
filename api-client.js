@@ -242,6 +242,7 @@ const api = {
                 farmId: crop.farm_id || crop.farmId,
                 createdAt: crop.created_at || crop.createdAt,
                 updatedAt: crop.updated_at || crop.updatedAt,
+                expectedHarvest: crop.expected_harvest || crop.expectedHarvest,
                 // Ensure numbers are numbers
                 count: crop.count ? parseInt(crop.count) : null,
                 area: crop.area ? parseFloat(crop.area) : null,

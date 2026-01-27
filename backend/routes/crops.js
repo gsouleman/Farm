@@ -40,7 +40,8 @@ router.post('/farm/:farmId', [
     body('plantedDate').isISO8601().toDate(),
     body('status').notEmpty().trim(),
     body('harvestDate').optional().isISO8601().toDate(),
-    body('yield').optional().isFloat({ min: 0 })
+    body('yield').optional().isFloat({ min: 0 }),
+    body('expectedHarvest').optional().trim()
 ], async (req, res) => {
     try {
         const errors = validationResult(req);
@@ -57,13 +58,13 @@ router.post('/farm/:farmId', [
             return res.status(404).json({ error: { message: 'Farm not found' } });
         }
 
-        const { category, type, count, area, plantedDate, status, harvestDate, yield: yieldValue } = req.body;
+        const { category, type, count, area, plantedDate, status, harvestDate, yield: yieldValue, expectedHarvest } = req.body;
 
         const result = await db.query(
-            `INSERT INTO crops (farm_id, category, type, count, area, planted_date, status, harvest_date, yield)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            `INSERT INTO crops (farm_id, category, type, count, area, planted_date, status, harvest_date, yield, expected_harvest)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING *`,
-            [req.params.farmId, category, type, count || null, area || null, plantedDate, status, harvestDate || null, yieldValue || null]
+            [req.params.farmId, category, type, count || null, area || null, plantedDate, status, harvestDate || null, yieldValue || null, expectedHarvest || null]
         );
 
         res.status(201).json(result.rows[0]);
@@ -101,7 +102,7 @@ router.put('/:id', [
             return res.status(404).json({ error: { message: 'Crop not found' } });
         }
 
-        const { category, type, count, area, plantedDate, status, harvestDate, yield: yieldValue } = req.body;
+        const { category, type, count, area, plantedDate, status, harvestDate, yield: yieldValue, expectedHarvest } = req.body;
 
         const result = await db.query(
             `UPDATE crops
@@ -113,10 +114,11 @@ router.put('/:id', [
            status = COALESCE($6, status),
            harvest_date = COALESCE($7, harvest_date),
            yield = COALESCE($8, yield),
+           expected_harvest = COALESCE($9, expected_harvest),
            updated_at = NOW()
-       WHERE id = $9
+       WHERE id = $10
        RETURNING *`,
-            [category, type, count, area, plantedDate, status, harvestDate, yieldValue, req.params.id]
+            [category, type, count, area, plantedDate, status, harvestDate, yieldValue, expectedHarvest, req.params.id]
         );
 
         res.json(result.rows[0]);

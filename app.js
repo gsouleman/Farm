@@ -1807,6 +1807,9 @@ Object.assign(app, {
       `;
             countGroup.style.display = 'block';
             areaGroup.style.display = 'none';
+            document.getElementById('cropExpectedHarvestGroup').style.display = 'block';
+            document.getElementById('cropHarvestDateGroup').style.display = 'none';
+
             document.getElementById('cropCount').required = true;
             document.getElementById('cropArea').required = false;
         } else {
@@ -1822,6 +1825,9 @@ Object.assign(app, {
       `;
             countGroup.style.display = 'none';
             areaGroup.style.display = 'block';
+            document.getElementById('cropExpectedHarvestGroup').style.display = 'none';
+            document.getElementById('cropHarvestDateGroup').style.display = 'block';
+
             document.getElementById('cropCount').required = false;
             document.getElementById('cropArea').required = true;
         }
@@ -2380,8 +2386,14 @@ Object.assign(app, {
             category: category,
             type: document.getElementById('cropType').value,
             plantedDate: document.getElementById('cropPlantedDate').value,
-            status: document.getElementById('cropStatus').value
+            status: document.getElementById('cropStatus').value,
+            expectedHarvest: document.getElementById('cropExpectedHarvest').value,
+            harvestDate: document.getElementById('cropHarvestDate').value // Cash crops only
         };
+
+        // Remove empty strings to keep checks clean
+        if (!cropData.expectedHarvest) delete cropData.expectedHarvest;
+        if (!cropData.harvestDate) delete cropData.harvestDate;
 
         if (category === 'fruit') {
             cropData.count = parseInt(document.getElementById('cropCount').value) || 0;
@@ -2478,7 +2490,7 @@ Object.assign(app, {
                 <p><strong>Planted Date:</strong> ${this.formatDate(crop.plantedDate)}</p>
                 <p><strong>Status:</strong> <span class="badge badge-${this.getStatusColor(crop.status)}">${crop.status}</span></p>
                 ${category === 'fruit' ? `<p><strong>Expected Harvest:</strong> ${crop.expectedHarvest || 'TBD'}</p>` : ''}
-                ${category === 'cash' ? `<p><strong>Harvest Date:</strong> ${crop.harvestDate ? this.formatDate(crop.harvestDate) : 'TBD'}</p>` : ''}
+                ${category === 'cash' ? `<p><strong>Expected Harvest Date:</strong> ${crop.harvestDate ? this.formatDate(crop.harvestDate) : 'TBD'}</p>` : ''}
                 ${category === 'cash' ? `<p><strong>Yield:</strong> ${crop.yield || 0} kg</p>` : ''}
                 <hr>
                 <p class="text-muted" style="font-size: 0.8rem;">Internal ID: ${crop.id}</p>

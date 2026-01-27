@@ -915,6 +915,17 @@
           </select>
         </div>
 
+        <!-- Dynamic Fields -->
+        <div class="form-group" id="cropExpectedHarvestGroup" style="display: none;">
+          <label class="form-label" for="cropExpectedHarvest">Expected Harvest</label>
+          <input type="text" class="form-control" id="cropExpectedHarvest" placeholder="e.g. 500kg or 50 bags">
+        </div>
+
+        <div class="form-group" id="cropHarvestDateGroup" style="display: none;">
+          <label class="form-label" for="cropHarvestDate">Expected Harvest Date</label>
+          <input type="date" class="form-control" id="cropHarvestDate">
+        </div>
+
         <div class="flex" style="justify-content: flex-end; gap: 1rem;">
           <button type="button" class="btn btn-outline" onclick="app.closeModal('addCropModal')">Cancel</button>
           <button type="submit" class="btn btn-success">Add Crop</button>
@@ -1262,4 +1273,4 @@ Example:
     </div>
   </div>
 
-  <script src="app.js?v=11"></script>
+  <script src="app.js?v=12"></script>
