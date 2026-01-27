@@ -234,6 +234,7 @@ const api = {
         // Helper to normalize DB snake_case to frontend camelCase
         normalize(crop) {
             if (!crop) return null;
+            // console.log('Debug: Normalizing crop', crop);
             return {
                 ...crop,
                 plantedDate: crop.planted_date || crop.plantedDate,
@@ -249,8 +250,21 @@ const api = {
         },
 
         async getByFarm(farmId) {
-            const crops = await api.request(`${API_CONFIG.endpoints.crops}/farm/${farmId}`);
-            return Array.isArray(crops) ? crops.map(this.normalize) : [];
+            console.log(`Debug: api.crops.getByFarm(${farmId}) called`);
+            try {
+                const crops = await api.request(`${API_CONFIG.endpoints.crops}/farm/${farmId}`);
+                console.log(`Debug: api.crops.getByFarm response length: ${crops ? crops.length : 'null'}`);
+
+                if (!Array.isArray(crops)) {
+                    console.warn('Debug: api.crops.getByFarm received non-array:', crops);
+                    return [];
+                }
+
+                return crops.map(c => this.normalize(c));
+            } catch (error) {
+                console.error('Debug: api.crops.getByFarm failed:', error);
+                throw error;
+            }
         },
 
         async create(farmId, cropData) {
