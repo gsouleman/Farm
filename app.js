@@ -5668,10 +5668,7 @@ app.loadIncidents = async function () {
         if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error connecting to server. Please check your connection.</td></tr>';
     }
 };
-    } catch (error) {
-    console.error('Error loading incidents:', error);
-}
-};
+
 
 app.renderIncidentTable = function (incidents) {
     const tbody = document.querySelector('#incidentsTable tbody');
