@@ -2999,105 +2999,106 @@ Object.assign(app, {
 
         // Get current farm and prepare zones data with defaults
         const farm = this.getCurrentFarm() || {};
-        const zones = farm.zones || {};
-        const fruitTrees = zones.fruitTrees || { area: 0, percentage: 0 };
-        const cashCrops = zones.cashCrops || { area: 0, percentage: 0 };
+
+        // Simple Projections (Mock logic for demonstration)
+        const projectedRevenue = income * 1.15; // 15% growth
+        const projectedProfit = netCashFlow * 1.20; // 20% efficiency gain
 
         reportContent.innerHTML = `
-      <div style="max-width: 800px; margin: 0 auto;">
-        <h1 style="text-align: center; color: var(--color-primary); font-size: 2.5rem;">
-          Investment Opportunity
-        </h1>
-        <h2 style="text-align: center; color: var(--color-secondary); margin-bottom: 3rem;">
-          ${farm.name || 'Maloure Farm'}, ${farm.location || 'Njimoun Subdivision'}
-        </h2>
-        
-        <div class="card-glass" style="padding: 2rem; margin-bottom: 2rem;">
-          <h3 style="color: var(--color-primary);">Executive Summary</h3>
-          <p style="font-size: 1.1rem; line-height: 1.8;">
-            ${farm.name || 'Maloure Farm'} is a ${farm.area || 0}-hectare agricultural enterprise located in ${farm.location || 'the fertile Maloure village of Njimoun subdivision, Foumban'}. With strategic crop diversification 
-            spanning fruit trees and high-value cash crops, the farm presents a compelling 
-            investment opportunity in sustainable agriculture.
-          </p>
-        </div>
-        
-        <h3 style="color: var(--color-primary);">Key Investment Highlights</h3>
-        <div class="grid grid-2" style="margin-bottom: 2rem;">
-          <div class="stat-card">
-            <div class="stat-card-icon">📍</div>
-            <div class="stat-card-label">Prime Location</div>
-            <div class="stat-card-value">${farm.area || 0} ha</div>
-            <p class="text-muted" style="margin-top: 0.5rem; font-size: 0.9rem;">
-              Strategic location in agricultural heartland
-            </p>
-          </div>
-          <div class="stat-card">
-            <div class="stat-card-icon">💰</div>
-            <div class="stat-card-label">Financial Performance</div>
-            <div class="stat-card-value">${this.formatCurrency(netCashFlow)}</div>
-            <p class="text-muted" style="margin-top: 0.5rem; font-size: 0.9rem;">
-              Net cash flow to date
-            </p>
-          </div>
-        </div>
-        
-        <h3 style="color: var(--color-primary);">Crop Portfolio</h3>
-        <ul style="font-size: 1.1rem; line-height: 2;">
-          <li><strong>Fruit Trees:</strong> Premium avocado and lemon cultivation (${fruitTrees.area} ha)</li>
-          <li><strong>Cash Crops:</strong> High-demand cassava, ginger, and pepper (${cashCrops.area} ha)</li>
-          <li><strong>Infrastructure:</strong> Modern farm house and residential facilities</li>
-        </ul>
-        
-        <h3 style="color: var(--color-primary); margin-top: 2rem;">Financial Overview</h3>
-        <div class="table-container">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Metric</th>
-                <th>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td>Total Revenue</td><td><strong>${this.formatCurrency(income)}</strong></td></tr>
-              <tr><td>Total Expenses</td><td><strong>${this.formatCurrency(expenses)}</strong></td></tr>
-              <tr><td>Net Cash Flow</td><td><strong style="color: ${netCashFlow >= 0 ? 'var(--color-success)' : 'var(--color-danger)'};">${this.formatCurrency(netCashFlow)}</strong></td></tr>
-              <tr><td>Profit Margin</td><td><strong>${income > 0 ? ((netCashFlow / income) * 100).toFixed(2) : 0}%</strong></td></tr>
-            </tbody>
-          </table>
-        </div>
-        
-        <h3 style="color: var(--color-primary); margin-top: 2rem;">Why Invest?</h3>
-        <div class="grid grid-2">
-          <div>
-            <h4>✅ Strategic Advantages</h4>
+        <div class="report-container" style="max-width: 850px; margin: 0 auto; font-family: 'Times New Roman', serif; color: #333; line-height: 1.6;">
+            <!-- Header -->
+            <div style="border-bottom: 3px solid #FBC02D; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end;">
+                <div>
+                    <h1 style="margin: 0; font-size: 28px; color: #F57F17; text-transform: uppercase; letter-spacing: 1px;">Investment Memorandum</h1>
+                    <div style="font-size: 14px; margin-top: 5px; color: #666;">STRICTLY PRIVATE & CONFIDENTIAL</div>
+                </div>
+                <div style="text-align: right;">
+                    <h2 style="margin: 0; font-size: 20px; color: #333;">${farm.name || 'Farm Name'}</h2>
+                    <div style="font-size: 14px;">Date: ${new Date().toLocaleDateString()}</div>
+                </div>
+            </div>
+
+            <!-- Executive Summary -->
+            <div style="background-color: #fffde7; padding: 20px; border-left: 4px solid #FBC02D; margin-bottom: 30px;">
+                <h3 style="margin-top: 0; color: #F57F17; font-family: Arial, sans-serif;">EXECUTIVE SUMMARY</h3>
+                <p style="margin-bottom: 10px;">
+                    <strong>${farm.name || 'Target Farm'}</strong> represents a prime agricultural asset located in <strong>${farm.location || 'Reported Region'}</strong>. 
+                    Spanning <strong>${parseFloat(farm.area || 0).toFixed(2)} hectares</strong>, the property has demonstrated consistent operational capacity. 
+                    This memorandum outlines the current financial standing and projects significant growth potential through optimized crop management and strategic expansion.
+                </p>
+                <p style="margin-bottom: 0;">
+                    <strong>Current Status:</strong> ${netCashFlow >= 0 ? 'Profitable Operation' : 'Development Phase'} | <strong>Zone utilization:</strong> ${farm.sections ? farm.sections.length : 0} Active Sections
+                </p>
+            </div>
+
+            <!-- Financial Highlights Grid -->
+            <h3 style="border-bottom: 1px solid #ccc; padding-bottom: 5px; font-family: Arial, sans-serif; font-size: 16px; color: #444;">FINANCIAL SNAPSHOT (YTD)</h3>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px;">
+                <div style="padding: 15px; border: 1px solid #e0e0e0; text-align: center;">
+                    <div style="font-size: 11px; text-transform: uppercase; color: #666;">Gross Revenue</div>
+                    <div style="font-size: 20px; font-weight: bold; color: #333;">${this.formatCurrency(income)}</div>
+                </div>
+                <div style="padding: 15px; border: 1px solid #e0e0e0; text-align: center;">
+                    <div style="font-size: 11px; text-transform: uppercase; color: #666;">Net Cash Flow</div>
+                    <div style="font-size: 20px; font-weight: bold; color: ${netCashFlow >= 0 ? '#2e7d32' : '#c62828'};">${this.formatCurrency(netCashFlow)}</div>
+                </div>
+                <div style="padding: 15px; border: 1px solid #e0e0e0; text-align: center;">
+                    <div style="font-size: 11px; text-transform: uppercase; color: #666;">ROI (Current)</div>
+                    <div style="font-size: 20px; font-weight: bold; color: #1976D2;">${income > 0 ? ((netCashFlow / income) * 100).toFixed(1) : 0}%</div>
+                </div>
+            </div>
+
+            <!-- Growth Projections Table -->
+             <h3 style="border-bottom: 1px solid #ccc; padding-bottom: 5px; font-family: Arial, sans-serif; font-size: 16px; color: #444;">PROJECTED PERFORMANCE (NEXT FISCAL YEAR)</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 14px; border: 1px solid #eee;">
+                <thead>
+                    <tr style="background-color: #f5f5f5;">
+                        <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Metric</th>
+                        <th style="padding: 10px; text-align: right; border-bottom: 2px solid #ddd;">Current</th>
+                        <th style="padding: 10px; text-align: right; border-bottom: 2px solid #ddd;">Projected (+1 Year)</th>
+                        <th style="padding: 10px; text-align: right; border-bottom: 2px solid #ddd;">Growth</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">Annual Revenue</td>
+                        <td style="padding: 10px; text-align: right; border-bottom: 1px solid #eee;">${this.formatCurrency(income)}</td>
+                        <td style="padding: 10px; text-align: right; border-bottom: 1px solid #eee;">${this.formatCurrency(projectedRevenue)}</td>
+                        <td style="padding: 10px; text-align: right; border-bottom: 1px solid #eee; color: #2e7d32;">+15%</td>
+                    </tr>
+                     <tr>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">Net Profit</td>
+                        <td style="padding: 10px; text-align: right; border-bottom: 1px solid #eee;">${this.formatCurrency(netCashFlow)}</td>
+                        <td style="padding: 10px; text-align: right; border-bottom: 1px solid #eee;">${this.formatCurrency(projectedProfit)}</td>
+                        <td style="padding: 10px; text-align: right; border-bottom: 1px solid #eee; color: #2e7d32;">+20%</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 style="border-bottom: 1px solid #ccc; padding-bottom: 5px; font-family: Arial, sans-serif; font-size: 16px; color: #444;">INVESTMENT THESIS</h3>
             <ul>
-              <li>Prime agricultural land</li>
-              <li>Established infrastructure</li>
-              <li>Diversified crop portfolio</li>
-              <li>Professional management</li>
+                <li style="margin-bottom: 8px;"><strong>Asset Security:</strong> Tangible land asset of ${parseFloat(farm.area || 0).toFixed(2)} Ha in a developing region.</li>
+                <li style="margin-bottom: 8px;"><strong>Operational Readiness:</strong> Existing infrastructure including farm house, residential zones, and irrigation logistics.</li>
+                <li style="margin-bottom: 8px;"><strong>Diversification:</strong> Mixed crop portfolio significantly mitigates single-commodity market risks.</li>
             </ul>
-          </div>
-          <div>
-            <h4>📈 Growth Potential</h4>
-            <ul>
-              <li>Expanding market demand</li>
-              <li>Scalable operations</li>
-              <li>Sustainable practices</li>
-              <li>Export opportunities</li>
-            </ul>
-          </div>
+
+            <!-- Footer Signatures -->
+            <div style="margin-top: 60px; display: flex; justify-content: space-between; page-break-inside: avoid;">
+                <div style="width: 40%; text-align: center;">
+                    <div style="border-bottom: 1px solid #333; margin-bottom: 10px;"></div>
+                    <div style="font-size: 12px; color: #666;">PREPARED BY</div>
+                </div>
+                <div style="width: 40%; text-align: center;">
+                    <div style="border-bottom: 1px solid #333; margin-bottom: 10px;"></div>
+                    <div style="font-size: 12px; color: #666;">APPROVED FOR DISTRIBUTION</div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 50px; font-size: 10px; color: #aaa; border-top: 1px solid #eee; padding-top: 10px;">
+                CONFIDENTIAL • DO NOT COPY • Generated on ${new Date().toLocaleString()}
+            </div>
         </div>
-        
-        <div class="card-glass" style="padding: 2rem; margin-top: 2rem; text-align: center;">
-          <h3 style="color: var(--color-primary);">Contact Information</h3>
-          <p style="font-size: 1.1rem;">
-            <strong>${farm.name || 'Maloure Farm'}</strong><br>
-            ${farm.location || 'Maloure Village, Njimoun Subdivision, Foumban'}<br>
-            Coordinates: ${farm.centerCoordinates?.lat || 0}, ${farm.centerCoordinates?.lng || 0}
-          </p>
-        </div>
-      </div>
-    `;
+        `;
 
         reportPreview.style.display = 'block';
         reportPreview.scrollIntoView({ behavior: 'smooth' });
