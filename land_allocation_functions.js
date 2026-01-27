@@ -339,6 +339,41 @@ Object.assign(app, {
                 [bbox[0] - 0.1, currentY]
             ]]);
 
+
+            // ---------------------------------------------------------
+            // SMART ALLOCATION: Parse planting advice
+            // ---------------------------------------------------------
+            let recommendedFruit = null;
+            let recommendedCash = null;
+
+            if (savedAnalysis && savedAnalysis.data && savedAnalysis.data.plantingAdvice) {
+                const advice = savedAnalysis.data.plantingAdvice;
+
+                // Helper to extract first mentioned crop that exists in our DB
+                const findBestCrop = (adviceList, availableCrops) => {
+                    if (!adviceList || !availableCrops) return null;
+
+                    for (const tip of adviceList) {
+                        // Extract first word or words before colon (e.g. "Avocado" from "Avocado: Plant on...")
+                        const match = tip.match(/^([^:]+):/);
+                        if (match) {
+                            const cropName = match[1].trim();
+                            // Case-insensitive fuzzy matching
+                            const found = availableCrops.find(c => c.name.toLowerCase().includes(cropName.toLowerCase()));
+                            if (found) return found.name;
+                        }
+                    }
+                    return null;
+                };
+
+                recommendedFruit = findBestCrop(advice.fruitTrees, fruitCrops);
+                recommendedCash = findBestCrop(advice.cashCrops, cashCrops);
+
+                if (recommendedFruit) analysisNote += ` | Prioritizing ${recommendedFruit}`;
+                if (recommendedCash) analysisNote += ` | Prioritizing ${recommendedCash}`;
+            }
+            // ---------------------------------------------------------
+
             try {
                 const intersection = turf.intersect(farmPolygon, stripPoly);
                 if (intersection) {
@@ -348,15 +383,23 @@ Object.assign(app, {
 
                     // Assign specific crop if available
                     let specificCrop = null;
-                    if (alloc.type === 'fruit-trees' && fruitCrops.length > 0) specificCrop = fruitCrops[0].name;
-                    if (alloc.type === 'cash-crops' && cashCrops.length > 0) specificCrop = cashCrops[0].name;
+
+                    if (alloc.type === 'fruit-trees') {
+                        // Priority 1: Recommendation from Analysis
+                        // Priority 2: First available in DB
+                        specificCrop = recommendedFruit || (fruitCrops.length > 0 ? fruitCrops[0].name : null);
+                    }
+
+                    if (alloc.type === 'cash-crops') {
+                        specificCrop = recommendedCash || (cashCrops.length > 0 ? cashCrops[0].name : null);
+                    }
 
                     // Calc center
                     const center = turf.centerOfMass(intersection);
 
                     farm.sections.push({
                         id: 'auto-' + Date.now() + Math.random(),
-                        name: alloc.name,
+                        name: alloc.name + (specificCrop ? ` (${specificCrop})` : ''),
                         type: alloc.type,
                         cropType: specificCrop,
                         boundaries: coords.slice(0, -1), // Remove closing duplicate if any
@@ -364,7 +407,7 @@ Object.assign(app, {
                         area: sectionArea, // Approx
                         percentage: alloc.percent * 100,
                         color: alloc.color,
-                        notes: 'Auto-allocated based on topography and best practices.'
+                        notes: `Auto-allocated based on topography. ${specificCrop ? 'Selected ' + specificCrop + ' based on analysis advice.' : ''}`
                     });
                 }
             } catch (err) {
