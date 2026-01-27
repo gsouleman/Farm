@@ -669,7 +669,7 @@ Object.assign(app, {
             console.log(`Debug: Fetched ${transactions.length} transactions for Farm ${farmId}`);
 
 
-            console.log(`Debug: loadFarmDetails - Crops raw data:`, crops);
+
 
             // Split crops into fruit trees and cash crops
             this.fruitTrees = crops.filter(c => c.category === 'fruit');
@@ -679,8 +679,7 @@ Object.assign(app, {
             farm.fruitTrees = this.fruitTrees;
             farm.cashCrops = this.cashCrops;
 
-            console.log(`Debug: loadFarmDetails - Filtered Fruit Trees: ${farm.fruitTrees.length}`, farm.fruitTrees);
-            console.log(`Debug: loadFarmDetails - Filtered Cash Crops: ${farm.cashCrops.length}`, farm.cashCrops);
+
 
             farm.sections = sections.map(s => ({
                 ...s,
