@@ -1209,17 +1209,56 @@ Object.assign(app, {
             const renderCategory = (id, cat) => {
                 const el = document.getElementById(id);
                 if (!el || !cat) return;
+
+                const campaignsHtml = (cat.campaigns || []).map(camp => `
+                    <div class="mt-2 p-2 rounded" style="background-color: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.05);">
+                        <strong>${camp.name}:</strong> ${camp.window}<br>
+                        <small class="text-danger">Risk: ${camp.risk}</small>
+                    </div>
+                `).join('');
+
                 el.innerHTML = `
-                    <div class="mb-2"><strong>Season:</strong> ${cat.type || cat.season}</div>
-                    <div class="mb-2"><strong>Window:</strong> ${cat.optimal || cat.start || cat.major}</div>
-                    <div class="mb-2 text-danger"><strong>Risk:</strong> ${cat.risks}</div>
-                    <div class="mt-2 p-2 bg-light small"><strong>Advice:</strong> ${cat.suitability || cat.recommended || cat.specialNotice}</div>
+                    <div class="mb-2"><strong>Season Type:</strong> ${cat.type}</div>
+                    <div class="mb-2"><strong>Suitability:</strong> ${cat.suitability}</div>
+                    <div class="mt-2">
+                        <strong>Available Campaigns:</strong>
+                        ${campaignsHtml}
+                    </div>
                 `;
             };
             renderCategory('cerealsSummary', data.categories.cereals);
             renderCategory('tubersSummary', data.categories.tubers);
             renderCategory('fruitTreesSummary', data.categories.fruitTrees);
             renderCategory('legumesSummary', data.categories.legumes);
+
+            // Populate durations table
+            const durationBody = document.getElementById('cropDurationsBody');
+            if (durationBody && data.durations) {
+                const categories = {
+                    'Cereals': ['maize', 'corn', 'rice', 'wheat', 'sorghum', 'millet'],
+                    'Tubers': ['cassava', 'yam', 'potato', 'sweet potato'],
+                    'Legumes': ['bean', 'soybean', 'soy', 'groundnut', 'cowpea'],
+                    'Fruit Trees': ['mango', 'avocado', 'citrus', 'papaya', 'passion fruit']
+                };
+
+                const rows = [];
+                Object.entries(categories).forEach(([mainCat, crops]) => {
+                    crops.forEach(cropName => {
+                        const duration = data.durations[cropName];
+                        if (duration) {
+                            rows.push(`
+                                <tr>
+                                    <td>${mainCat}</td>
+                                    <td style="text-transform: capitalize;">${cropName}</td>
+                                    <td>${duration} Months</td>
+                                    <td>${mainCat === 'Cereals' || mainCat === 'Legumes' ? '2-3 Campaigns' : mainCat === 'Tubers' ? '1-3 Campaigns' : 'Long-term Cycle'}</td>
+                                </tr>
+                            `);
+                        }
+                    });
+                });
+                durationBody.innerHTML = rows.join('');
+            }
 
             // Render Historical Risk Analysis
             const riskCard = document.getElementById('historicalRiskCard');
@@ -1561,40 +1600,57 @@ Object.assign(app, {
         // Fruit trees
         const fruitBody = document.getElementById('fruitTreesBody');
         if (this.fruitTrees.length === 0) {
-            fruitBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No fruit trees recorded yet</td></tr>';
+            fruitBody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No fruit trees recorded yet</td></tr>';
         } else {
-            fruitBody.innerHTML = this.fruitTrees.map((crop, index) => `
+            fruitBody.innerHTML = this.fruitTrees.map((crop, index) => {
+                const alertLevel = crop.alert_level || crop.alertLevel || 'GREEN';
+                const alertDescription = crop.alert_description || crop.alertDescription || 'Growing season';
+                const plantedDate = crop.planted_date || crop.plantedDate;
+                const badgeClass = alertLevel === 'RED' ? 'danger' : alertLevel === 'YELLOW' ? 'warning' : 'success';
+                return `
         <tr>
           <td><strong>${crop.type}</strong></td>
           <td>${crop.count}</td>
-          <td>${this.formatDate(crop.plantedDate)}</td>
+          <td>${this.formatDate(plantedDate)}</td>
           <td><span class="badge badge-${this.getStatusColor(crop.status)}">${crop.status}</span></td>
-          <td>${crop.expectedHarvest || 'TBD'}</td>
+          <td>${crop.expected_harvest || crop.expectedHarvest || 'TBD'}</td>
+          <td><span class="badge badge-${badgeClass}">${alertLevel}</span></td>
+          <td style="font-size: 0.8rem; max-width: 200px;">${alertDescription}</td>
           <td>
             <button class="btn btn-info btn-sm" onclick="app.viewCrop('fruit', ${index})" title="View Details">👁️</button><button class="btn btn-primary btn-sm" onclick="app.editCrop('fruit', ${index})" title="Edit">✏️</button><button class="btn btn-danger btn-sm" onclick="app.deleteFruitTree(${index})" title="Delete">🗑️</button>
           </td>
         </tr>
-      `).join('');
+      `;
+            }).join('');
         }
 
         // Cash crops
         const cashBody = document.getElementById('cashCropsBody');
         if (this.cashCrops.length === 0) {
-            cashBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No cash crops recorded yet</td></tr>';
+            cashBody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">No cash crops recorded yet</td></tr>';
         } else {
-            cashBody.innerHTML = this.cashCrops.map((crop, index) => `
+            cashBody.innerHTML = this.cashCrops.map((crop, index) => {
+                const alertLevel = crop.alert_level || crop.alertLevel || 'GREEN';
+                const alertDescription = crop.alert_description || crop.alertDescription || 'Growing season';
+                const plantedDate = crop.planted_date || crop.plantedDate;
+                const harvestDate = crop.harvest_date || crop.harvestDate;
+                const badgeClass = alertLevel === 'RED' ? 'danger' : alertLevel === 'YELLOW' ? 'warning' : 'success';
+                return `
         <tr>
           <td><strong>${crop.type}</strong></td>
           <td>${crop.area}</td>
-          <td>${this.formatDate(crop.plantedDate)}</td>
+          <td>${this.formatDate(plantedDate)}</td>
           <td><span class="badge badge-${this.getStatusColor(crop.status)}">${crop.status}</span></td>
-          <td>${crop.harvestDate ? this.formatDate(crop.harvestDate) : 'TBD'}</td>
+          <td>${harvestDate ? this.formatDate(harvestDate) : 'TBD'}</td>
           <td>${crop.yield || 0} kg</td>
+          <td><span class="badge badge-${badgeClass}">${alertLevel}</span></td>
+          <td style="font-size: 0.8rem; max-width: 200px;">${alertDescription}</td>
           <td>
             <button class="btn btn-info btn-sm" onclick="app.viewCrop('cash', ${index})" title="View Details">👁️</button><button class="btn btn-primary btn-sm" onclick="app.editCrop('cash', ${index})" title="Edit">✏️</button><button class="btn btn-danger btn-sm" onclick="app.deleteCashCrop(${index})" title="Delete">🗑️</button>
           </td>
         </tr>
-      `).join('');
+      `;
+            }).join('');
         }
     },
 
@@ -1910,8 +1966,20 @@ Object.assign(app, {
         if (oldLink) oldLink.remove();
         cropTypeSelect.parentNode.appendChild(manageLink);
 
-        // Add change listener for "New..."
-        cropTypeSelect.onchange = (e) => this.handleTypeChange(e, type);
+        // Add change listener for "New..." AND for altitude alerts
+        cropTypeSelect.addEventListener('change', (e) => {
+            this.handleTypeChange(e, type);
+            this.checkCropAltitudeAlert();
+        });
+
+        // Clear existing alert state
+        this._currentCropAlert = null;
+        const alertEl = document.getElementById('cropAltitudeAlert');
+        if (alertEl) alertEl.style.display = 'none';
+
+        // Reset checkbox
+        const contInput = document.getElementById('cropHasContingency');
+        if (contInput) contInput.checked = false;
 
         if (type === 'fruit') {
             document.getElementById('cropModalTitle').textContent = 'Add Fruit Tree';
@@ -2722,8 +2790,11 @@ Object.assign(app, {
             plantedDate: document.getElementById('cropPlantedDate').value,
             status: document.getElementById('cropStatus').value,
             expectedHarvest: document.getElementById('cropExpectedHarvest').value,
-            harvestDate: document.getElementById('cropHarvestDate').value, // Cash crops only
-            yield: parseFloat(document.getElementById('cropYield').value) || 0 // Cash crops only
+            harvestDate: document.getElementById('cropHarvestDate').value,
+            yield: parseFloat(document.getElementById('cropYield').value) || 0,
+            hasContingency: document.getElementById('cropHasContingency').checked,
+            alertLevel: this._currentCropAlert ? this._currentCropAlert.level : 'GREEN',
+            alertDescription: this._currentCropAlert ? this._currentCropAlert.message : 'Growing season'
         };
 
         // Remove empty strings to keep checks clean
@@ -2781,6 +2852,7 @@ Object.assign(app, {
     async checkCropAltitudeAlert() {
         const cropName = document.getElementById('cropType').value;
         const plantedDate = document.getElementById('cropPlantedDate').value;
+        const hasContingency = document.getElementById('cropHasContingency').checked;
 
         if (!cropName) return;
         const farm = this.getCurrentFarm();
@@ -2788,12 +2860,38 @@ Object.assign(app, {
         const el = document.getElementById('cropAltitudeAlert');
         if (!el) return;
         try {
-            const data = await api.get(`/api/calendar/${farm.id}/alerts?crop=${encodeURIComponent(cropName)}&date=${encodeURIComponent(plantedDate)}`);
+            const data = await api.get(`/api/calendar/${farm.id}/alerts?crop=${encodeURIComponent(cropName)}&date=${encodeURIComponent(plantedDate)}&contingency=${hasContingency}`);
             if (data.alert) {
-                el.innerHTML = `<div class="alert alert-${data.alert.level === 'DANGER' ? 'danger' : 'warning'}" style="padding: 0.5rem; margin: 0.5rem 0; font-size: 0.85rem; border-radius: 4px;"><strong>${data.alert.level}:</strong> ${data.alert.message}</div>`;
+                const color = data.alert.level === 'RED' ? 'danger' : data.alert.level === 'YELLOW' ? 'warning' : 'success';
+                el.innerHTML = `<div class="alert alert-${color}" style="padding: 0.5rem; margin: 0.5rem 0; font-size: 0.85rem; border-radius: 4px;"><strong>${data.alert.level}:</strong> ${data.alert.message}</div>`;
                 el.style.display = 'block';
-            } else { el.style.display = 'none'; }
-        } catch (e) { el.style.display = 'none'; }
+
+                // Store alert info for saving
+                this._currentCropAlert = data.alert;
+
+                // Popup for RED alerts
+                if (data.alert.level === 'RED' && !hasContingency) {
+                    this.showError(`⚠️ SEASONAL ALERT: ${data.alert.message}`);
+                }
+
+                // Automatic Harvest Date
+                if (data.alert.harvestDate) {
+                    const harvestInput = document.getElementById('cropHarvestDate');
+                    if (harvestInput) {
+                        harvestInput.value = data.alert.harvestDate;
+                        // Show the harvest date group if it was hidden
+                        const group = document.getElementById('cropHarvestDateGroup');
+                        if (group) group.style.display = 'block';
+                    }
+                }
+            } else {
+                el.style.display = 'none';
+                this._currentCropAlert = null;
+            }
+        } catch (e) {
+            el.style.display = 'none';
+            this._currentCropAlert = null;
+        }
     },
 
     // Delete fruit tree
@@ -2881,6 +2979,10 @@ Object.assign(app, {
         }
         document.getElementById('cropPlantedDate').value = crop.plantedDate ? crop.plantedDate.split('T')[0] : '';
         document.getElementById('cropStatus').value = crop.status;
+        document.getElementById('cropHasContingency').checked = !!crop.hasContingency;
+
+        // Trigger alert check to show existing alerts
+        this.checkCropAltitudeAlert();
     },
 
     // Export transactions

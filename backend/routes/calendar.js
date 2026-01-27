@@ -49,7 +49,8 @@ router.get('/:farmId', async (req, res) => {
 router.get('/:farmId/alerts', async (req, res) => {
     try {
         const { farmId } = req.params;
-        const { crop, date } = req.query;
+        const { crop, date, contingency } = req.query;
+        const hasContingency = contingency === 'true';
 
         if (!crop) {
             return res.status(400).json({ error: { message: 'Crop name is required' } });
@@ -65,7 +66,7 @@ router.get('/:farmId/alerts', async (req, res) => {
         }
 
         const altitude = farmResult.rows[0].altitude || 0;
-        const alert = calendarService.getCropSelectionAlert(crop, altitude, date);
+        const alert = calendarService.getCropSelectionAlert(crop, altitude, date, hasContingency);
 
         res.json({ alert });
     } catch (error) {

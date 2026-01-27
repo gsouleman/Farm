@@ -641,12 +641,14 @@
                     <th>Planted Date</th>
                     <th>Status</th>
                     <th>Expected Harvest</th>
+                    <th>Alert</th>
+                    <th>Description</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody id="fruitTreesBody">
                   <tr>
-                    <td colspan="6" class="text-center text-muted">No fruit trees recorded yet</td>
+                    <td colspan="8" class="text-center text-muted">No fruit trees recorded yet</td>
                   </tr>
                 </tbody>
               </table>
@@ -673,12 +675,14 @@
                     <th>Status</th>
                     <th>Harvest Date</th>
                     <th>Yield (kg)</th>
+                    <th>Alert</th>
+                    <th>Description</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody id="cashCropsBody">
                   <tr>
-                    <td colspan="7" class="text-center text-muted">No cash crops recorded yet</td>
+                    <td colspan="9" class="text-center text-muted">No cash crops recorded yet</td>
                   </tr>
                 </tbody>
               </table>
@@ -1087,6 +1091,13 @@
           <input type="date" class="form-control" id="cropPlantedDate" required onchange="app.checkCropAltitudeAlert()">
         </div>
 
+        <div class="form-group" id="contingencyGroup"
+          style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+          <input type="checkbox" id="cropHasContingency" onchange="app.checkCropAltitudeAlert()">
+          <label for="cropHasContingency" class="form-label" style="margin: 0;">Irrigation / Contingency Plan
+            available?</label>
+        </div>
+
         <div class="form-group">
           <label class="form-label" for="cropStatus">Status</label>
           <select class="form-control" id="cropStatus" required>
@@ -1462,6 +1473,54 @@ Example:
           </div>
           <div class="card-body" id="legumesSummary">
             <div class="text-center text-muted">Select a farm to view analysis...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Crop Durations & Cycles -->
+      <div class="card mb-4">
+        <div class="card-header" style="background-color: #e9ecef;">
+          <h3 class="card-title">🕒 Crop Durations & Growth Cycles</h3>
+        </div>
+        <div class="card-body">
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Crop</th>
+                  <th>Growth Duration</th>
+                  <th>Campaigns per Year</th>
+                </tr>
+              </thead>
+              <tbody id="cropDurationsBody">
+                <!-- Will be populated by JS -->
+                <tr>
+                  <td>Cereals</td>
+                  <td>Maize / Corn</td>
+                  <td>4 Months</td>
+                  <td>2 Campaigns (Lowland/Midland)</td>
+                </tr>
+                <tr>
+                  <td>Tubers</td>
+                  <td>Potato</td>
+                  <td>3 Months</td>
+                  <td>Up to 3 Campaigns</td>
+                </tr>
+                <tr>
+                  <td>Tubers</td>
+                  <td>Cassava</td>
+                  <td>12 Months</td>
+                  <td>1 Main Cycle</td>
+                </tr>
+                <tr>
+                  <td>Legumes</td>
+                  <td>Beans</td>
+                  <td>3 Months</td>
+                  <td>2-3 Campaigns</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
