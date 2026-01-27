@@ -5503,8 +5503,8 @@ app.renderEmployees = function () {
                 <td><span class="badge badge-secondary">${emp.type || 'Full-time'}</span></td>
                 <td><span class="badge ${emp.status === 'Active' ? 'badge-success' : 'badge-danger'}">${emp.status}</span></td>
                 <td>${emp.phone || '-'}</td>
-                <td>${emp.payFrequency || 'Monthly'}</td>
-                <td>${this.formatCurrency(emp.salary || 0)}</td>
+                <td>${emp.pay_frequency || 'Monthly'}</td>
+                <td>${this.formatCurrency(emp.pay_rate || 0)}</td>
                 <td>
                     <button class="btn btn-outline btn-sm" onclick="app.openEditEmployeeModal('${emp.id}')">✏️ Edit</button>
                     <button class="btn btn-danger btn-sm" onclick="app.deleteEmployee('${emp.id}')">🗑️ Delete</button>
@@ -5523,7 +5523,8 @@ app.openAddEmployeeModal = function () {
 
 app.openEditEmployeeModal = function (empId) {
     const farm = this.getCurrentFarm();
-    const emp = farm.employees.find(e => e.id === empId);
+    // Ensure loose matching for ID (string vs int)
+    const emp = farm.employees.find(e => e.id == empId);
     if (!emp) return;
 
     document.getElementById('employeeId').value = emp.id;
@@ -5532,19 +5533,17 @@ app.openEditEmployeeModal = function (empId) {
     document.getElementById('empType').value = emp.type || 'Full-time';
     document.getElementById('empStatus').value = emp.status;
     document.getElementById('empPhone').value = emp.phone;
-    document.getElementById('empPayFrequency').value = emp.payFrequency || 'Monthly';
-    document.getElementById('empSalary').value = emp.salary;
+    document.getElementById('empPayFrequency').value = emp.pay_frequency || 'Monthly';
+    document.getElementById('empSalary').value = emp.pay_rate;
 
     document.getElementById('employeeModalTitle').textContent = 'Edit Employee';
     this.openModal('employeeModal');
 };
 
-app.saveEmployee = function (event) {
+app.saveEmployee = async function (event) {
     event.preventDefault();
     const farm = this.getCurrentFarm();
     if (!farm) return;
-
-    if (!farm.employees) farm.employees = [];
 
     const id = document.getElementById('employeeId').value;
     const name = document.getElementById('empName').value;
@@ -5552,43 +5551,65 @@ app.saveEmployee = function (event) {
     const type = document.getElementById('empType').value;
     const status = document.getElementById('empStatus').value;
     const phone = document.getElementById('empPhone').value;
-    const payFrequency = document.getElementById('empPayFrequency').value;
-    const salary = parseFloat(document.getElementById('empSalary').value) || 0;
+    const pay_frequency = document.getElementById('empPayFrequency').value;
+    const pay_rate = parseFloat(document.getElementById('empSalary').value) || 0;
 
-    if (id) {
-        // Update existing
-        const index = farm.employees.findIndex(e => e.id === id);
-        if (index !== -1) {
-            farm.employees[index] = { ...farm.employees[index], name, role, type, status, phone, payFrequency, salary };
+    const employeeData = {
+        name,
+        role,
+        type,
+        status,
+        phone,
+        pay_frequency,
+        pay_rate
+    };
+
+    try {
+        if (id) {
+            // Update existing
+            const updatedEmp = await api.employees.update(id, employeeData);
+
+            // Update local state
+            const index = farm.employees.findIndex(e => e.id == id);
+            if (index !== -1) {
+                farm.employees[index] = updatedEmp;
+            }
+            this.showSuccess('Employee updated successfully');
+        } else {
+            // Create new
+            const newEmp = await api.employees.create(farm.id, employeeData);
+
+            if (!farm.employees) farm.employees = [];
+            farm.employees.push(newEmp);
+            this.showSuccess('Employee added successfully');
         }
-    } else {
-        // Create new
-        farm.employees.push({
-            id: Date.now().toString(),
-            name,
-            role,
-            type,
-            status,
-            phone,
-            payFrequency,
-            salary,
-            dateAdded: new Date().toISOString()
-        });
-    }
 
-    this.saveData();
-    this.renderEmployees();
-    this.closeModal('employeeModal');
+        this.renderEmployees();
+        this.closeModal('employeeModal');
+    } catch (error) {
+        console.error('Error saving employee:', error);
+        this.showError('Failed to save employee: ' + error.message);
+    }
 };
 
 app.deleteEmployee = function (id) {
     const farm = this.getCurrentFarm();
     if (!farm) return;
 
-    const emp = farm.employees.find(e => e.id === id);
+    const emp = farm.employees.find(e => e.id == id);
     this.showConfirmation(
         `Are you sure you want to delete ${emp ? emp.name : 'this employee'}?`,
-        () => {
+        async () => {
+            try {
+                await api.employees.delete(id);
+                // Remove from local state
+                farm.employees = farm.employees.filter(e => e.id != id);
+                this.renderEmployees();
+                this.showSuccess('Employee deleted successfully');
+            } catch (error) {
+                console.error('Error deleting employee:', error);
+                this.showError('Failed to delete employee: ' + error.message);
+            }
         }
     );
 };
