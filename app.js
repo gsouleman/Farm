@@ -4442,7 +4442,7 @@ Object.assign(app, {
     },
 
     // Auto Allocation Logic (Heuristic Strip Layout)
-    async autoAllocateSections() {
+    async _deprecated_autoAllocateSections() {
         const farm = this.getCurrentFarm();
         if (!farm || !farm.boundaries || farm.boundaries.length < 3) {
             this.showError('Farm must have boundaries defined for auto-allocation.');
