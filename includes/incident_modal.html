@@ -1,0 +1,96 @@
+<!-- Log Incident Modal -->
+<div id="logIncidentModal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 class="modal-title">Log New Risk / Incident</h2>
+            <button class="close-btn" onclick="app.closeModal('logIncidentModal')">&times;</button>
+        </div>
+        <form id="logIncidentForm" onsubmit="event.preventDefault(); app.handleLogIncidentSubmit();">
+            <div class="form-group">
+                <label>Category</label>
+                <select id="incidentCategory" class="form-control" required
+                    onchange="app.updateIncidentSubcategories()">
+                    <option value="">Select Category</option>
+                    <option value="CLIMATE">Climate & Environmental</option>
+                    <option value="BIOLOGICAL">Biological Threats</option>
+                    <option value="OPERATIONAL">Operational & Logistical</option>
+                    <option value="SECURITY">Security & Safety</option>
+                    <option value="MARKET">Market & Economic</option>
+                    <option value="MANAGEMENT">Management & Human Factor</option>
+                    <option value="INFRASTRUCTURE">Infrastructure</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Subcategory (Specific Threat)</label>
+                <select id="incidentSubcategory" class="form-control" required>
+                    <!-- Populated dynamically -->
+                    <option value="">Select Category First</option>
+                </select>
+            </div>
+
+            <div class="row">
+                <div class="col-6">
+                    <div class="form-group">
+                        <label>Severity Level</label>
+                        <select id="incidentSeverity" class="form-control" required>
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                            <option value="Critical" style="color: red; font-weight: bold;">Critical</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="form-group">
+                        <label>Date Detected</label>
+                        <input type="date" id="incidentDate" class="form-control" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Affected Area / Asset</label>
+                <input type="text" id="incidentAsset" class="form-control"
+                    placeholder="e.g., North Field, Tractor A, Storage 1" required>
+            </div>
+
+            <div class="row">
+                <div class="col-6">
+                    <div class="form-group">
+                        <label>Est. Financial Impact (Xaf)</label>
+                        <input type="number" id="incidentImpact" class="form-control" min="0" value="0">
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="incidentStatus" class="form-control">
+                            <option value="Open">Open</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Resolved">Resolved</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Root Cause / Details</label>
+                <textarea id="incidentDetails" class="form-control" rows="3"
+                    placeholder="Describe what happened..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Immediate Action Taken</label>
+                <textarea id="incidentAction" class="form-control" rows="2"
+                    placeholder="What was done immediately?"></textarea>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                    onclick="app.closeModal('logIncidentModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Log Incident</button>
+            </div>
+        </form>
+    </div>
+</div>

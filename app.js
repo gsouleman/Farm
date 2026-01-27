@@ -5431,6 +5431,8 @@ app.showTab = function (tabName) {
         // Trigger specific renders if needed
         if (tabName === 'employees') {
             this.renderEmployees();
+        } else if (tabName === 'incidents') {
+            this.loadIncidents();
         } else if (tabName === 'farm-info') {
             setTimeout(() => {
                 const farm = this.getCurrentFarm();
@@ -5565,11 +5567,165 @@ app.deleteEmployee = function (id) {
     this.showConfirmation(
         `Are you sure you want to delete ${emp ? emp.name : 'this employee'}?`,
         () => {
-            farm.employees = farm.employees.filter(e => e.id !== id);
-            this.saveData();
-            this.renderEmployees();
         }
     );
+};
+
+// ==========================================
+// RISK & INCIDENT LOG LOGIC
+// ==========================================
+
+app.incidentSubcategories = {
+    'CLIMATE': ['Drought/Low Rainfall', 'Excessive Rainfall/Flooding', 'Bush/Wildfire', 'Storm/Hail Damage', 'Frost/Cold Damage', 'Heat Stress Periods'],
+    'BIOLOGICAL': ['Pest Infestation', 'Disease Outbreak', 'Weed Infestation', 'Invasive Species', 'Livestock Predation', 'Crop Grazing Damage'],
+    'OPERATIONAL': ['Logistics Delay/Failure', 'Equipment Breakdown', 'Labor Shortage/Absenteeism', 'Supply Chain Disruption', 'Input Quality Issues'],
+    'SECURITY': ['Theft/Vandalism', 'Trespassing/Encroachment', 'Livestock Rustling', 'Worksite Accident', 'Fire Safety Breach'],
+    'MARKET': ['Market Price Volatility', 'Buyer Default/Non-payment', 'Contract Breach', 'Transport Cost Spike', 'Input Cost Inflation'],
+    'MANAGEMENT': ['Procedural Negligence', 'Training Deficiency', 'Record-Keeping Gaps', 'Poor Planning/Timing Error', 'Communication Breakdown'],
+    'INFRASTRUCTURE': ['Irrigation System Failure', 'Fence/Boundary Damage', 'Storage Facility Issue', 'Road/Access Problem', 'Energy/Power Outage']
+};
+
+app.openLogIncidentModal = function () {
+    this.openModal('logIncidentModal');
+    // Set default date to today
+    document.getElementById('incidentDate').valueAsDate = new Date();
+};
+
+app.updateIncidentSubcategories = function () {
+    const category = document.getElementById('incidentCategory').value;
+    const subcategorySelect = document.getElementById('incidentSubcategory');
+
+    subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
+
+    if (category && this.incidentSubcategories[category]) {
+        this.incidentSubcategories[category].forEach(sub => {
+            const option = document.createElement('option');
+            option.value = sub;
+            option.textContent = sub;
+            subcategorySelect.appendChild(option);
+        });
+    }
+};
+
+app.handleLogIncidentSubmit = async function () {
+    const farm = this.getCurrentFarm();
+    if (!farm) return alert('No farm selected');
+
+    const incident = {
+        farm_id: farm.id, // Ensure your backend handles INTEGER farm_id now
+        category: document.getElementById('incidentCategory').value,
+        subcategory: document.getElementById('incidentSubcategory').value,
+        severity: document.getElementById('incidentSeverity').value,
+        date_detected: document.getElementById('incidentDate').value,
+        affected_assets: document.getElementById('incidentAsset').value,
+        financial_impact: document.getElementById('incidentImpact').value,
+        status: document.getElementById('incidentStatus').value,
+        details: {
+            root_cause: document.getElementById('incidentDetails').value,
+            action_taken: document.getElementById('incidentAction').value
+        }
+    };
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/incidents`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(incident)
+        });
+
+        if (response.ok) {
+            app.showNotification('Incident logged successfully', 'success');
+            this.closeModal('logIncidentModal');
+            document.getElementById('logIncidentForm').reset();
+            this.loadIncidents(); // Refresh list
+        } else {
+            app.showNotification('Failed to log incident', 'error');
+        }
+    } catch (error) {
+        console.error('Error logging incident:', error);
+        app.showNotification('Error connecting to server', 'error');
+    }
+};
+
+app.loadIncidents = async function () {
+    const farm = this.getCurrentFarm();
+    if (!farm) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/incidents/${farm.id}`);
+        if (response.ok) {
+            const incidents = await response.json();
+            this.renderIncidentTable(incidents);
+            this.updateIncidentStats(incidents);
+        }
+    } catch (error) {
+        console.error('Error loading incidents:', error);
+    }
+};
+
+app.renderIncidentTable = function (incidents) {
+    const tbody = document.querySelector('#incidentsTable tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    if (incidents.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">No incidents logged yet.</td></tr>';
+        return;
+    }
+
+    incidents.forEach(inc => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${new Date(inc.date_detected).toLocaleDateString()}</td>
+            <td><span class="badge badge-${this.getSeverityClass(inc.severity)}">${inc.severity}</span></td>
+            <td>${inc.category}</td>
+            <td>${inc.subcategory}</td>
+            <td><span class="badge badge-${this.getStatusClass(inc.status)}">${inc.status}</span></td>
+            <td>${this.formatCurrency(inc.financial_impact)}</td>
+            <td>
+                <button class="btn btn-sm btn-outline-danger" onclick="app.deleteIncident('${inc.id}')">🗑️</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+};
+
+app.updateIncidentStats = function (incidents) {
+    const open = incidents.filter(i => i.status === 'Open').length;
+    const critical = incidents.filter(i => i.severity === 'Critical').length;
+    const resolved = incidents.filter(i => i.status === 'Resolved').length; // Should filter by month locally if needed
+    const impact = incidents.reduce((sum, i) => sum + Number(i.financial_impact || 0), 0);
+
+    if (document.getElementById('statsOpenIncidents')) document.getElementById('statsOpenIncidents').textContent = open;
+    if (document.getElementById('statsCriticalIncidents')) document.getElementById('statsCriticalIncidents').textContent = critical;
+    if (document.getElementById('statsResolvedMonth')) document.getElementById('statsResolvedMonth').textContent = resolved;
+    if (document.getElementById('statsTotalImpact')) document.getElementById('statsTotalImpact').textContent = this.formatCurrency(impact);
+};
+
+app.getSeverityClass = function (severity) {
+    switch (severity) {
+        case 'Critical': return 'danger';
+        case 'High': return 'warning';
+        case 'Medium': return 'info';
+        default: return 'success'; // Low
+    }
+};
+
+app.getStatusClass = function (status) {
+    return status === 'Resolved' ? 'success' : (status === 'In Progress' ? 'warning' : 'danger');
+};
+
+app.deleteIncident = async function (id) {
+    if (!confirm('Are you sure you want to delete this log?')) return;
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/incidents/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+            this.loadIncidents();
+        }
+    } catch (error) {
+        console.error('Error deleting incident:', error);
+    }
 };
 
 // Initialize app when DOM is ready

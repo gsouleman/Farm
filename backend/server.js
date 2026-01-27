@@ -33,6 +33,7 @@ app.use('/api/crops', cropRoutes);
 app.use('/api/sections', sectionRoutes);
 app.use('/api/employees', require('./routes/employees'));
 app.use('/api/crop-types', require('./routes/crop_types'));
+app.use('/api/incidents', require('./routes/incidents'));
 
 // Health check
 app.get('/health', (req, res) => {
