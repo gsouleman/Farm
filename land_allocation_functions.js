@@ -242,10 +242,15 @@ Object.assign(app, {
         let analysisNote = "Standard Best Practices";
 
         try {
-            const savedAnalysis = await api.analysis.get(farm.id).catch(() => null);
+            console.log(`Debug: Fetching analysis for farm ${farm.id}...`);
+            const savedAnalysis = await api.analysis.get(farm.id).catch(err => {
+                console.warn("Debug: Analysis fetch failed or came back empty.", err);
+                return null;
+            });
+
             if (savedAnalysis && savedAnalysis.data) {
                 const data = savedAnalysis.data;
-                console.log("Using Analysis Data:", data);
+                console.log("Debug: Analysis Data Loaded:", data);
 
                 if (data.slope > 10) {
                     slopeMod = 0.15; // Shift 15% to trees
@@ -256,8 +261,13 @@ Object.assign(app, {
                     waterMod = true;
                     analysisNote += " + Water Buffer Zone";
                 }
+            } else {
+                console.log("Debug: No existing analysis found. Using defaults.");
+                this.showNotification("Tip: Generate a 'Farm Analysis' first for smarter allocation!", "warning");
             }
-        } catch (e) { console.warn("Auto-allocate: No analysis found", e); }
+        } catch (e) {
+            console.error("Debug: Unexpected error in auto-allocate analysis fetch", e);
+        }
 
         this.showNotification(`Allocating sections based on: ${analysisNote}`, 'info');
 
@@ -347,6 +357,7 @@ Object.assign(app, {
             let recommendedCash = null;
 
             if (savedAnalysis && savedAnalysis.data && savedAnalysis.data.plantingAdvice) {
+                console.log("Debug: Parsing Planting Advice...", savedAnalysis.data.plantingAdvice);
                 const advice = savedAnalysis.data.plantingAdvice;
 
                 // Helper to extract first mentioned crop that exists in our DB
@@ -354,19 +365,30 @@ Object.assign(app, {
                     if (!adviceList || !availableCrops) return null;
 
                     for (const tip of adviceList) {
-                        // Extract first word or words before colon (e.g. "Avocado" from "Avocado: Plant on...")
-                        const match = tip.match(/^([^:]+):/);
-                        if (match) {
-                            const cropName = match[1].trim();
-                            // Case-insensitive fuzzy matching
-                            const found = availableCrops.find(c => c.name.toLowerCase().includes(cropName.toLowerCase()));
-                            if (found) return found.name;
-                        }
+                        try {
+                            // Extract first word or words before colon (e.g. "Avocado" from "Avocado: Plant on...")
+                            const match = tip.match(/^([^:]+):/);
+                            if (match) {
+                                const cropName = match[1].trim();
+                                console.log(`Debug: Found potential crop recommendation: "${cropName}"`);
+                                // Case-insensitive fuzzy matching
+                                const found = availableCrops.find(c => c.name.toLowerCase().includes(cropName.toLowerCase()));
+                                if (found) {
+                                    console.log(`Debug: Match found in DB! Using "${found.name}"`);
+                                    return found.name;
+                                } else {
+                                    console.log(`Debug: "${cropName}" recommended but NOT found in your Crop Types list.`);
+                                }
+                            }
+                        } catch (e) { console.error("Error parsing tip:", tip, e); }
                     }
                     return null;
                 };
 
+                console.log("Debug: Checking Fruit Trees...");
                 recommendedFruit = findBestCrop(advice.fruitTrees, fruitCrops);
+
+                console.log("Debug: Checking Cash Crops...");
                 recommendedCash = findBestCrop(advice.cashCrops, cashCrops);
 
                 if (recommendedFruit) analysisNote += ` | Prioritizing ${recommendedFruit}`;
