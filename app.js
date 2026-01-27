@@ -1863,12 +1863,38 @@ Object.assign(app, {
             if (cropTypeSelect.value === '__NEW__') {
                 const customType = prompt('Enter custom crop type name:');
                 if (customType && customType.trim()) {
-                    const newOption = document.createElement('option');
-                    newOption.value = customType.trim();
-                    newOption.textContent = customType.trim();
-                    // Insert before the "New..." option
-                    cropTypeSelect.insertBefore(newOption, cropTypeSelect.lastElementChild);
-                    cropTypeSelect.value = customType.trim();
+                    const name = customType.trim();
+                    const category = document.getElementById('cropCategory').value;
+
+                    // Immediately persist the new type to the DB
+                    api.cropTypes.create({ category, name })
+                        .then(() => {
+                            const newOption = document.createElement('option');
+                            newOption.value = name;
+                            newOption.textContent = name;
+                            // Insert before the "New..." option
+                            cropTypeSelect.insertBefore(newOption, cropTypeSelect.lastElementChild);
+                            cropTypeSelect.value = name;
+
+                            // Update local cache
+                            if (!app.userCropTypes[category].some(x => (x.name || x) === name)) {
+                                app.userCropTypes[category].push({ category, name });
+                            }
+                            app.showSuccess(`New crop type "${name}" saved!`);
+                        })
+                        .catch(err => {
+                            console.error('Failed to save new crop type:', err);
+                            app.showError('Failed to save new type, but you can still use it for now.');
+
+                            // Fallback: Add to dropdown anyway so user isn't blocked, 
+                            // but warn them it might not persist if API failed.
+                            const newOption = document.createElement('option');
+                            newOption.value = name;
+                            newOption.textContent = name;
+                            cropTypeSelect.insertBefore(newOption, cropTypeSelect.lastElementChild);
+                            cropTypeSelect.value = name;
+                        });
+
                 } else {
                     cropTypeSelect.value = '';
                 }
