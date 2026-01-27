@@ -75,7 +75,8 @@ router.post('/', [
     body('centerLat').optional().isFloat(),
     body('centerLng').optional().isFloat(),
     body('boundaries').optional().isArray(),
-    body('zones').optional().isObject()
+    body('zones').optional().isObject(),
+    body('altitude').optional().isFloat()
 ], async (req, res) => {
     try {
         const errors = validationResult(req);
@@ -83,11 +84,11 @@ router.post('/', [
             return res.status(400).json({ error: { message: 'Validation failed', details: errors.array() } });
         }
 
-        const { name, location, area, perimeter, centerLat, centerLng, boundaries, zones } = req.body;
+        const { name, location, area, perimeter, centerLat, centerLng, boundaries, zones, altitude } = req.body;
 
         const result = await db.query(
-            `INSERT INTO farms (user_id, name, location, area, perimeter, center_lat, center_lng, boundaries, zones)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            `INSERT INTO farms (user_id, name, location, area, perimeter, center_lat, center_lng, boundaries, zones, altitude)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING *`,
             [
                 req.userId,
@@ -98,7 +99,8 @@ router.post('/', [
                 centerLat || null,
                 centerLng || null,
                 boundaries ? JSON.stringify(boundaries) : null,
-                zones ? JSON.stringify(zones) : null
+                zones ? JSON.stringify(zones) : null,
+                altitude || 0
             ]
         );
 
@@ -118,7 +120,8 @@ router.put('/:id', [
     body('centerLat').optional().isFloat(),
     body('centerLng').optional().isFloat(),
     body('boundaries').optional().isArray(),
-    body('zones').optional().isObject()
+    body('zones').optional().isObject(),
+    body('altitude').optional().isFloat()
 ], async (req, res) => {
     try {
         const errors = validationResult(req);
@@ -141,7 +144,7 @@ router.put('/:id', [
             return res.status(404).json({ error: { message: 'Farm not found' } });
         }
 
-        const { name = null, location = null, area = null, perimeter = null, centerLat = null, centerLng = null, boundaries = null, zones = null } = req.body;
+        const { name = null, location = null, area = null, perimeter = null, centerLat = null, centerLng = null, boundaries = null, zones = null, altitude = null } = req.body;
 
         console.log(`Debug: PUT /api/farms/${req.params.id} - Current User: ${req.userId}`);
         console.log(`Debug: PUT boundaries: ${boundaries ? (Array.isArray(boundaries) ? boundaries.length : 'NOT ARRAY') : 'NULL'}`);
@@ -156,8 +159,9 @@ router.put('/:id', [
            center_lng = COALESCE($6, center_lng),
            boundaries = COALESCE($7, boundaries),
            zones = COALESCE($8, zones),
+           altitude = COALESCE($9, altitude),
            updated_at = NOW()
-       WHERE id = $9 AND user_id = $10
+       WHERE id = $10 AND user_id = $11
        RETURNING *`,
             [
                 name,
@@ -168,6 +172,7 @@ router.put('/:id', [
                 centerLng,
                 boundaries ? JSON.stringify(boundaries) : null,
                 zones ? JSON.stringify(zones) : null,
+                altitude,
                 req.params.id,
                 req.userId
             ]

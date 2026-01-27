@@ -37,6 +37,7 @@ app.use('/api/incidents', require('./routes/incidents'));
 app.use('/api/alerts', require('./routes/alerts'));
 app.use('/api/tasks', require('./routes/tasks'));
 app.use('/api/insurance', require('./routes/insurance'));
+app.use('/api/calendar', require('./routes/calendar'));
 
 // Health check
 app.get('/health', (req, res) => {

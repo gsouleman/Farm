@@ -81,6 +81,7 @@
               <a href="#crops" onclick="app.showTab('crops')">Crops & Harvest</a>
               <a href="#employees" onclick="app.showTab('employees')">Workforce</a>
               <a href="#incidents" onclick="app.showTab('incidents')">Risk & Incidents</a>
+              <a href="#agri-calendar" onclick="app.showTab('agri-calendar')">📅 Agri Calendar</a>
             </div>
           </li>
 
@@ -359,6 +360,10 @@
                 <div class="info-item">
                   <label>Center Coordinates</label>
                   <span id="farmCoordinatesDisplay">-</span>
+                </div>
+                <div class="info-item">
+                  <label>Altitude</label>
+                  <span id="farmAltitudeDisplay">-</span>
                 </div>
               </div>
 
@@ -1061,9 +1066,10 @@
 
         <div class="form-group">
           <label class="form-label" for="cropType">Type</label>
-          <select class="form-control" id="cropType" required>
+          <select class="form-control" id="cropType" required onchange="app.checkCropAltitudeAlert()">
             <option value="">Select type...</option>
           </select>
+          <div id="cropAltitudeAlert" style="margin-top: 0.5rem; display: none;"></div>
         </div>
 
         <div class="form-group" id="cropCountGroup">
@@ -1078,7 +1084,7 @@
 
         <div class="form-group">
           <label class="form-label" for="cropPlantedDate">Planted Date</label>
-          <input type="date" class="form-control" id="cropPlantedDate" required>
+          <input type="date" class="form-control" id="cropPlantedDate" required onchange="app.checkCropAltitudeAlert()">
         </div>
 
         <div class="form-group">
@@ -1134,6 +1140,12 @@
           <label class="form-label" for="newFarmLocation">Location</label>
           <input type="text" class="form-control" id="newFarmLocation" required
             placeholder="e.g., Maloure Village, Njimoun, Foumban">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="newFarmAltitude">Altitude (meters)</label>
+          <input type="number" class="form-control" id="newFarmAltitude" placeholder="e.g., 950" value="0">
+          <small class="text-muted">Used for Agri Calendar season calculations.</small>
         </div>
 
         <div class="form-group">
@@ -1386,6 +1398,103 @@ Example:
       </div>
     </div>
   </div>
+
+  <!-- Agri Calendar Section -->
+  <section id="agri-calendar" class="section" style="display: none;">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-center mb-0">📅 Agri Calendar & Planting Guide</h2>
+        <div id="farmZoneBadge" class="badge badge-info" style="font-size: 1rem; padding: 0.5rem 1rem;">
+          Loading zone...
+        </div>
+      </div>
+
+      <!-- Farm Location Context -->
+      <div class="alert alert-info mb-4" id="calendarFarmInfo"
+        style="background-color: #e7f3ff; color: #004085; border: 1px solid #b8daff; border-radius: 8px; padding: 1rem;">
+        <i class="fas fa-info-circle"></i> Based on your farm's altitude and coordinates, we've generated a personalized
+        planting summary to optimize your yield and reduce climate risks.
+      </div>
+
+      <!-- Risk Alerts Container -->
+      <div id="calendarAlerts" class="mb-4">
+        <!-- Alerts will be injected here -->
+      </div>
+
+      <!-- Season Summary Grid -->
+      <div class="grid grid-2 mb-4">
+        <!-- Cereals -->
+        <div class="card h-100">
+          <div class="card-header" style="background-color: #fff3cd; color: #856404; border-bottom: 2px solid #ffeeba;">
+            <h3 class="card-title">🌾 Cereals (Maize, Rice)</h3>
+          </div>
+          <div class="card-body" id="cerealsSummary">
+            <div class="text-center text-muted">Select a farm to view analysis...</div>
+          </div>
+        </div>
+
+        <!-- Tubers -->
+        <div class="card h-100">
+          <div class="card-header" style="background-color: #d4edda; color: #155724; border-bottom: 2px solid #c3e6cb;">
+            <h3 class="card-title">🥔 Tubers (Cassava, Yam)</h3>
+          </div>
+          <div class="card-body" id="tubersSummary">
+            <div class="text-center text-muted">Select a farm to view analysis...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-2 mb-4">
+        <!-- Fruit Trees -->
+        <div class="card h-100">
+          <div class="card-header" style="background-color: #d1ecf1; color: #0c5460; border-bottom: 2px solid #bee5eb;">
+            <h3 class="card-title">🌳 Fruit Trees (Mango, Citrus)</h3>
+          </div>
+          <div class="card-body" id="fruitTreesSummary">
+            <div class="text-center text-muted">Select a farm to view analysis...</div>
+          </div>
+        </div>
+
+        <!-- Legumes -->
+        <div class="card h-100">
+          <div class="card-header" style="background-color: #e2e3e5; color: #383d41; border-bottom: 2px solid #d6d8db;">
+            <h3 class="card-title">🫘 Legumes (Beans, Cowpeas)</h3>
+          </div>
+          <div class="card-body" id="legumesSummary">
+            <div class="text-center text-muted">Select a farm to view analysis...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Historical Risk Analysis -->
+      <div class="card mb-4" id="historicalRiskCard" style="display: none;">
+        <div class="card-header bg-danger text-white">
+          <h3 class="card-title"><i class="fas fa-history"></i> Historical Risk Analysis</h3>
+        </div>
+        <div class="card-body">
+          <div class="d-flex gap-4 align-items-center">
+            <div id="riskStats" style="flex: 1;">
+              <!-- Incident stats will be injected here -->
+            </div>
+            <div id="riskRecommendation" class="p-4 bg-light rounded" style="flex: 1; border-left: 5px solid #dc3545;">
+              <p class="mb-0" id="riskRecommendationText">Analyzing historical data...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detailed Season Guide -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h3 class="card-title">✨ Altitude-Based Strategy</h3>
+        </div>
+        <div class="card-body" id="zoneStrategies">
+          <p class="text-muted text-center">Please select a farm with valid coordinates to see specific altitude-based
+            strategies.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- Footer -->
   <footer class="section bg-primary" style="color: white; text-align: center; padding: 2rem 0;">

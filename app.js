@@ -1180,8 +1180,71 @@ Object.assign(app, {
             setText('farmCoordinatesDisplay', '-');
         }
 
+        setText('farmAltitudeDisplay', (farm.altitude || 0) + ' meters');
+
         // Render Land Allocation Table
         this.renderLandAllocationTable();
+    },
+
+    async renderAgriCalendar() {
+        const farm = this.getCurrentFarm();
+        if (!farm || !farm.id) return;
+        try {
+            const data = await api.get(`/api/calendar/${farm.id}`);
+            const badge = document.getElementById('farmZoneBadge');
+            if (badge) {
+                badge.textContent = `${data.zone} Zone (${data.altitude}m)`;
+                badge.className = `badge ${data.zone === 'Highland' ? 'badge-danger' : data.zone === 'Midland' ? 'badge-info' : 'badge-success'}`;
+            }
+            if (data.alerts && data.alerts.length > 0) {
+                const alertsHtml = data.alerts.map(alert => `
+                    <div class="alert alert-${alert.type === 'WARNING' ? 'warning' : 'info'}" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.75rem;">
+                        <span>${alert.type === 'WARNING' ? '⚠️' : 'ℹ️'}</span>
+                        <div><strong>${alert.type}:</strong> ${alert.message}</div>
+                    </div>
+                `).join('');
+                const el = document.getElementById('calendarAlerts');
+                if (el) el.innerHTML = alertsHtml;
+            }
+            const renderCategory = (id, cat) => {
+                const el = document.getElementById(id);
+                if (!el || !cat) return;
+                el.innerHTML = `
+                    <div class="mb-2"><strong>Season:</strong> ${cat.type || cat.season}</div>
+                    <div class="mb-2"><strong>Window:</strong> ${cat.optimal || cat.start || cat.major}</div>
+                    <div class="mb-2 text-danger"><strong>Risk:</strong> ${cat.risks}</div>
+                    <div class="mt-2 p-2 bg-light small"><strong>Advice:</strong> ${cat.suitability || cat.recommended || cat.specialNotice}</div>
+                `;
+            };
+            renderCategory('cerealsSummary', data.categories.cereals);
+            renderCategory('tubersSummary', data.categories.tubers);
+            renderCategory('fruitTreesSummary', data.categories.fruitTrees);
+            renderCategory('legumesSummary', data.categories.legumes);
+
+            // Render Historical Risk Analysis
+            const riskCard = document.getElementById('historicalRiskCard');
+            if (riskCard && data.incidentImpact) {
+                riskCard.style.display = 'block';
+                const statsEl = document.getElementById('riskStats');
+                const recEl = document.getElementById('riskRecommendationText');
+
+                const categoriesHtml = Object.entries(data.incidentImpact.summary.byCategory)
+                    .map(([cat, count]) => `<div class="mb-1"><strong>${cat}:</strong> ${count} incident(s)</div>`)
+                    .join('');
+
+                if (statsEl) statsEl.innerHTML = `
+                    <div class="mb-2 text-muted">Based on ${data.incidentImpact.summary.total} historical incidents:</div>
+                    ${categoriesHtml}
+                `;
+                if (recEl) recEl.textContent = data.incidentImpact.recommendation;
+            } else if (riskCard) {
+                riskCard.style.display = 'none';
+            }
+        } catch (e) {
+            console.error('Error rendering calendar:', e);
+            const alertsEl = document.getElementById('calendarAlerts');
+            if (alertsEl) alertsEl.innerHTML = '<div class="alert alert-danger">Error fetching calendar data.</div>';
+        }
     },
 
     // Render Land Allocation Table based on sections
@@ -2715,6 +2778,24 @@ Object.assign(app, {
         }
     },
 
+    async checkCropAltitudeAlert() {
+        const cropName = document.getElementById('cropType').value;
+        const plantedDate = document.getElementById('cropPlantedDate').value;
+
+        if (!cropName) return;
+        const farm = this.getCurrentFarm();
+        if (!farm || !farm.id) return;
+        const el = document.getElementById('cropAltitudeAlert');
+        if (!el) return;
+        try {
+            const data = await api.get(`/api/calendar/${farm.id}/alerts?crop=${encodeURIComponent(cropName)}&date=${encodeURIComponent(plantedDate)}`);
+            if (data.alert) {
+                el.innerHTML = `<div class="alert alert-${data.alert.level === 'DANGER' ? 'danger' : 'warning'}" style="padding: 0.5rem; margin: 0.5rem 0; font-size: 0.85rem; border-radius: 4px;"><strong>${data.alert.level}:</strong> ${data.alert.message}</div>`;
+                el.style.display = 'block';
+            } else { el.style.display = 'none'; }
+        } catch (e) { el.style.display = 'none'; }
+    },
+
     // Delete fruit tree
     async deleteFruitTree(index) {
         const crop = this.fruitTrees[index];
@@ -3296,6 +3377,7 @@ Object.assign(app, {
         document.getElementById('newFarmLng').value = farm.centerCoordinates.lng;
         document.getElementById('newFarmArea').value = farm.area;
         document.getElementById('newFarmPerimeter').value = farm.perimeter || 0;
+        document.getElementById('newFarmAltitude').value = farm.altitude || 0;
 
         if (farm.boundaries && farm.boundaries.length > 0) {
             document.getElementById('newFarmBoundaries').value = farm.boundaries.map(c => `${c.lat},${c.lng}`).join('\n');
@@ -3369,6 +3451,7 @@ Object.assign(app, {
 
         const name = document.getElementById('newFarmName').value;
         const location = document.getElementById('newFarmLocation').value;
+        const altitude = parseFloat(document.getElementById('newFarmAltitude').value) || 0;
         const area = parseFloat(document.getElementById('newFarmArea').value);
         const perimeter = parseFloat(document.getElementById('newFarmPerimeter').value) || 0;
         const centerCoordinates = {
@@ -3379,6 +3462,7 @@ Object.assign(app, {
         const farmData = {
             name: name,
             location: location,
+            altitude: altitude,
             area: area,
             perimeter: perimeter,
             centerLat: centerCoordinates.lat,
@@ -5468,6 +5552,8 @@ app.showTab = function (tabName) {
             }, 100);
         } else if (tabName === 'advanced') {
             this.initAdvancedFeatures();
+        } else if (tabName === 'agri-calendar') {
+            this.renderAgriCalendar();
         }
     }
 

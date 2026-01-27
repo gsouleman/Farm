@@ -64,6 +64,19 @@ const api = {
         localStorage.removeItem('currentUser');
     },
 
+    // Authenticated GET request
+    async get(endpoint) {
+        return await this.request(endpoint, { method: 'GET' });
+    },
+
+    // Authenticated POST request
+    async post(endpoint, data) {
+        return await this.request(endpoint, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+
     // Make authenticated API request
     async request(endpoint, options = {}) {
         const token = this.getToken();
