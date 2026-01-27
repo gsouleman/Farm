@@ -41,7 +41,7 @@ app.use('/api/calendar', require('./routes/calendar'));
 
 // Health check
 app.get('/health', (req, res) => {
-    res.json({ status: 'ok', version: '1.5.1-advanced-features', timestamp: new Date().toISOString() });
+    res.json({ status: 'ok', version: '1.5.2-agri-calendar', timestamp: new Date().toISOString() });
 });
 
 // Error handling middleware
