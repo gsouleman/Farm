@@ -5975,14 +5975,14 @@ app.renderWeather = function (data, container) {
 
     // WMO Weather Codes (Simplified)
     const getWeatherIcon = (code) => {
-        if (code === 0) return 'â˜€ï¸'; // Clear
-        if (code <= 3) return 'â›…'; // Cloudy
-        if (code <= 48) return 'ðŸŒ«ï¸'; // Fog
-        if (code <= 67) return 'ðŸŒ§ï¸'; // Rain
-        if (code <= 77) return 'â„ï¸'; // Snow
-        if (code <= 82) return 'â›ˆï¸'; // Showers
-        if (code <= 99) return 'âš¡'; // Thunderstorm
-        return 'â“';
+        if (code === 0) return '\u2600\uFE0F'; // Clear
+        if (code <= 3) return '\u26C5'; // Cloudy
+        if (code <= 48) return '\uD83C\uDF2B\uFE0F'; // Fog
+        if (code <= 67) return '\uD83C\uDF27\uFE0F'; // Rain
+        if (code <= 77) return '\u2744\uFE0F'; // Snow
+        if (code <= 82) return '\u26C8\uFE0F'; // Showers
+        if (code <= 99) return '\u26A1'; // Thunderstorm
+        return '\u2753';
     };
 
     const icon = getWeatherIcon(current.weather_code);
@@ -5992,13 +5992,13 @@ app.renderWeather = function (data, container) {
     let adviceColor = "text-success";
 
     if (current.rain > 5 || current.wind_speed_10m > 30) {
-        advice = "âš ï¸ Unfavorable for spraying or planting due to rain/wind.";
+        advice = "\u26A0\uFE0F Unfavorable for spraying or planting due to rain/wind.";
         adviceColor = "text-danger";
     } else if (current.temperature_2m > 30) {
-        advice = "âš ï¸ High heat stress risk. Ensure irrigation.";
+        advice = "\u26A0\uFE0F High heat stress risk. Ensure irrigation.";
         adviceColor = "text-warning";
     } else {
-        advice = "âœ… Good conditions for field operations.";
+        advice = "\u2705 Good conditions for field operations.";
     }
 
     const html = `
@@ -6009,9 +6009,9 @@ app.renderWeather = function (data, container) {
                 <h2 style="margin: 0;">${current.temperature_2m}${data.current_units.temperature_2m}</h2>
                 <p class="text-muted">Current Conditions</p>
                 <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1rem;">
-                    <span>ðŸ’§ ${current.relative_humidity_2m}% Humidity</span>
-                    <span>ðŸ’¨ ${current.wind_speed_10m} km/h Wind</span>
-                    <span>â˜” ${current.rain} mm Rain</span>
+                    <span>\uD83D\uDCA7 ${current.relative_humidity_2m}% Humidity</span>
+                    <span>\uD83D\uDCA8 ${current.wind_speed_10m} km/h Wind</span>
+                    <span>\u2614 ${current.rain} mm Rain</span>
                 </div>
             </div>
 
@@ -6026,7 +6026,7 @@ app.renderWeather = function (data, container) {
                         <div style="min-width: 60px; text-align: center; border: 1px solid #ddd; border-radius: 4px; padding: 5px;">
                             <div style="font-size: 0.8rem;">${new Date(day).toLocaleDateString('en-US', { weekday: 'short' })}</div>
                             <div>${getWeatherIcon(data.daily.weather_code[i])}</div>
-                            <div style="font-size: 0.8rem; font-weight: bold;">${Math.round(data.daily.temperature_2m_max[i])}Â°</div>
+                            <div style="font-size: 0.8rem; font-weight: bold;">${Math.round(data.daily.temperature_2m_max[i])}\u00B0</div>
                         </div>
                     `).join('')}
                 </div>
@@ -6195,7 +6195,7 @@ app.checkAlerts = async function () {
                 alertHtml += `
                     <div class="alert alert-danger" style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <strong>âš ï¸ CRITICAL ALERT: ${t.incident_category}</strong><br>
+                            <strong>\u26A0\uFE0F CRITICAL ALERT: ${t.incident_category}</strong><br>
                             ${count} incidents recorded in the last 30 days (Threshold: ${t.count_threshold}).
                         </div>
                         <button class="btn btn-sm btn-outline-danger" onclick="app.showTab('incidents')">View Log</button>
@@ -6335,12 +6335,12 @@ app.renderTaskBoard = async function () {
         let html = `
             <div class="d-flex justify-content-between mb-3">
                 <h5>Task Board</h5>
-                <button class="btn btn-sm btn-primary" onclick="app.openAddTaskModal()">âž• New Task</button>
+                <button class="btn btn-sm btn-primary" onclick="app.openAddTaskModal()">\u2795 New Task</button>
             </div>
             <div class="grid grid-2">
                 <!-- Pending Tasks -->
                 <div style="background: #fff3cd; padding: 10px; border-radius: 8px;">
-                    <h6 class="text-warning-dark border-bottom pb-2">â³ Pending</h6>
+                    <h6 class="text-warning-dark border-bottom pb-2">\u23F3 Pending</h6>
                     <div id="pending-tasks-list" style="max-height: 300px; overflow-y: auto;">
                         ${this.generateTaskItems(tasks.filter(t => t.status !== 'Completed'))}
                     </div>
@@ -6348,7 +6348,7 @@ app.renderTaskBoard = async function () {
 
                 <!-- Completed Tasks -->
                 <div style="background: #d1e7dd; padding: 10px; border-radius: 8px;">
-                    <h6 class="text-success-dark border-bottom pb-2">âœ… Completed</h6>
+                    <h6 class="text-success-dark border-bottom pb-2">\u2705 Completed</h6>
                     <div id="completed-tasks-list" style="max-height: 300px; overflow-y: auto;">
                         ${this.generateTaskItems(tasks.filter(t => t.status === 'Completed'))}
                     </div>
@@ -6375,13 +6375,13 @@ app.generateTaskItems = function (tasks) {
             </div>
             <p class="mb-1 text-muted small">${t.description || ''}</p>
             <div class="d-flex justify-content-between align-items-center mt-2">
-                <small>ðŸ“… ${t.due_date ? new Date(t.due_date).toLocaleDateString() : 'No date'}</small>
+                <small>\uD83D\uDCC5 ${t.due_date ? new Date(t.due_date).toLocaleDateString() : 'No date'}</small>
                 <div>
                     ${t.status !== 'Completed' ?
-            `<button class="btn btn-sm btn-success py-0" onclick="app.completeTask(${t.id})" title="Mark Complete">âœ”</button>` :
+            `<button class="btn btn-sm btn-success py-0" onclick="app.completeTask(${t.id})" title="Mark Complete">\u2714</button>` :
             `<span class="text-success">Done</span>`
         }
-                    <button class="btn btn-sm btn-outline-danger py-0" onclick="app.deleteTask(${t.id})" title="Delete">âœ–</button>
+                    <button class="btn btn-sm btn-outline-danger py-0" onclick="app.deleteTask(${t.id})" title="Delete">\u2716</button>
                 </div>
             </div>
         </div>
@@ -6398,7 +6398,7 @@ app.openAddTaskModal = function (prefill = {}) {
                 <div class="modal">
                     <div class="modal-header">
                         <h3 class="modal-title">Create New Task</h3>
-                        <button class="modal-close" onclick="app.closeModal('addTaskModal')">Ã—</button>
+                        <button class="modal-close" onclick="app.closeModal('addTaskModal')">\u00D7</button>
                     </div>
                     <form id="addTaskForm">
                         <div class="modal-body">
@@ -6554,7 +6554,7 @@ app.renderInsuranceClaims = async function () {
         let html = `
             <div class="d-flex justify-content-between mb-3">
                 <h5>Insurance Claims Log</h5>
-                <button class="btn btn-sm btn-primary" onclick="app.openAddClaimModal()">ðŸ“ File New Claim</button>
+                <button class="btn btn-sm btn-primary" onclick="app.openAddClaimModal()">\uD83D\uDCDD File New Claim</button>
             </div>
             <div class="table-container">
                 <table class="table">
@@ -6621,7 +6621,7 @@ app.openAddClaimModal = async function () {
                     <div class="modal">
                         <div class="modal-header">
                             <h3 class="modal-title">File Insurance Claim</h3>
-                            <button class="modal-close" onclick="app.closeModal('addClaimModal')">Ã—</button>
+                            <button class="modal-close" onclick="app.closeModal('addClaimModal')">\u00D7</button>
                         </div>
                         <form id="addClaimForm">
                             <div class="modal-body">
