@@ -377,77 +377,74 @@ Object.assign(app, {
 
                         for (const tip of adviceList) {
                             try {
-                                // Extract first word or words before colon (e.g. "Avocado" from "Avocado: Plant on...")
                                 const match = tip.match(/^([^:]+):/);
                                 if (match) {
-                                    if (match) {
-                                        const cropName = match[1].trim();
-                                        // Case-insensitive fuzzy matching
-                                        const found = availableCrops.find(c => c.name.toLowerCase().includes(cropName.toLowerCase()));
-                                        if (found) {
-                                            return found.name;
-                                        }
+                                    const cropName = match[1].trim();
+                                    const found = availableCrops.find(c => c.name.toLowerCase().includes(cropName.toLowerCase()));
+                                    if (found) {
+                                        return found.name;
                                     }
-                                } catch (e) { console.error("Error parsing tip:", tip, e); }
-                            }
-                    return null;
-                        };
-
-                        recommendedFruit = findBestCrop(advice.fruitTrees, fruitCrops);
-                        recommendedCash = findBestCrop(advice.cashCrops, cashCrops);
-
-                        if (recommendedFruit) analysisNote += ` | Prioritizing ${recommendedFruit}`;
-                        if (recommendedCash) analysisNote += ` | Prioritizing ${recommendedCash}`;
-                    }
-                    // ---------------------------------------------------------
-
-                    try {
-                        const intersection = turf.intersect(farmPolygon, stripPoly);
-                        if (intersection) {
-                            // Convert back to our lat/lng format
-                            // Turf uses [lng, lat]
-                            const coords = intersection.geometry.coordinates[0].map(p => ({ lat: p[1], lng: p[0] }));
-
-                            // Assign specific crop if available
-                            let specificCrop = null;
-
-                            if (alloc.type === 'fruit-trees') {
-                                // Priority 1: Recommendation from Analysis
-                                // Priority 2: First available in DB
-                                specificCrop = recommendedFruit || (fruitCrops.length > 0 ? fruitCrops[0].name : null);
-                            }
-
-                            if (alloc.type === 'cash-crops') {
-                                specificCrop = recommendedCash || (cashCrops.length > 0 ? cashCrops[0].name : null);
-                            }
-
-                            // Calc center
-                            const center = turf.centerOfMass(intersection);
-
-                            farm.sections.push({
-                                id: 'auto-' + Date.now() + Math.random(),
-                                name: alloc.name + (specificCrop ? ` (${specificCrop})` : ''),
-                                type: alloc.type,
-                                cropType: specificCrop,
-                                boundaries: coords.slice(0, -1), // Remove closing duplicate if any
-                                centerCoordinates: { lat: center.geometry.coordinates[1], lng: center.geometry.coordinates[0] },
-                                area: sectionArea, // Approx
-                                percentage: alloc.percent * 100,
-                                color: alloc.color,
-                                notes: `Auto-allocated based on topography. ${specificCrop ? 'Selected ' + specificCrop + ' based on analysis advice.' : ''}`
-                            });
+                                }
+                            } catch (e) { console.error("Error parsing tip:", tip, e); }
                         }
-                    } catch (err) {
-                        console.error('Error calculating geometry for ' + alloc.name, err);
-                    }
+                        return null;
+                    };
 
-                    currentY += stripHeight;
+                    recommendedFruit = findBestCrop(advice.fruitTrees, fruitCrops);
+                    recommendedCash = findBestCrop(advice.cashCrops, cashCrops);
+
+                    if (recommendedFruit) analysisNote += ` | Prioritizing ${recommendedFruit}`;
+                    if (recommendedCash) analysisNote += ` | Prioritizing ${recommendedCash}`;
+                }
+                // ---------------------------------------------------------
+
+                try {
+                    const intersection = turf.intersect(farmPolygon, stripPoly);
+                    if (intersection) {
+                        // Convert back to our lat/lng format
+                        // Turf uses [lng, lat]
+                        const coords = intersection.geometry.coordinates[0].map(p => ({ lat: p[1], lng: p[0] }));
+
+                        // Assign specific crop if available
+                        let specificCrop = null;
+
+                        if (alloc.type === 'fruit-trees') {
+                            // Priority 1: Recommendation from Analysis
+                            // Priority 2: First available in DB
+                            specificCrop = recommendedFruit || (fruitCrops.length > 0 ? fruitCrops[0].name : null);
+                        }
+
+                        if (alloc.type === 'cash-crops') {
+                            specificCrop = recommendedCash || (cashCrops.length > 0 ? cashCrops[0].name : null);
+                        }
+
+                        // Calc center
+                        const center = turf.centerOfMass(intersection);
+
+                        farm.sections.push({
+                            id: 'auto-' + Date.now() + Math.random(),
+                            name: alloc.name + (specificCrop ? ` (${specificCrop})` : ''),
+                            type: alloc.type,
+                            cropType: specificCrop,
+                            boundaries: coords.slice(0, -1), // Remove closing duplicate if any
+                            centerCoordinates: { lat: center.geometry.coordinates[1], lng: center.geometry.coordinates[0] },
+                            area: sectionArea, // Approx
+                            percentage: alloc.percent * 100,
+                            color: alloc.color,
+                            notes: `Auto-allocated based on topography. ${specificCrop ? 'Selected ' + specificCrop + ' based on analysis advice.' : ''}`
+                        });
+                    }
+                } catch (err) {
+                    console.error('Error calculating geometry for ' + alloc.name, err);
                 }
 
-                this.saveData();
-                this.renderFarmSectionsTable();
-                this.renderGraphicalMap();
-                this.renderLandAllocationTable();
-                this.showSuccess('Auto-allocation complete! Sections have been generated based on optimal layout.');
+                currentY += stripHeight;
             }
+
+            this.saveData();
+            this.renderFarmSectionsTable();
+            this.renderGraphicalMap();
+            this.renderLandAllocationTable();
+            this.showSuccess('Auto-allocation complete! Sections have been generated based on optimal layout.');
+        }
         });
