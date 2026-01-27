@@ -1806,10 +1806,32 @@ Object.assign(app, {
         const countGroup = document.getElementById('cropCountGroup');
         const areaGroup = document.getElementById('cropAreaGroup');
 
-        // Populate dropdown with Dynamic Types
-        const types = this.userCropTypes[type] && this.userCropTypes[type].length > 0
-            ? this.userCropTypes[type]
-            : this.defaultCropTypes[type]; // Corrected from appConfig
+        // Populate dropdown with Merged Types (Defaults + Custom)
+        const defaults = this.defaultCropTypes[type] || [];
+        const custom = this.userCropTypes[type] || [];
+
+        // Helper to get name
+        const getName = i => i.name || i;
+        const seen = new Set();
+        const types = [];
+
+        // Add defaults first
+        defaults.forEach(item => {
+            const name = getName(item);
+            if (!seen.has(name)) {
+                seen.add(name);
+                types.push(item);
+            }
+        });
+
+        // Add custom
+        custom.forEach(item => {
+            const name = getName(item);
+            if (!seen.has(name)) {
+                seen.add(name);
+                types.push(item);
+            }
+        });
 
         // Sort: User types first, then defaults if we merge (or just use filtered list)
         // Actually, let's just use the loaded list. If empty, use default.
@@ -1960,9 +1982,31 @@ Object.assign(app, {
         const select = document.getElementById('cropType');
         if (!select) return;
 
-        const types = this.userCropTypes[category] && this.userCropTypes[category].length > 0
-            ? this.userCropTypes[category]
-            : this.defaultCropTypes[category];
+        const defaults = this.defaultCropTypes[category] || [];
+        const custom = this.userCropTypes[category] || [];
+
+        // Helper to get name
+        const getName = i => i.name || i;
+        const seen = new Set();
+        const types = [];
+
+        // Add defaults first
+        defaults.forEach(item => {
+            const name = getName(item);
+            if (!seen.has(name)) {
+                seen.add(name);
+                types.push(item);
+            }
+        });
+
+        // Add custom
+        custom.forEach(item => {
+            const name = getName(item);
+            if (!seen.has(name)) {
+                seen.add(name);
+                types.push(item);
+            }
+        });
 
         const optionsHtml = types.map(t => `<option value="${t.name || t}">${t.name || t}</option>`).join('');
 
