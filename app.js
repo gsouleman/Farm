@@ -6066,7 +6066,7 @@ app.renderAlertSettings = async function () {
 
     // Load existing thresholds
     try {
-        const response = await api.request(`/alerts/thresholds/farm/${farm.id}`);
+        const response = await api.request(`/api/alerts/thresholds/farm/${farm.id}`);
         // Create map for easy lookup
         const thresholds = {};
         if (Array.isArray(response)) {
@@ -6134,7 +6134,7 @@ app.saveThreshold = async function (category) {
     const count = document.getElementById(`thresh-count-${category}`).value;
 
     try {
-        await api.request('/alerts/thresholds', {
+        await api.request('/api/alerts/thresholds', {
             method: 'POST',
             body: JSON.stringify({
                 farm_id: farm.id,
@@ -6160,13 +6160,13 @@ app.checkAlerts = async function () {
 
     try {
         // 1. Get thresholds
-        const thresholds = await api.request(`/alerts/thresholds/farm/${farm.id}`);
+        const thresholds = await api.request(`/api/alerts/thresholds/farm/${farm.id}`);
         if (!Array.isArray(thresholds) || thresholds.length === 0) return;
 
         // 2. Get recent incidents summary (mocking logic using existing API or new aggregation)
         // For now, we'll fetch all open incidents and count client-side for simplicity 
         // (Optimally this should be a backend aggregation endpoint)
-        const incidents = await api.incidents.getByFarm(farm.id); // Assuming this exists or using generic request
+        const incidents = await api.request(`/api/incidents/${farm.id}`); // Correct way to fetch incidents
 
         const alertsContainer = document.getElementById('dashboard-alerts-container');
         // Check if we need to insert container
@@ -6188,7 +6188,7 @@ app.checkAlerts = async function () {
         thresholds.forEach(t => {
             const count = incidents.filter(i =>
                 i.category === t.incident_category &&
-                new Date(i.date) >= cutoff
+                new Date(i.date_detected) >= cutoff
             ).length;
 
             if (count >= t.count_threshold) {
@@ -6232,7 +6232,7 @@ app.renderTrendsChart = async function () {
     card.innerHTML = '<div class="text-center"><div class="spinner-border text-primary"></div><p>Loading trends...</p></div>';
 
     try {
-        const response = await api.request(`/incidents/stats/trends/${farm.id}`);
+        const response = await api.request(`/api/incidents/stats/trends/${farm.id}`);
         // Data format: [{ month: '2025-01', category: 'THEFT', count: 2 }, ...]
 
         if (!Array.isArray(response) || response.length === 0) {
@@ -6329,7 +6329,7 @@ app.renderTaskBoard = async function () {
     }
 
     try {
-        const tasks = await api.request(`/tasks/farm/${farm.id}`);
+        const tasks = await api.request(`/api/tasks/farm/${farm.id}`);
         // tasks = [{ id, title, description, due_date, status, priority }]
 
         let html = `
@@ -6464,7 +6464,7 @@ app.saveTask = async function () {
     };
 
     try {
-        await api.request('/tasks', {
+        await api.request('/api/tasks', {
             method: 'POST',
             body: JSON.stringify(taskData)
         });
@@ -6480,7 +6480,7 @@ app.saveTask = async function () {
 
 app.completeTask = async function (id) {
     try {
-        await api.request(`/tasks/${id}`, {
+        await api.request(`/api/tasks/${id}`, {
             method: 'PUT',
             body: JSON.stringify({ status: 'Completed' })
         });
@@ -6493,7 +6493,7 @@ app.completeTask = async function (id) {
 app.deleteTask = async function (id) {
     if (!confirm('Delete this task?')) return;
     try {
-        await api.request(`/tasks/${id}`, { method: 'DELETE' });
+        await api.request(`/api/tasks/${id}`, { method: 'DELETE' });
         this.renderTaskBoard();
     } catch (error) {
         console.error('Error deleting task:', error);
@@ -6549,7 +6549,7 @@ app.renderInsuranceClaims = async function () {
     }
 
     try {
-        const claims = await api.request(`/insurance/farm/${farm.id}`);
+        const claims = await api.request(`/api/insurance/farm/${farm.id}`);
 
         let html = `
             <div class="d-flex justify-content-between mb-3">
@@ -6698,7 +6698,7 @@ app.saveClaim = async function () {
     };
 
     try {
-        await api.request('/insurance', {
+        await api.request('/api/insurance', {
             method: 'POST',
             body: JSON.stringify(data)
         });
