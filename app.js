@@ -5651,16 +5651,26 @@ app.loadIncidents = async function () {
     const farm = this.getCurrentFarm();
     if (!farm) return;
 
+    const tbody = document.querySelector('#incidentsTable tbody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center">Loading incidents...</td></tr>';
+
     try {
         const response = await fetch(`${API_BASE_URL}/api/incidents/${farm.id}`);
         if (response.ok) {
             const incidents = await response.json();
             this.renderIncidentTable(incidents);
             this.updateIncidentStats(incidents);
+        } else {
+            if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Failed to load incidents. Server returned ' + response.status + '</td></tr>';
         }
     } catch (error) {
         console.error('Error loading incidents:', error);
+        if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error connecting to server. Please check your connection.</td></tr>';
     }
+};
+    } catch (error) {
+    console.error('Error loading incidents:', error);
+}
 };
 
 app.renderIncidentTable = function (incidents) {
