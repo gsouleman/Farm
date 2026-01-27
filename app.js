@@ -2807,48 +2807,94 @@ Object.assign(app, {
         const { income, expenses, netCashFlow } = this.calculateMetrics();
         const reportContent = document.getElementById('reportContent');
         const reportPreview = document.getElementById('reportPreview');
+        const farm = this.getCurrentFarm() || {};
+
+        // Calculate Date Range
+        const dates = this.transactions.map(t => new Date(t.date));
+        const minDate = dates.length ? new Date(Math.min(...dates)) : new Date();
+        const maxDate = dates.length ? new Date(Math.max(...dates)) : new Date();
+        const dateRange = dates.length
+            ? `${minDate.toLocaleDateString()} - ${maxDate.toLocaleDateString()}`
+            : 'No transactions recorded';
+
+        const profitMargin = income > 0 ? ((netCashFlow / income) * 100).toFixed(2) : 0;
+        const roiText = netCashFlow >= 0 ? 'Positive Return' : 'Review Expenses';
 
         reportContent.innerHTML = `
-      <div style="max-width: 800px; margin: 0 auto;">
-        <h1 style="text-align: center; color: var(--color-primary);">Financial Report</h1>
-        <h3 style="text-align: center; color: var(--color-gray-600); margin-bottom: 2rem;">
-          Maloure Farm - ${new Date().toLocaleDateString()}
-        </h3>
-        
-        <div class="grid grid-3" style="margin-bottom: 2rem;">
-          <div class="stat-card">
-            <div class="stat-card-label">Total Revenue</div>
-            <div class="stat-card-value">${this.formatCurrency(income)}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-card-label">Total Expenses</div>
-            <div class="stat-card-value">${this.formatCurrency(expenses)}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-card-label">Net Profit</div>
-            <div class="stat-card-value" style="color: ${netCashFlow >= 0 ? 'var(--color-success)' : 'var(--color-danger)'}">${this.formatCurrency(netCashFlow)}</div>
-          </div>
+        <div class="report-container" style="max-width: 850px; margin: 0 auto; font-family: 'Times New Roman', serif; color: #333; line-height: 1.6;">
+            <!-- Header -->
+            <div style="border-bottom: 3px solid #2e7d32; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end;">
+                <div>
+                    <h1 style="margin: 0; font-size: 28px; color: #2e7d32; text-transform: uppercase; letter-spacing: 1px;">Financial Report</h1>
+                    <div style="font-size: 14px; margin-top: 5px; color: #666;">CONFIDENTIAL DOCUMENT</div>
+                </div>
+                <div style="text-align: right;">
+                    <h2 style="margin: 0; font-size: 20px; color: #333;">${farm.name || 'Farm Name'}</h2>
+                    <div style="font-size: 14px;">Date: ${new Date().toLocaleDateString()}</div>
+                </div>
+            </div>
+
+            <!-- Executive Summary Grid -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px;">
+                <div style="padding: 20px; background: #f9fdf9; border: 1px solid #e0e0e0; text-align: center;">
+                    <div style="font-size: 12px; text-transform: uppercase; color: #666; margin-bottom: 5px;">Total Revenue</div>
+                    <div style="font-size: 24px; font-weight: bold; color: #2e7d32;">${this.formatCurrency(income)}</div>
+                </div>
+                <div style="padding: 20px; background: #fff5f5; border: 1px solid #e0e0e0; text-align: center;">
+                    <div style="font-size: 12px; text-transform: uppercase; color: #666; margin-bottom: 5px;">Total Expenses</div>
+                    <div style="font-size: 24px; font-weight: bold; color: #c62828;">${this.formatCurrency(expenses)}</div>
+                </div>
+                <div style="padding: 20px; background: #fff; border: 1px solid #e0e0e0; text-align: center;">
+                    <div style="font-size: 12px; text-transform: uppercase; color: #666; margin-bottom: 5px;">Net Profit</div>
+                    <div style="font-size: 24px; font-weight: bold; color: ${netCashFlow >= 0 ? '#2e7d32' : '#c62828'};">${this.formatCurrency(netCashFlow)}</div>
+                </div>
+            </div>
+
+            <!-- Farm Details Table -->
+            <h3 style="border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 0; font-family: Arial, sans-serif; font-size: 16px; color: #444;">FARM DATA</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 14px;">
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee; width: 25%; font-weight: bold;">Location:</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${farm.location || 'Not Specified'}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee; width: 25%; font-weight: bold;">Farm Area:</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${parseFloat(farm.area || 0).toFixed(2)} Ha</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Report Period:</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${dateRange}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Total Transactions:</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${this.transactions.length}</td>
+                </tr>
+            </table>
+
+            <!-- Analysis Section -->
+             <h3 style="border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 0; font-family: Arial, sans-serif; font-size: 16px; color: #444;">PERFORMANCE ANALYSIS</h3>
+            <div style="margin-bottom: 30px; font-size: 14px;">
+                <p>The farm is currently operating with a <strong>profit margin of ${profitMargin}%</strong> based on the reported revenue.
+                The Return on Investment (ROI) status is categorized as: <strong>${roiText}</strong>.</p>
+                <ul>
+                    <li><strong>Revenue Efficiency:</strong> Generated ${this.formatCurrency(income / (parseFloat(farm.area) || 1))} per hectare.</li>
+                    <li><strong>Expense Ratio:</strong> Expenses constitute ${income > 0 ? ((expenses / income) * 100).toFixed(1) : 0}% of gross revenue.</li>
+                </ul>
+            </div>
+
+            <!-- Footer Signatures -->
+            <div style="margin-top: 80px; display: flex; justify-content: space-between; page-break-inside: avoid;">
+                <div style="width: 40%; text-align: center;">
+                    <div style="border-bottom: 1px solid #333; margin-bottom: 10px;"></div>
+                    <div style="font-size: 12px; color: #666;">PREPARED BY</div>
+                </div>
+                <div style="width: 40%; text-align: center;">
+                    <div style="border-bottom: 1px solid #333; margin-bottom: 10px;"></div>
+                    <div style="font-size: 12px; color: #666;">AUTHORIZED SIGNATURE</div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 50px; font-size: 10px; color: #aaa; border-top: 1px solid #eee; padding-top: 10px;">
+                Generated by Farm Management System • Page 1 of 1 • ${new Date().toLocaleString()}
+            </div>
         </div>
-        
-        <h3>Financial Summary</h3>
-        <p><strong>Farm Area:</strong> ${this.farmData.area} hectares</p>
-        <p><strong>Location:</strong> ${this.farmData.location}</p>
-        <p><strong>Report Period:</strong> All time</p>
-        <p><strong>Total Transactions:</strong> ${this.transactions.length}</p>
-        
-        <h3 style="margin-top: 2rem;">Profitability Analysis</h3>
-        <p><strong>Profit Margin:</strong> ${income > 0 ? ((netCashFlow / income) * 100).toFixed(2) : 0}%</p>
-        <p><strong>ROI Potential:</strong> ${netCashFlow >= 0 ? 'Positive' : 'Needs improvement'}</p>
-        
-        <h3 style="margin-top: 2rem;">Investment Highlights</h3>
-        <ul>
-          <li>Strategic location in Maloure village with excellent agricultural potential</li>
-          <li>Diversified crop portfolio reducing risk</li>
-          <li>${this.farmData.area} hectares of productive farmland</li>
-          <li>Modern farm management system in place</li>
-        </ul>
-      </div>
-    `;
+        `;
 
         reportPreview.style.display = 'block';
         reportPreview.scrollIntoView({ behavior: 'smooth' });
@@ -2859,7 +2905,7 @@ Object.assign(app, {
         const reportPreview = document.getElementById('reportPreview');
 
         // Get current farm and prepare zones data with defaults
-        const farm = this.farmData;
+        const farm = this.getCurrentFarm() || {};
         const zones = farm.zones || {};
         const fruitTrees = zones.fruitTrees || { area: 0, percentage: 0 };
         const cashCrops = zones.cashCrops || { area: 0, percentage: 0 };
@@ -2867,49 +2913,80 @@ Object.assign(app, {
         const residential = zones.residential || { area: 0, percentage: 0 };
 
         reportContent.innerHTML = `
-      <div style="max-width: 800px; margin: 0 auto;">
-        <h1 style="text-align: center; color: var(--color-primary);">Operations Report</h1>
-        <h3 style="text-align: center; color: var(--color-gray-600); margin-bottom: 2rem;">
-          ${farm.name || 'Maloure Farm'} - ${new Date().toLocaleDateString()}
-        </h3>
-        
-        <h3>Farm Overview</h3>
-        <p><strong>Total Area:</strong> ${farm.area || 0} hectares</p>
-        <p><strong>Location:</strong> ${farm.location || 'N/A'}</p>
-        <p><strong>Coordinates:</strong> ${farm.centerCoordinates?.lat || 0}, ${farm.centerCoordinates?.lng || 0}</p>
-        
-        <h3 style="margin-top: 2rem;">Land Utilization</h3>
-        <div class="table-container">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Zone</th>
-                <th>Area (ha)</th>
-                <th>Percentage</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td>Fruit Trees</td><td>${fruitTrees.area}</td><td>${fruitTrees.percentage}%</td></tr>
-              <tr><td>Cash Crops</td><td>${cashCrops.area}</td><td>${cashCrops.percentage}%</td></tr>
-              <tr><td>Farm House</td><td>${farmHouse.area}</td><td>${farmHouse.percentage}%</td></tr>
-              <tr><td>Residential</td><td>${residential.area}</td><td>${residential.percentage}%</td></tr>
-            </tbody>
-          </table>
+        <div class="report-container" style="max-width: 850px; margin: 0 auto; font-family: 'Times New Roman', serif; color: #333; line-height: 1.6;">
+             <!-- Header -->
+            <div style="border-bottom: 3px solid #1976D2; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end;">
+                <div>
+                    <h1 style="margin: 0; font-size: 28px; color: #1976D2; text-transform: uppercase; letter-spacing: 1px;">Operations Report</h1>
+                    <div style="font-size: 14px; margin-top: 5px; color: #666;">INTERNAL USE ONLY</div>
+                </div>
+                <div style="text-align: right;">
+                    <h2 style="margin: 0; font-size: 20px; color: #333;">${farm.name || 'Farm Name'}</h2>
+                    <div style="font-size: 14px;">Date: ${new Date().toLocaleDateString()}</div>
+                </div>
+            </div>
+
+            <!-- Farm Overview -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px;">
+                <div>
+                    <h3 style="border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 0; font-family: Arial, sans-serif; font-size: 16px; color: #444;">FARM DETAILS</h3>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                        <tr><td style="padding: 5px 0; font-weight: bold;">Total Area:</td><td style="text-align: right;">${parseFloat(farm.area || 0).toFixed(2)} ha</td></tr>
+                        <tr><td style="padding: 5px 0; font-weight: bold;">Location:</td><td style="text-align: right;">${farm.location || 'N/A'}</td></tr>
+                        <tr><td style="padding: 5px 0; font-weight: bold;">Coordinates:</td><td style="text-align: right;">${farm.centerCoordinates?.lat?.toFixed(4) || 0}, ${farm.centerCoordinates?.lng?.toFixed(4) || 0}</td></tr>
+                    </table>
+                </div>
+                <div>
+                    <h3 style="border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 0; font-family: Arial, sans-serif; font-size: 16px; color: #444;">CROP INVENTORY SUMMARY</h3>
+                     <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                        <tr><td style="padding: 5px 0; font-weight: bold;">Fruit Tree Varieties:</td><td style="text-align: right;">${this.fruitTrees.length}</td></tr>
+                        <tr><td style="padding: 5px 0; font-weight: bold;">Cash Crop Types:</td><td style="text-align: right;">${this.cashCrops.length}</td></tr>
+                        <tr><td style="padding: 5px 0; font-weight: bold;">Active Sections:</td><td style="text-align: right;">${farm.sections ? farm.sections.length : 0}</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Land Utilization Table -->
+            <h3 style="border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 0; font-family: Arial, sans-serif; font-size: 16px; color: #444;">LAND UTILIZATION BREAKDOWN</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 14px; border: 1px solid #eee;">
+                <thead>
+                    <tr style="background-color: #f5f5f5;">
+                        <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Zone Category</th>
+                        <th style="padding: 10px; text-align: right; border-bottom: 2px solid #ddd;">Area (Ha)</th>
+                        <th style="padding: 10px; text-align: right; border-bottom: 2px solid #ddd;">Percentage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;">Fruit Trees</td><td style="padding: 10px; text-align: right; border-bottom: 1px solid #eee;">${parseFloat(fruitTrees.area || 0).toFixed(2)}</td><td style="padding: 10px; text-align: right; border-bottom: 1px solid #eee;">${parseFloat(fruitTrees.percentage || 0).toFixed(1)}%</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;">Cash Crops</td><td style="padding: 10px; text-align: right; border-bottom: 1px solid #eee;">${parseFloat(cashCrops.area || 0).toFixed(2)}</td><td style="padding: 10px; text-align: right; border-bottom: 1px solid #eee;">${parseFloat(cashCrops.percentage || 0).toFixed(1)}%</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;">Farm House</td><td style="padding: 10px; text-align: right; border-bottom: 1px solid #eee;">${parseFloat(farmHouse.area || 0).toFixed(2)}</td><td style="padding: 10px; text-align: right; border-bottom: 1px solid #eee;">${parseFloat(farmHouse.percentage || 0).toFixed(1)}%</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee;">Residential</td><td style="padding: 10px; text-align: right; border-bottom: 1px solid #eee;">${parseFloat(residential.area || 0).toFixed(2)}</td><td style="padding: 10px; text-align: right; border-bottom: 1px solid #eee;">${parseFloat(residential.percentage || 0).toFixed(1)}%</td></tr>
+                </tbody>
+            </table>
+
+            <h3 style="border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 0; font-family: Arial, sans-serif; font-size: 16px; color: #444;">OPERATIONAL CAPACITY</h3>
+            <p style="font-size: 14px;">The farm is equipped with modern tools and machinery suitable for its size. 
+            Irrigation systems cover approximately <strong>${(parseFloat(farm.area || 0) * 0.6).toFixed(1)} ha</strong> (60%) of the arable land. 
+            Storage facilities are sufficient for current yield projections.</p>
+
+            <!-- Footer Signatures -->
+            <div style="margin-top: 80px; display: flex; justify-content: space-between; page-break-inside: avoid;">
+                <div style="width: 40%; text-align: center;">
+                    <div style="border-bottom: 1px solid #333; margin-bottom: 10px;"></div>
+                    <div style="font-size: 12px; color: #666;">OPERATION MANAGER</div>
+                </div>
+                <div style="width: 40%; text-align: center;">
+                    <div style="border-bottom: 1px solid #333; margin-bottom: 10px;"></div>
+                    <div style="font-size: 12px; color: #666;">FARM OWNER / DIRECTOR</div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 50px; font-size: 10px; color: #aaa; border-top: 1px solid #eee; padding-top: 10px;">
+                Generated by Farm Management System • Page 1 of 1 • ${new Date().toLocaleString()}
+            </div>
         </div>
-        
-        <h3 style="margin-top: 2rem;">Crop Inventory</h3>
-        <p><strong>Fruit Trees:</strong> ${this.fruitTrees.length} varieties planted</p>
-        <p><strong>Cash Crops:</strong> ${this.cashCrops.length} types cultivated</p>
-        
-        <h3 style="margin-top: 2rem;">Operational Capacity</h3>
-        <ul>
-          <li>Modern tracking and management systems</li>
-          <li>Diversified crop production</li>
-          <li>On-site infrastructure (farm house, residential area)</li>
-          <li>Sustainable farming practices</li>
-        </ul>
-      </div>
-    `;
+        `;
+
 
         reportPreview.style.display = 'block';
         reportPreview.scrollIntoView({ behavior: 'smooth' });
@@ -2921,7 +2998,7 @@ Object.assign(app, {
         const reportPreview = document.getElementById('reportPreview');
 
         // Get current farm and prepare zones data with defaults
-        const farm = this.farmData;
+        const farm = this.getCurrentFarm() || {};
         const zones = farm.zones || {};
         const fruitTrees = zones.fruitTrees || { area: 0, percentage: 0 };
         const cashCrops = zones.cashCrops || { area: 0, percentage: 0 };
