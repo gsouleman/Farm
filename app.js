@@ -187,7 +187,13 @@ const translations = {
             financial: "Financial Summary",
             crops: "Crop Performance",
             inventory: "Inventory Report",
-            custom: "Custom Report"
+            custom: "Custom Report",
+            generateProfessionalReports: "Generate Professional Reports",
+            financialReport: "Financial Report",
+            operationsReport: "Operations Report",
+            investorPresentation: "Investor Presentation",
+            reportPreview: "Report Preview",
+            print: "Print"
         },
         // Common
         common: {
