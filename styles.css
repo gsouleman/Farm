@@ -1070,3 +1070,42 @@ select.form-control {
   font-family: 'Inter', sans-serif;
   text-shadow: 0px 0px 2px black;
 }
+/* ===== Navigation Dropdown ===== */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: var(--color-white);
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: var(--z-dropdown);
+  border-radius: var(--radius-md);
+  top: 100%;
+  left: 0;
+  overflow: hidden;
+}
+
+.dropdown-content a {
+  color: var(--color-dark);
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  font-weight: 500;
+}
+
+.dropdown-content a:hover {
+  background-color: var(--color-gray-100);
+  color: var(--color-primary);
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.dropdown:hover .nav-link {
+  background-color: rgba(255, 255, 255, 0.2);
+}

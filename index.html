@@ -68,12 +68,20 @@
         <ul class="navbar-nav"
           style="display: flex; gap: 0.25rem; margin: 0; padding: 0; list-style: none; align-items: center;">
           <li><a href="#dashboard" class="nav-link active" onclick="app.showTab('dashboard')">Dashboard</a></li>
-          <li><a href="#farm-info" class="nav-link" onclick="app.showTab('farm-info')">Farm</a></li>
-          <li><a href="#financial" class="nav-link" onclick="app.showTab('financial')">Financial</a></li>
-          <li><a href="#crops" class="nav-link" onclick="app.showTab('crops')">Crops</a></li>
-          <li><a href="#employees" class="nav-link" onclick="app.showTab('employees')">Employees</a></li>
-          <li><a href="#reports" class="nav-link" onclick="app.showTab('reports')">Reports</a></li>
-          <li><a href="#incidents" class="nav-link" onclick="app.showTab('incidents')">Risk Log ⚠️</a></li>
+
+          <!-- Operations Dropdown -->
+          <li class="dropdown">
+            <a href="#" class="nav-link" onclick="event.preventDefault()">Operations ▼</a>
+            <div class="dropdown-content">
+              <a href="#crops" onclick="app.showTab('crops')">Crops & Harvest</a>
+              <a href="#employees" onclick="app.showTab('employees')">Workforce</a>
+              <a href="#incidents" onclick="app.showTab('incidents')">Risk & Incidents</a>
+            </div>
+          </li>
+
+          <li><a href="#financial" class="nav-link" onclick="app.showTab('financial')">Finances</a></li>
+          <li><a href="#reports" class="nav-link" onclick="app.showTab('reports')">Analytics & Reports</a></li>
+          <li><a href="#farm-info" class="nav-link" onclick="app.showTab('farm-info')">Farm Profile</a></li>
 
           <!-- Dropdown Menu -->
           <li style="display: flex; align-items: center; gap: 0.5rem; position: relative;">
