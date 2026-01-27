@@ -672,8 +672,12 @@ Object.assign(app, {
             console.log(`Debug: loadFarmDetails - Crops raw data:`, crops);
 
             // Split crops into fruit trees and cash crops
-            farm.fruitTrees = crops.filter(c => c.category === 'fruit');
-            farm.cashCrops = crops.filter(c => c.category === 'cash');
+            this.fruitTrees = crops.filter(c => c.category === 'fruit');
+            this.cashCrops = crops.filter(c => c.category === 'cash');
+
+            // Sync local farm object for logs/reference
+            farm.fruitTrees = this.fruitTrees;
+            farm.cashCrops = this.cashCrops;
 
             console.log(`Debug: loadFarmDetails - Filtered Fruit Trees: ${farm.fruitTrees.length}`, farm.fruitTrees);
             console.log(`Debug: loadFarmDetails - Filtered Cash Crops: ${farm.cashCrops.length}`, farm.cashCrops);
