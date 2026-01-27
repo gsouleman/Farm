@@ -4293,6 +4293,53 @@ Object.assign(app, {
         document.getElementById('sectionForm').reset();
     },
 
+    // Handle Section Type Change for Dynamic Dropdown
+    handleSectionTypeChange(type) {
+        const textInput = document.getElementById('sectionCrop');
+        const selectInput = document.getElementById('sectionCropSelect');
+        if (!textInput || !selectInput) return;
+
+        let options = [];
+        if (type === 'fruit-trees') {
+            options = this.userCropTypes.fruit || [];
+        } else if (type === 'cash-crops') {
+            options = this.userCropTypes.cash || [];
+        }
+
+        if (options.length > 0) {
+            // Show Select, Hide Text
+            textInput.style.display = 'none';
+            textInput.required = false;
+
+            selectInput.style.display = 'block';
+            selectInput.required = false; // Optional as per original form
+
+            // Populate
+            const fragment = document.createDocumentFragment();
+            const defOpt = document.createElement('option');
+            defOpt.value = "";
+            defOpt.textContent = "Select crop...";
+            fragment.appendChild(defOpt);
+
+            options.forEach(opt => {
+                const el = document.createElement('option');
+                // Handle both string and object (if name property exists)
+                const val = (typeof opt === 'object' && opt.name) ? opt.name : opt;
+                el.value = val;
+                el.textContent = val;
+                fragment.appendChild(el);
+            });
+            selectInput.innerHTML = '';
+            selectInput.appendChild(fragment);
+
+        } else {
+            // Show Text, Hide Select
+            textInput.style.display = 'block';
+            selectInput.style.display = 'none';
+            selectInput.required = false;
+        }
+    },
+
     // Save farm section with manual area input
     async saveFarmSection(event) {
         event.preventDefault();
@@ -4301,7 +4348,16 @@ Object.assign(app, {
         const sectionId = document.getElementById('sectionId').value;
         const name = document.getElementById('sectionName').value;
         const type = document.getElementById('sectionType').value;
-        const crop = document.getElementById('sectionCrop').value;
+
+        // Determine crop value based on visibility
+        let crop = '';
+        const selectInput = document.getElementById('sectionCropSelect');
+        if (selectInput && selectInput.style.display !== 'none') {
+            crop = selectInput.value;
+        } else {
+            crop = document.getElementById('sectionCrop').value;
+        }
+
         const color = document.getElementById('sectionColor').value;
         const areaInput = document.getElementById('sectionArea');
 
@@ -4382,6 +4438,127 @@ Object.assign(app, {
             this.showSuccess(`Section "${name}" saved successfully!`);
         } catch (error) {
             this.showError('Failed to save section: ' + error.message);
+        }
+    },
+
+    // Auto Allocation Logic (Heuristic Strip Layout)
+    async autoAllocateSections() {
+        const farm = this.getCurrentFarm();
+        if (!farm || !farm.boundaries || farm.boundaries.length < 3) {
+            this.showError('Farm must have boundaries defined for auto-allocation.');
+            return;
+        }
+
+        if (farm.sections && farm.sections.length > 0) {
+            if (!confirm('Warning: Auto-allocation will DELETE all existing sections and generate a new layout. Continue?')) {
+                return;
+            }
+        }
+
+        this.showLoading('Generating optimal layout...');
+
+        try {
+            // Delete existing sections (Best Effort)
+            if (farm.sections) {
+                // Iterate backwards to avoid index issues if we were mutating locally? 
+                // Using ID is safer.
+                const ids = farm.sections.map(s => s.id);
+                for (const id of ids) {
+                    try { await api.sections.delete(id); } catch (e) { console.warn('Delete failed', e); }
+                }
+                farm.sections = [];
+            }
+
+            const itemsToAllocate = [];
+
+            // Infrastructure Defaults
+            itemsToAllocate.push({ name: 'Farm House', type: 'infrastructure', area: 0.1, color: '#8D6E63' });
+            itemsToAllocate.push({ name: 'Residential Area', type: 'infrastructure', area: 0.1, color: '#A1887F' });
+
+            // Crops
+            if (this.fruitTrees) {
+                this.fruitTrees.forEach(tree => {
+                    const estArea = (tree.count * 0.0025); // 25m2 per tree
+                    if (estArea > 0.01) itemsToAllocate.push({ name: tree.type, type: 'fruit-trees', cropType: tree.type, area: estArea, color: '#AED581' });
+                });
+            }
+            if (this.cashCrops) {
+                this.cashCrops.forEach(crop => {
+                    const area = parseFloat(crop.area);
+                    if (area > 0) itemsToAllocate.push({ name: crop.type, type: 'cash-crops', cropType: crop.type, area: area, color: '#FFEB3B' });
+                });
+            }
+
+            // Geometry Processing with Turf.js
+            const farmPoly = turf.polygon([farm.boundaries.map(p => [p.lng, p.lat]).concat([[farm.boundaries[0].lng, farm.boundaries[0].lat]])]);
+            const farmAreaHa = turf.area(farmPoly) / 10000;
+            const bbox = turf.bbox(farmPoly); // [minLng, minLat, maxLng, maxLat]
+            const [minLng, minLat, maxLng, maxLat] = bbox;
+            const totalHeight = maxLat - minLat;
+
+            let currentLat = maxLat;
+
+            for (const item of itemsToAllocate) {
+                // Height Proportional to Area Ratio
+                const heightStep = (item.area / farmAreaHa) * totalHeight;
+                if (heightStep <= 0) continue;
+
+                const sliceMaxLat = currentLat;
+                const sliceMinLat = currentLat - heightStep;
+
+                const slicePoly = turf.polygon([[
+                    [minLng, sliceMinLat], [maxLng, sliceMinLat],
+                    [maxLng, sliceMaxLat], [minLng, sliceMaxLat],
+                    [minLng, sliceMinLat]
+                ]]);
+
+                const intersection = turf.intersect(slicePoly, farmPoly);
+
+                if (intersection) {
+                    let finalGeom = intersection.geometry;
+                    let coords = [];
+
+                    if (finalGeom.type === 'MultiPolygon') {
+                        // Find largest ring
+                        let maxArea = 0;
+                        let maxIdx = 0;
+                        finalGeom.coordinates.forEach((polyCoords, idx) => {
+                            const a = turf.area(turf.polygon(polyCoords));
+                            if (a > maxArea) { maxArea = a; maxIdx = idx; }
+                        });
+                        coords = finalGeom.coordinates[maxIdx][0];
+                    } else if (finalGeom.type === 'Polygon') {
+                        coords = finalGeom.coordinates[0];
+                    }
+
+                    if (coords.length > 0) {
+                        const boundaries = coords.map(c => ({ lat: c[1], lng: c[0] }));
+
+                        const sectionPayload = {
+                            name: item.name,
+                            type: item.type,
+                            cropType: item.cropType || '',
+                            color: item.color,
+                            area: item.area,
+                            percentage: ((item.area / farmAreaHa) * 100).toFixed(2),
+                            boundaries: boundaries
+                        };
+
+                        await api.sections.create(farm.id, sectionPayload);
+                    }
+                }
+                currentLat = sliceMinLat;
+            }
+
+            this.hideLoading();
+            this.showSuccess('Auto-allocation complete!');
+            await this.loadFarmDetails(farm.id);
+            this.renderGraphicalMap();
+
+        } catch (error) {
+            console.error(error);
+            this.hideLoading();
+            this.showError('Auto-allocation failed: ' + error.message);
         }
     },
 

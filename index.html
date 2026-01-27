@@ -416,6 +416,10 @@
                 <button class="btn btn-primary btn-sm" onclick="app.toggleDrawingMode()" id="drawSectionBtn">
                   Crop Allocation
                 </button>
+                <button class="btn btn-warning btn-sm" onclick="app.autoAllocateSections()"
+                  title="Automatically generate layout">
+                  ✨ Auto Allocation
+                </button>
               </div>
             </div>
             <div class="card-body">
@@ -1222,7 +1226,7 @@ Example:
 
         <div class="form-group">
           <label class="form-label" for="sectionType">Section Type</label>
-          <select class="form-control" id="sectionType" required>
+          <select class="form-control" id="sectionType" required onchange="app.handleSectionTypeChange(this.value)">
             <option value="">Select type...</option>
             <option value="fruit-trees">Fruit Trees</option>
             <option value="cash-crops">Cash Crops</option>
@@ -1237,6 +1241,9 @@ Example:
         <div class="form-group">
           <label class="form-label" for="sectionCrop">Crop Type (if applicable)</label>
           <input type="text" class="form-control" id="sectionCrop" placeholder="e.g., Avocado, Cassava">
+          <select class="form-control" id="sectionCropSelect" style="display: none;">
+            <option value="">Select crop...</option>
+          </select>
         </div>
 
         <div class="form-group">
