@@ -6,6 +6,7 @@ const API_CONFIG = {
         const remoteURL = 'https://farm-backend-uq2z.onrender.com';
 
         const host = window.location.hostname;
+
         // Detect local environments (localhost, 127.0.0.1, LAN IPs)
         if (host === 'localhost' || host === '127.0.0.1' || host === '::1' || host === '' ||
             host.startsWith('192.168.') || host.startsWith('10.') || host.startsWith('172.')) {
