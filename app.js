@@ -1806,32 +1806,8 @@ Object.assign(app, {
         const countGroup = document.getElementById('cropCountGroup');
         const areaGroup = document.getElementById('cropAreaGroup');
 
-        // Populate dropdown with Merged Types (Defaults + Custom)
-        const defaults = this.defaultCropTypes[type] || [];
-        const custom = this.userCropTypes[type] || [];
-
-        // Helper to get name
-        const getName = i => i.name || i;
-        const seen = new Set();
-        const types = [];
-
-        // Add defaults first
-        defaults.forEach(item => {
-            const name = getName(item);
-            if (!seen.has(name)) {
-                seen.add(name);
-                types.push(item);
-            }
-        });
-
-        // Add custom
-        custom.forEach(item => {
-            const name = getName(item);
-            if (!seen.has(name)) {
-                seen.add(name);
-                types.push(item);
-            }
-        });
+        // Populate dropdown from Unified List
+        const types = this.userCropTypes[type] || [];
 
         // Sort: User types first, then defaults if we merge (or just use filtered list)
         // Actually, let's just use the loaded list. If empty, use default.
@@ -1927,23 +1903,35 @@ Object.assign(app, {
 
     async loadCropTypes() {
         try {
-            const types = await api.cropTypes.getAll();
+            let types = await api.cropTypes.getAll();
+
+            // Check if we need to seed defaults
+            if (types.length === 0) {
+                await this.seedDefaultTypes();
+                types = await api.cropTypes.getAll();
+            }
 
             // Separate into categories
             this.userCropTypes.fruit = types.filter(t => t.category === 'fruit');
             this.userCropTypes.cash = types.filter(t => t.category === 'cash');
 
-            // If empty (first run), populate from defaults? Not strictly necessary, but good UX.
-            // For now, if empty, we fall back to defaults in openAddCropModal via the logic there.
-
-            // However, to make them editable, we should probably persist defaults once.
-            // Let's keep it simple: if list is empty, user sees standard list (hardcoded).
-            // Once they add a custom one, it appears. 
-            // To allow editing "Avocado", they'd need to add it as custom or we seed DB.
-
         } catch (error) {
             console.error('Failed to load crop types:', error);
-            // Fallback to empty (will use defaults)
+        }
+    },
+
+    async seedDefaultTypes() {
+        try {
+            // Seed Fruit
+            for (const name of this.defaultCropTypes.fruit) {
+                await api.cropTypes.create({ category: 'fruit', name });
+            }
+            // Seed Cash
+            for (const name of this.defaultCropTypes.cash) {
+                await api.cropTypes.create({ category: 'cash', name });
+            }
+        } catch (e) {
+            console.error('Seeding failed', e);
         }
     },
 
@@ -1982,31 +1970,7 @@ Object.assign(app, {
         const select = document.getElementById('cropType');
         if (!select) return;
 
-        const defaults = this.defaultCropTypes[category] || [];
-        const custom = this.userCropTypes[category] || [];
-
-        // Helper to get name
-        const getName = i => i.name || i;
-        const seen = new Set();
-        const types = [];
-
-        // Add defaults first
-        defaults.forEach(item => {
-            const name = getName(item);
-            if (!seen.has(name)) {
-                seen.add(name);
-                types.push(item);
-            }
-        });
-
-        // Add custom
-        custom.forEach(item => {
-            const name = getName(item);
-            if (!seen.has(name)) {
-                seen.add(name);
-                types.push(item);
-            }
-        });
+        const types = this.userCropTypes[category] || [];
 
         const optionsHtml = types.map(t => `<option value="${t.name || t}">${t.name || t}</option>`).join('');
 
