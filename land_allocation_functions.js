@@ -301,6 +301,21 @@ Object.assign(app, {
             console.warn('Could not fetch crop types for auto-allocation', e);
         }
 
+        // Merge with defaults if available (fallback for empty DB)
+        if (app.defaultCropTypes) {
+            console.log("Debug: Merging with default crop types...");
+            const defaultFruits = (app.defaultCropTypes.fruit || []).map(name => ({ name, category: 'fruit' }));
+            const defaultCash = (app.defaultCropTypes.cash || []).map(name => ({ name, category: 'cash' }));
+
+            // Add if not already present
+            defaultFruits.forEach(d => {
+                if (!fruitCrops.some(c => c.name.toLowerCase() === d.name.toLowerCase())) fruitCrops.push(d);
+            });
+            defaultCash.forEach(d => {
+                if (!cashCrops.some(c => c.name.toLowerCase() === d.name.toLowerCase())) cashCrops.push(d);
+            });
+        }
+
         // Mock Logic: We cannot do real GIS polygon slicing in client-side JS easily without complex libraries.
         // We will create "Virtual" sections that don't have perfect boundaries but have correct areas.
         // For visualization complexity, we will just assign the EXISTING generic boundaires to the whole farm 
