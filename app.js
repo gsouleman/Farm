@@ -5687,6 +5687,11 @@ app.handleLogIncidentSubmit = async function () {
             this.closeModal('logIncidentModal');
             document.getElementById('logIncidentForm').reset();
             this.loadIncidents(); // Refresh list
+
+            // Auto-generate preventive task if applicable
+            if (this.checkAutoTaskGeneration) {
+                this.checkAutoTaskGeneration(incident);
+            }
         } else {
             app.showNotification('Failed to log incident', 'error');
         }
@@ -5916,123 +5921,792 @@ app.renderRiskReport = function (farm) {
     // Scroll to preview
     document.getElementById('reportPreview').scrollIntoView({ behavior: 'smooth' });
 };
- 
- / /   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
- / /   A D V A N C E D   F E A T U R E S   M O D U L E  
- / /   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
-  
- a p p . i n i t A d v a n c e d F e a t u r e s   =   f u n c t i o n   ( )   {  
-         c o n s o l e . l o g ( ' A d v a n c e d   F e a t u r e s   I n i t i a l i z e d ' ) ;  
-         t h i s . u p d a t e A d v a n c e d T e x t ( ) ;  
-         t h i s . l o a d W e a t h e r ( ) ;  
- } ;  
-  
- a p p . u p d a t e A d v a n c e d T e x t   =   f u n c t i o n   ( )   {  
-         / /   P l a c e h o l d e r   f o r   f u t u r e   t r a n s l a t i o n s  
- } ;  
-  
- / /   W e a t h e r   I n t e g r a t i o n  
- a p p . l o a d W e a t h e r   =   a s y n c   f u n c t i o n   ( )   {  
-         c o n s t   c a r d   =   d o c u m e n t . q u e r y S e l e c t o r ( ' # w e a t h e r - c a r d   . c a r d - b o d y ' ) ;  
-         c o n s t   f a r m   =   t h i s . g e t C u r r e n t F a r m ( ) ;  
-  
-         i f   ( ! f a r m   | |   ! f a r m . c e n t e r C o o r d i n a t e s   | |   ( f a r m . c e n t e r C o o r d i n a t e s . l a t   = = =   0   & &   f a r m . c e n t e r C o o r d i n a t e s . l n g   = = =   0 ) )   {  
-                 c a r d . i n n e r H T M L   =   ` < d i v   c l a s s = " a l e r t   a l e r t - w a r n i n g " > P l e a s e   s e t   f a r m   l o c a t i o n   i n   ' F a r m   P r o f i l e '   - >   ' E d i t   D e t a i l s '   t o   s e e   l o c a l   w e a t h e r . < / d i v > ` ;  
-                 r e t u r n ;  
-         }  
-  
-         c o n s t   {   l a t ,   l n g   }   =   f a r m . c e n t e r C o o r d i n a t e s ;  
-         c a r d . i n n e r H T M L   =   ` < d i v   c l a s s = " t e x t - c e n t e r " > < d i v   c l a s s = " s p i n n e r - b o r d e r   t e x t - p r i m a r y "   r o l e = " s t a t u s " > < / d i v > < p > F e t c h i n g   f o r e c a s t   f o r   $ { l a t . t o F i x e d ( 4 ) } ,   $ { l n g . t o F i x e d ( 4 ) } . . . < / p > < / d i v > ` ;  
-  
-         t r y   {  
-                 c o n s t   u r l   =   ` h t t p s : / / a p i . o p e n - m e t e o . c o m / v 1 / f o r e c a s t ? l a t i t u d e = $ { l a t } & l o n g i t u d e = $ { l n g } & c u r r e n t = t e m p e r a t u r e _ 2 m , r e l a t i v e _ h u m i d i t y _ 2 m , r a i n , w i n d _ s p e e d _ 1 0 m , w e a t h e r _ c o d e & d a i l y = w e a t h e r _ c o d e , t e m p e r a t u r e _ 2 m _ m a x , t e m p e r a t u r e _ 2 m _ m i n , r a i n _ s u m , p r e c i p i t a t i o n _ p r o b a b i l i t y _ m a x & t i m e z o n e = a u t o ` ;  
-  
-                 c o n s t   r e s p o n s e   =   a w a i t   f e t c h ( u r l ) ;  
-                 i f   ( ! r e s p o n s e . o k )   t h r o w   n e w   E r r o r ( ' W e a t h e r   A P I   u n a v a i l a b l e ' ) ;  
-                 c o n s t   d a t a   =   a w a i t   r e s p o n s e . j s o n ( ) ;  
-  
-                 t h i s . r e n d e r W e a t h e r ( d a t a ,   c a r d ) ;  
-                 t h i s . c h e c k E x t r e m e C o n d i t i o n s ( d a t a ) ;  
-  
-         }   c a t c h   ( e r r o r )   {  
-                 c o n s o l e . e r r o r ( ' W e a t h e r   e r r o r : ' ,   e r r o r ) ;  
-                 c a r d . i n n e r H T M L   =   ` < d i v   c l a s s = " a l e r t   a l e r t - d a n g e r " > F a i l e d   t o   l o a d   w e a t h e r   d a t a :   $ { e r r o r . m e s s a g e } < / d i v > ` ;  
-         }  
- } ;  
-  
- a p p . r e n d e r W e a t h e r   =   f u n c t i o n   ( d a t a ,   c o n t a i n e r )   {  
-         c o n s t   c u r r e n t   =   d a t a . c u r r e n t ;  
-  
-         / /   W M O   W e a t h e r   C o d e s   ( S i m p l i f i e d )  
-         c o n s t   g e t W e a t h e r I c o n   =   ( c o d e )   = >   {  
-                 i f   ( c o d e   = = =   0 )   r e t u r n   ' � �� � � � ' ;   / /   C l e a r  
-                 i f   ( c o d e   < =   3 )   r e t u r n   ' � : & ' ;   / /   C l o u d y  
-                 i f   ( c o d e   < =   4 8 )   r e t u r n   ' � xR� � � � ' ;   / /   F o g  
-                 i f   ( c o d e   < =   6 7 )   r e t u r n   ' � xR� � � � ' ;   / /   R a i n  
-                 i f   ( c o d e   < =   7 7 )   r e t u r n   ' � �  � � � ' ;   / /   S n o w  
-                 i f   ( c o d e   < =   8 2 )   r e t u r n   ' � : �� � � ' ;   / /   S h o w e r s  
-                 i f   ( c o d e   < =   9 9 )   r e t u r n   ' � a� ' ;   / /   T h u n d e r s t o r m  
-                 r e t u r n   ' � �  ' ;  
-         } ;  
-  
-         c o n s t   i c o n   =   g e t W e a t h e r I c o n ( c u r r e n t . w e a t h e r _ c o d e ) ;  
-  
-         / /   P l a n t i n g   A d v i c e   L o g i c  
-         l e t   a d v i c e   =   " C o n d i t i o n s   a r e   s t a b l e . " ;  
-         l e t   a d v i c e C o l o r   =   " t e x t - s u c c e s s " ;  
-  
-         i f   ( c u r r e n t . r a i n   >   5   | |   c u r r e n t . w i n d _ s p e e d _ 1 0 m   >   3 0 )   {  
-                 a d v i c e   =   " � a� � � �   U n f a v o r a b l e   f o r   s p r a y i n g   o r   p l a n t i n g   d u e   t o   r a i n / w i n d . " ;  
-                 a d v i c e C o l o r   =   " t e x t - d a n g e r " ;  
-         }   e l s e   i f   ( c u r r e n t . t e m p e r a t u r e _ 2 m   >   3 0 )   {  
-                 a d v i c e   =   " � a� � � �   H i g h   h e a t   s t r e s s   r i s k .   E n s u r e   i r r i g a t i o n . " ;  
-                 a d v i c e C o l o r   =   " t e x t - w a r n i n g " ;  
-         }   e l s e   {  
-                 a d v i c e   =   " � S&   G o o d   c o n d i t i o n s   f o r   f i e l d   o p e r a t i o n s . " ;  
-         }  
-  
-         c o n s t   h t m l   =   `  
-                 < d i v   c l a s s = " g r i d   g r i d - 2 "   s t y l e = " g a p :   2 r e m ; " >  
-                         < ! - -   C u r r e n t   S t a t u s   - - >  
-                         < d i v   s t y l e = " t e x t - a l i g n :   c e n t e r ; " >  
-                                 < d i v   s t y l e = " f o n t - s i z e :   3 r e m ; " > $ { i c o n } < / d i v >  
-                                 < h 2   s t y l e = " m a r g i n :   0 ; " > $ { c u r r e n t . t e m p e r a t u r e _ 2 m } $ { d a t a . c u r r e n t _ u n i t s . t e m p e r a t u r e _ 2 m } < / h 2 >  
-                                 < p   c l a s s = " t e x t - m u t e d " > C u r r e n t   C o n d i t i o n s < / p >  
-                                 < d i v   s t y l e = " d i s p l a y :   f l e x ;   j u s t i f y - c o n t e n t :   c e n t e r ;   g a p :   1 r e m ;   m a r g i n - t o p :   1 r e m ; " >  
-                                         < s p a n > � x �   $ { c u r r e n t . r e l a t i v e _ h u m i d i t y _ 2 m } %   H u m i d i t y < / s p a n >  
-                                         < s p a n > � x �   $ { c u r r e n t . w i n d _ s p e e d _ 1 0 m }   k m / h   W i n d < / s p a n >  
-                                         < s p a n > � �   $ { c u r r e n t . r a i n }   m m   R a i n < / s p a n >  
-                                 < / d i v >  
-                         < / d i v >  
-  
-                         < ! - -   A d v i c e   &   C h e c k   - - >  
-                         < d i v >  
-                                 < h 4 > F a r m   A d v i s o r y < / h 4 >  
-                                 < p   c l a s s = " $ { a d v i c e C o l o r } "   s t y l e = " f o n t - s i z e :   1 . 1 r e m ;   f o n t - w e i g h t :   5 0 0 ; " > $ { a d v i c e } < / p >  
-                                  
-                                 < h 5   c l a s s = " m t - 3 " > 7 - D a y   F o r e c a s t < / h 5 >  
-                                 < d i v   s t y l e = " d i s p l a y :   f l e x ;   g a p :   5 p x ;   o v e r f l o w - x :   a u t o ;   p a d d i n g - b o t t o m :   5 p x ; " >  
-                                         $ { d a t a . d a i l y . t i m e . m a p ( ( d a y ,   i )   = >   `  
-                                                 < d i v   s t y l e = " m i n - w i d t h :   6 0 p x ;   t e x t - a l i g n :   c e n t e r ;   b o r d e r :   1 p x   s o l i d   # d d d ;   b o r d e r - r a d i u s :   4 p x ;   p a d d i n g :   5 p x ; " >  
-                                                         < d i v   s t y l e = " f o n t - s i z e :   0 . 8 r e m ; " > $ { n e w   D a t e ( d a y ) . t o L o c a l e D a t e S t r i n g ( ' e n - U S ' ,   {   w e e k d a y :   ' s h o r t '   } ) } < / d i v >  
-                                                         < d i v > $ { g e t W e a t h e r I c o n ( d a t a . d a i l y . w e a t h e r _ c o d e [ i ] ) } < / d i v >  
-                                                         < d i v   s t y l e = " f o n t - s i z e :   0 . 8 r e m ;   f o n t - w e i g h t :   b o l d ; " > $ { M a t h . r o u n d ( d a t a . d a i l y . t e m p e r a t u r e _ 2 m _ m a x [ i ] ) } � � < / d i v >  
-                                                 < / d i v >  
-                                         ` ) . j o i n ( ' ' ) }  
-                                 < / d i v >  
-                         < / d i v >  
-                 < / d i v >  
-         ` ;  
-  
-         c o n t a i n e r . i n n e r H T M L   =   h t m l ;  
- } ;  
-  
- a p p . c h e c k E x t r e m e C o n d i t i o n s   =   f u n c t i o n   ( d a t a )   {  
-         c o n s t   b a d C o d e s   =   [ 9 5 ,   9 6 ,   9 9 ,   6 6 ,   6 7 ] ;  
-         c o n s t   i s B a d   =   b a d C o d e s . i n c l u d e s ( d a t a . c u r r e n t . w e a t h e r _ c o d e ) ;  
-  
-         i f   ( i s B a d )   {  
-                 c o n s o l e . w a r n ( ' E x t r e m e   w e a t h e r   d e t e c t e d ! ' ) ;  
-         }  
- } ;  
- 
+
+
+// ===================================
+// ADVANCED FEATURES MODULE
+// ===================================
+
+app.initAdvancedFeatures = function () {
+    console.log('Advanced Features Initialized');
+    this.updateAdvancedText();
+    this.loadWeather();
+    if (this.initAlerts) this.initAlerts();
+    if (this.initTrends) this.initTrends();
+    if (this.initTasks) this.initTasks();
+    if (this.initInsurance) this.initInsurance();
+};
+
+app.updateAdvancedText = function () {
+    // Placeholder for future translations
+};
+
+// Weather Integration
+app.loadWeather = async function () {
+    const card = document.querySelector('#weather-card .card-body');
+    const farm = this.getCurrentFarm();
+
+    if (!farm || !farm.centerCoordinates || (farm.centerCoordinates.lat === 0 && farm.centerCoordinates.lng === 0)) {
+        card.innerHTML = `<div class="alert alert-warning">Please set farm location in 'Farm Profile' -> 'Edit Details' to see local weather.</div>`;
+        return;
+    }
+
+    const { lat, lng } = farm.centerCoordinates;
+    card.innerHTML = `<div class="text-center"><div class="spinner-border text-primary" role="status"></div><p>Fetching forecast for ${lat.toFixed(4)}, ${lng.toFixed(4)}...</p></div>`;
+
+    try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,rain,wind_speed_10m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,rain_sum,precipitation_probability_max&timezone=auto`;
+
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Weather API unavailable');
+        const data = await response.json();
+
+        this.renderWeather(data, card);
+        this.checkExtremeConditions(data);
+
+    } catch (error) {
+        console.error('Weather error:', error);
+        card.innerHTML = `<div class="alert alert-danger">Failed to load weather data: ${error.message}</div>`;
+    }
+};
+
+app.renderWeather = function (data, container) {
+    const current = data.current;
+
+    // WMO Weather Codes (Simplified)
+    const getWeatherIcon = (code) => {
+        if (code === 0) return 'â˜€ï¸'; // Clear
+        if (code <= 3) return 'â›…'; // Cloudy
+        if (code <= 48) return 'ðŸŒ«ï¸'; // Fog
+        if (code <= 67) return 'ðŸŒ§ï¸'; // Rain
+        if (code <= 77) return 'â„ï¸'; // Snow
+        if (code <= 82) return 'â›ˆï¸'; // Showers
+        if (code <= 99) return 'âš¡'; // Thunderstorm
+        return 'â“';
+    };
+
+    const icon = getWeatherIcon(current.weather_code);
+
+    // Planting Advice Logic
+    let advice = "Conditions are stable.";
+    let adviceColor = "text-success";
+
+    if (current.rain > 5 || current.wind_speed_10m > 30) {
+        advice = "âš ï¸ Unfavorable for spraying or planting due to rain/wind.";
+        adviceColor = "text-danger";
+    } else if (current.temperature_2m > 30) {
+        advice = "âš ï¸ High heat stress risk. Ensure irrigation.";
+        adviceColor = "text-warning";
+    } else {
+        advice = "âœ… Good conditions for field operations.";
+    }
+
+    const html = `
+        <div class="grid grid-2" style="gap: 2rem;">
+            <!-- Current Status -->
+            <div style="text-align: center;">
+                <div style="font-size: 3rem;">${icon}</div>
+                <h2 style="margin: 0;">${current.temperature_2m}${data.current_units.temperature_2m}</h2>
+                <p class="text-muted">Current Conditions</p>
+                <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 1rem;">
+                    <span>ðŸ’§ ${current.relative_humidity_2m}% Humidity</span>
+                    <span>ðŸ’¨ ${current.wind_speed_10m} km/h Wind</span>
+                    <span>â˜” ${current.rain} mm Rain</span>
+                </div>
+            </div>
+
+            <!-- Advice & Check -->
+            <div>
+                <h4>Farm Advisory</h4>
+                <p class="${adviceColor}" style="font-size: 1.1rem; font-weight: 500;">${advice}</p>
+                
+                <h5 class="mt-3">7-Day Forecast</h5>
+                <div style="display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px;">
+                    ${data.daily.time.map((day, i) => `
+                        <div style="min-width: 60px; text-align: center; border: 1px solid #ddd; border-radius: 4px; padding: 5px;">
+                            <div style="font-size: 0.8rem;">${new Date(day).toLocaleDateString('en-US', { weekday: 'short' })}</div>
+                            <div>${getWeatherIcon(data.daily.weather_code[i])}</div>
+                            <div style="font-size: 0.8rem; font-weight: bold;">${Math.round(data.daily.temperature_2m_max[i])}Â°</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+
+    container.innerHTML = html;
+};
+
+app.checkExtremeConditions = function (data) {
+    const badCodes = [95, 96, 99, 66, 67];
+    const isBad = badCodes.includes(data.current.weather_code);
+
+    if (isBad) {
+        console.warn('Extreme weather detected!');
+    }
+};
+
+// ===================================
+// ALERT SYSTEM MODULE
+// ===================================
+
+app.initAlerts = function () {
+    this.renderAlertSettings();
+    this.checkAlerts();
+};
+
+app.renderAlertSettings = async function () {
+    const card = document.querySelector('#alerts-card .card-body');
+    const farm = this.getCurrentFarm();
+
+    if (!farm) {
+        card.innerHTML = '<p class="text-center text-muted">Please select a farm first.</p>';
+        return;
+    }
+
+    // Load existing thresholds
+    try {
+        const response = await api.request(`/alerts/thresholds/farm/${farm.id}`);
+        // Create map for easy lookup
+        const thresholds = {};
+        if (Array.isArray(response)) {
+            response.forEach(t => thresholds[t.incident_category] = t);
+        }
+
+        const categories = ['THEFT', 'PEST', 'DISEASE', 'EQUIPMENT'];
+
+        let html = `
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <div class="alert alert-info">
+                        Set thresholds to receive warnings on the dashboard when incidents exceed a certain number within 30 days.
+                    </div>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Threshold (Count)</th>
+                            <th>Time Period</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        categories.forEach(cat => {
+            const t = thresholds[cat] || { count_threshold: 3, time_period_days: 30 };
+            html += `
+                <tr>
+                    <td><span class="badge badge-secondary">${cat}</span></td>
+                    <td>
+                        <input type="number" id="thresh-count-${cat}" class="form-control form-control-sm" style="width: 80px" value="${t.count_threshold}" min="1">
+                    </td>
+                    <td>
+                        <span class="text-muted">30 Days</span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="app.saveThreshold('${cat}')">Save</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += `   </tbody>
+                </table>
+            </div>
+        `;
+
+        card.innerHTML = html;
+
+    } catch (error) {
+        console.error('Error loading thresholds:', error);
+        card.innerHTML = '<p class="text-center text-danger">Failed to load alert settings.</p>';
+    }
+};
+
+app.saveThreshold = async function (category) {
+    const farm = this.getCurrentFarm();
+    if (!farm) return;
+
+    const count = document.getElementById(`thresh-count-${category}`).value;
+
+    try {
+        await api.request('/alerts/thresholds', {
+            method: 'POST',
+            body: JSON.stringify({
+                farm_id: farm.id,
+                incident_category: category,
+                count_threshold: parseInt(count),
+                time_period_days: 30
+            })
+        });
+
+        this.showSuccess(`Threshold for ${category} updated.`);
+        this.checkAlerts(); // Re-check immediately
+    } catch (error) {
+        console.error('Error saving threshold:', error);
+        this.showError('Failed to save threshold.');
+    }
+};
+
+app.checkAlerts = async function () {
+    // Only check if on dashboard or advanced tab to save resources? 
+    // Ideally this runs on load.
+    const farm = this.getCurrentFarm();
+    if (!farm) return;
+
+    try {
+        // 1. Get thresholds
+        const thresholds = await api.request(`/alerts/thresholds/farm/${farm.id}`);
+        if (!Array.isArray(thresholds) || thresholds.length === 0) return;
+
+        // 2. Get recent incidents summary (mocking logic using existing API or new aggregation)
+        // For now, we'll fetch all open incidents and count client-side for simplicity 
+        // (Optimally this should be a backend aggregation endpoint)
+        const incidents = await api.incidents.getByFarm(farm.id); // Assuming this exists or using generic request
+
+        const alertsContainer = document.getElementById('dashboard-alerts-container');
+        // Check if we need to insert container
+        if (!alertsContainer) {
+            const dashContainer = document.querySelector('#dashboard .container');
+            if (dashContainer) {
+                const div = document.createElement('div');
+                div.id = 'dashboard-alerts-container';
+                div.className = 'mb-4';
+                dashContainer.insertBefore(div, dashContainer.firstChild.nextSibling); // Insert after Title
+            }
+        }
+
+        let alertHtml = '';
+        const now = new Date();
+        const cutoff = new Date();
+        cutoff.setDate(now.getDate() - 30); // Hardcoded 30 days for now matches UI
+
+        thresholds.forEach(t => {
+            const count = incidents.filter(i =>
+                i.category === t.incident_category &&
+                new Date(i.date) >= cutoff
+            ).length;
+
+            if (count >= t.count_threshold) {
+                alertHtml += `
+                    <div class="alert alert-danger" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong>âš ï¸ CRITICAL ALERT: ${t.incident_category}</strong><br>
+                            ${count} incidents recorded in the last 30 days (Threshold: ${t.count_threshold}).
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger" onclick="app.showTab('incidents')">View Log</button>
+                    </div>
+                `;
+            }
+        });
+
+        const container = document.getElementById('dashboard-alerts-container');
+        if (container) container.innerHTML = alertHtml;
+
+    } catch (error) {
+        console.warn('Alert check failed', error);
+    }
+};
+
+// ===================================
+// TREND ANALYSIS MODULE
+// ===================================
+
+app.initTrends = function () {
+    this.renderTrendsChart();
+};
+
+app.renderTrendsChart = async function () {
+    const card = document.querySelector('#trends-card .card-body');
+    const farm = this.getCurrentFarm();
+
+    if (!farm) {
+        card.innerHTML = '<p class="text-center text-muted">Please select a farm first.</p>';
+        return;
+    }
+
+    card.innerHTML = '<div class="text-center"><div class="spinner-border text-primary"></div><p>Loading trends...</p></div>';
+
+    try {
+        const response = await api.request(`/incidents/stats/trends/${farm.id}`);
+        // Data format: [{ month: '2025-01', category: 'THEFT', count: 2 }, ...]
+
+        if (!Array.isArray(response) || response.length === 0) {
+            card.innerHTML = '<p class="text-center text-muted">No incident data available for trend analysis.</p>';
+            return;
+        }
+
+        // Process data for Chart.js
+        // 1. Get unique months (labels) and sort
+        const months = [...new Set(response.map(r => r.month))].sort();
+
+        // 2. Get unique categories (datasets)
+        const categories = [...new Set(response.map(r => r.category))];
+
+        // 3. Build Datasets
+        const datasets = categories.map(cat => {
+            const data = months.map(m => {
+                const entry = response.find(r => r.month === m && r.category === cat);
+                return entry ? parseInt(entry.count) : 0;
+            });
+
+            // Assign distinct color based on category
+            const color = this.getCategoryColor(cat);
+
+            return {
+                label: cat,
+                data: data,
+                borderColor: color,
+                backgroundColor: color,
+                fill: false,
+                tension: 0.1
+            };
+        });
+
+        // Clear and create canvas
+        card.innerHTML = '<canvas id="trendsChart" height="300"></canvas>';
+        const ctx = document.getElementById('trendsChart').getContext('2d');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 },
+                        title: { display: true, text: 'Incidents' }
+                    }
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Error loading trends:', error);
+        card.innerHTML = '<p class="text-center text-danger">Failed to load trend data.</p>';
+    }
+};
+
+app.getCategoryColor = function (category) {
+    const colors = {
+        'THEFT': '#dc3545',     // Red
+        'PEST': '#ffc107',      // Yellow
+        'DISEASE': '#fd7e14',   // Orange
+        'CLIMATE': '#0dcaf0',   // Cyan
+        'EQUIPMENT': '#6c757d', // Gray
+        'SECURITY': '#20c997'   // Teal
+    };
+    return colors[category] || '#0d6efd'; // Default Blue
+};
+
+// ===================================
+// TASK MANAGER MODULE
+// ===================================
+
+app.initTasks = function () {
+    this.renderTaskBoard();
+};
+
+app.renderTaskBoard = async function () {
+    const card = document.querySelector('#tasks-card .card-body');
+    const farm = this.getCurrentFarm();
+
+    if (!farm) {
+        card.innerHTML = '<p class="text-center text-muted">Please select a farm first.</p>';
+        return;
+    }
+
+    try {
+        const tasks = await api.request(`/tasks/farm/${farm.id}`);
+        // tasks = [{ id, title, description, due_date, status, priority }]
+
+        let html = `
+            <div class="d-flex justify-content-between mb-3">
+                <h5>Task Board</h5>
+                <button class="btn btn-sm btn-primary" onclick="app.openAddTaskModal()">âž• New Task</button>
+            </div>
+            <div class="grid grid-2">
+                <!-- Pending Tasks -->
+                <div style="background: #fff3cd; padding: 10px; border-radius: 8px;">
+                    <h6 class="text-warning-dark border-bottom pb-2">â³ Pending</h6>
+                    <div id="pending-tasks-list" style="max-height: 300px; overflow-y: auto;">
+                        ${this.generateTaskItems(tasks.filter(t => t.status !== 'Completed'))}
+                    </div>
+                </div>
+
+                <!-- Completed Tasks -->
+                <div style="background: #d1e7dd; padding: 10px; border-radius: 8px;">
+                    <h6 class="text-success-dark border-bottom pb-2">âœ… Completed</h6>
+                    <div id="completed-tasks-list" style="max-height: 300px; overflow-y: auto;">
+                        ${this.generateTaskItems(tasks.filter(t => t.status === 'Completed'))}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        card.innerHTML = html;
+
+    } catch (error) {
+        console.error('Error loading tasks:', error);
+        card.innerHTML = '<p class="text-center text-danger">Failed to load tasks.</p>';
+    }
+};
+
+app.generateTaskItems = function (tasks) {
+    if (tasks.length === 0) return '<p class="text-muted text-center mt-2">No tasks</p>';
+
+    return tasks.map(t => `
+        <div class="card mb-2 p-2 shadow-sm" style="font-size: 0.9rem;">
+            <div class="d-flex justify-content-between">
+                <strong>${t.title}</strong>
+                <span class="badge ${t.priority === 'High' ? 'badge-danger' : 'badge-secondary'}">${t.priority}</span>
+            </div>
+            <p class="mb-1 text-muted small">${t.description || ''}</p>
+            <div class="d-flex justify-content-between align-items-center mt-2">
+                <small>ðŸ“… ${t.due_date ? new Date(t.due_date).toLocaleDateString() : 'No date'}</small>
+                <div>
+                    ${t.status !== 'Completed' ?
+            `<button class="btn btn-sm btn-success py-0" onclick="app.completeTask(${t.id})" title="Mark Complete">âœ”</button>` :
+            `<span class="text-success">Done</span>`
+        }
+                    <button class="btn btn-sm btn-outline-danger py-0" onclick="app.deleteTask(${t.id})" title="Delete">âœ–</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+};
+
+app.openAddTaskModal = function (prefill = {}) {
+    // Determine the next available ID for the modal (using simple manual modal creation or existing structure)
+    // We will inject a simple modal into the DOM if it doesn't exist
+    let modal = document.getElementById('addTaskModal');
+    if (!modal) {
+        const modalHtml = `
+            <div class="modal-overlay" id="addTaskModal">
+                <div class="modal">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Create New Task</h3>
+                        <button class="modal-close" onclick="app.closeModal('addTaskModal')">Ã—</button>
+                    </div>
+                    <form id="addTaskForm">
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label>Title</label>
+                                <input type="text" id="taskTitle" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <textarea id="taskDesc" class="form-control" rows="2"></textarea>
+                            </div>
+                            <div class="grid grid-2">
+                                <div class="form-group">
+                                    <label>Priority</label>
+                                    <select id="taskPriority" class="form-control">
+                                        <option value="Low">Low</option>
+                                        <option value="Medium" selected>Medium</option>
+                                        <option value="High">High</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Due Date</label>
+                                    <input type="date" id="taskDueDate" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" onclick="app.closeModal('addTaskModal')">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Task</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        modal = document.getElementById('addTaskModal');
+
+        // Bind submit
+        document.getElementById('addTaskForm').onsubmit = (e) => {
+            e.preventDefault();
+            this.saveTask();
+        };
+    }
+
+    // Reset and Prefill
+    document.getElementById('addTaskForm').reset();
+    if (prefill.title) document.getElementById('taskTitle').value = prefill.title;
+    if (prefill.description) document.getElementById('taskDesc').value = prefill.description;
+
+    this.openModal('addTaskModal');
+};
+
+app.saveTask = async function () {
+    const farm = this.getCurrentFarm();
+    if (!farm) return;
+
+    const taskData = {
+        farm_id: farm.id,
+        title: document.getElementById('taskTitle').value,
+        description: document.getElementById('taskDesc').value,
+        priority: document.getElementById('taskPriority').value,
+        due_date: document.getElementById('taskDueDate').value
+    };
+
+    try {
+        await api.request('/tasks', {
+            method: 'POST',
+            body: JSON.stringify(taskData)
+        });
+
+        this.closeModal('addTaskModal');
+        this.showSuccess('Task created successfully');
+        this.renderTaskBoard();
+    } catch (error) {
+        console.error('Error creating task:', error);
+        this.showError('Failed to create task');
+    }
+};
+
+app.completeTask = async function (id) {
+    try {
+        await api.request(`/tasks/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ status: 'Completed' })
+        });
+        this.renderTaskBoard();
+    } catch (error) {
+        console.error('Error completing task:', error);
+    }
+};
+
+app.deleteTask = async function (id) {
+    if (!confirm('Delete this task?')) return;
+    try {
+        await api.request(`/tasks/${id}`, { method: 'DELETE' });
+        this.renderTaskBoard();
+    } catch (error) {
+        console.error('Error deleting task:', error);
+    }
+};
+
+// ===================================
+// AUTO-TASK GENERATION LOGIC
+// ===================================
+
+app.checkAutoTaskGeneration = function (incident) {
+    let taskTitle = '';
+    let taskDesc = '';
+
+    if (incident.category === 'THEFT') {
+        taskTitle = `Security Review: ${incident.subcategory || 'Theft'}`;
+        taskDesc = `Auto-generated follow-up for theft incident. Check boundaries, locks, and coordinate with local security.`;
+    } else if (incident.category === 'PEST' || incident.category === 'DISEASE') {
+        taskTitle = `Crop Treatment: ${incident.subcategory || 'Incident'}`;
+        taskDesc = `Auto-generated follow-up for ${incident.category.toLowerCase()}. Inspect affected area and apply treatment if necessary.`;
+    } else if (incident.severity === 'High') {
+        taskTitle = `High-Priority Action: ${incident.category}`;
+        taskDesc = `Urgent response required for high-severity incident. Evaluate impact and plan mitigation.`;
+    }
+
+    if (taskTitle) {
+        console.log(`Debug: Triggering auto-task generation for ${incident.category}`);
+        // For better UX, we prompt the user
+        if (confirm(`Would you like to create a preventive follow-up task: "${taskTitle}"?`)) {
+            this.openAddTaskModal({
+                title: taskTitle,
+                description: taskDesc
+            });
+        }
+    }
+};
+
+// ===================================
+// INSURANCE LOG MODULE
+// ===================================
+
+app.initInsurance = function () {
+    this.renderInsuranceClaims();
+};
+
+app.renderInsuranceClaims = async function () {
+    const card = document.querySelector('#insurance-card .card-body');
+    const farm = this.getCurrentFarm();
+
+    if (!farm) {
+        card.innerHTML = '<p class="text-center text-muted">Please select a farm first.</p>';
+        return;
+    }
+
+    try {
+        const claims = await api.request(`/insurance/farm/${farm.id}`);
+
+        let html = `
+            <div class="d-flex justify-content-between mb-3">
+                <h5>Insurance Claims Log</h5>
+                <button class="btn btn-sm btn-primary" onclick="app.openAddClaimModal()">ðŸ“ File New Claim</button>
+            </div>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Incident</th>
+                            <th>Claim #</th>
+                            <th>Provider</th>
+                            <th>Status</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${claims.length === 0 ? '<tr><td colspan="6" class="text-center">No claims filed yet.</td></tr>' : ''}
+                        ${claims.map(c => `
+                            <tr>
+                                <td>${new Date(c.filing_date).toLocaleDateString()}</td>
+                                <td>
+                                    <small class="text-muted">${c.incident_category || 'N/A'}</small><br>
+                                    ${c.incident_date ? new Date(c.incident_date).toLocaleDateString() : ''}
+                                </td>
+                                <td><code>${c.claim_number}</code></td>
+                                <td>${c.provider}</td>
+                                <td><span class="badge ${this.getClaimStatusBadge(c.status)}">${c.status}</span></td>
+                                <td>${this.formatCurrency(c.amount_claimed)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        card.innerHTML = html;
+
+    } catch (error) {
+        console.error('Error loading claims:', error);
+        card.innerHTML = '<p class="text-center text-danger">Failed to load insurance log.</p>';
+    }
+};
+
+app.getClaimStatusBadge = function (status) {
+    switch (status) {
+        case 'Approved': return 'badge-success';
+        case 'Rejected': return 'badge-danger';
+        case 'Paid': return 'badge-success';
+        case 'Under Review': return 'badge-warning';
+        default: return 'badge-secondary';
+    }
+};
+
+app.openAddClaimModal = async function () {
+    const farm = this.getCurrentFarm();
+
+    try {
+        // Fetch incidents for dropdown
+        const response = await fetch(`${API_BASE_URL}/api/incidents/${farm.id}`);
+        const incidents = await response.json();
+
+        let modal = document.getElementById('addClaimModal');
+        if (!modal) {
+            const modalHtml = `
+                <div class="modal-overlay" id="addClaimModal">
+                    <div class="modal">
+                        <div class="modal-header">
+                            <h3 class="modal-title">File Insurance Claim</h3>
+                            <button class="modal-close" onclick="app.closeModal('addClaimModal')">Ã—</button>
+                        </div>
+                        <form id="addClaimForm">
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <label>Linked Incident</label>
+                                    <select id="claimIncident" class="form-control" required>
+                                        <option value="">-- Select Incident --</option>
+                                        ${incidents.map(i => `<option value="${i.id}">${i.category} - ${new Date(i.date_detected).toLocaleDateString()}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="grid grid-2">
+                                    <div class="form-group">
+                                        <label>Claim Number</label>
+                                        <input type="text" id="claimNumber" class="form-control" placeholder="ABC-123" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Provider</label>
+                                        <input type="text" id="claimProvider" class="form-control" placeholder="Allianz / AXA" required>
+                                    </div>
+                                </div>
+                                <div class="grid grid-2">
+                                    <div class="form-group">
+                                        <label>Amount Claimed</label>
+                                        <input type="number" id="claimAmount" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Filing Date</label>
+                                        <input type="date" id="claimDate" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Notes</label>
+                                    <textarea id="claimNotes" class="form-control" rows="2"></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" onclick="app.closeModal('addClaimModal')">Cancel</button>
+                                <button type="submit" class="btn btn-primary">File Claim</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            modal = document.getElementById('addClaimModal');
+            document.getElementById('addClaimForm').onsubmit = (e) => {
+                e.preventDefault();
+                this.saveClaim();
+            };
+        } else {
+            const select = document.getElementById('claimIncident');
+            select.innerHTML = '<option value="">-- Select Incident --</option>' +
+                incidents.map(i => `<option value="${i.id}">${i.category} - ${new Date(i.date_detected).toLocaleDateString()}</option>`).join('');
+        }
+
+        document.getElementById('claimDate').valueAsDate = new Date();
+        this.openModal('addClaimModal');
+    } catch (error) {
+        console.error(error);
+        this.showError('Could not load incidents list.');
+    }
+};
+
+app.saveClaim = async function () {
+    const farm = this.getCurrentFarm();
+    const data = {
+        farm_id: farm.id,
+        incident_id: document.getElementById('claimIncident').value,
+        claim_number: document.getElementById('claimNumber').value,
+        provider: document.getElementById('claimProvider').value,
+        amount_claimed: parseFloat(document.getElementById('claimAmount').value),
+        filing_date: document.getElementById('claimDate').value,
+        notes: document.getElementById('claimNotes').value
+    };
+
+    try {
+        await api.request('/insurance', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+        this.closeModal('addClaimModal');
+        this.showSuccess('Insurance claim filed.');
+        this.renderInsuranceClaims();
+    } catch (error) {
+        console.error(error);
+        this.showError('Failed to file claim.');
+    }
+};

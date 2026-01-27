@@ -2,6 +2,31 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
 
+// GET incident stats (trends)
+router.get('/stats/trends/:farmId', async (req, res) => {
+    try {
+        const { farmId } = req.params;
+
+        // Aggregate by Month and Category
+        // Postgres: TO_CHAR(date_detected, 'YYYY-MM')
+        const result = await db.query(`
+            SELECT 
+                TO_CHAR(date_detected, 'YYYY-MM') as month,
+                category,
+                COUNT(*) as count
+            FROM incidents 
+            WHERE farm_id = $1
+            GROUP BY 1, 2
+            ORDER BY 1 ASC
+        `, [farmId]);
+
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching trends:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 // GET all incidents for a farm
 router.get('/:farmId', async (req, res) => {
     try {

@@ -34,6 +34,9 @@ app.use('/api/sections', sectionRoutes);
 app.use('/api/employees', require('./routes/employees'));
 app.use('/api/crop-types', require('./routes/crop_types'));
 app.use('/api/incidents', require('./routes/incidents'));
+app.use('/api/alerts', require('./routes/alerts'));
+app.use('/api/tasks', require('./routes/tasks'));
+app.use('/api/insurance', require('./routes/insurance'));
 
 // Health check
 app.get('/health', (req, res) => {
