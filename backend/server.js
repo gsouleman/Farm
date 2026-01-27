@@ -32,6 +32,7 @@ app.use('/api/transactions', transactionRoutes);
 app.use('/api/crops', cropRoutes);
 app.use('/api/sections', sectionRoutes);
 app.use('/api/employees', require('./routes/employees'));
+console.log('Mounting /api/crop-types route...');
 app.use('/api/crop-types', require('./routes/crop_types'));
 
 // Health check
