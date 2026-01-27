@@ -1905,10 +1905,17 @@ Object.assign(app, {
         try {
             let types = await api.cropTypes.getAll();
 
-            // Check if we need to seed defaults
-            if (types.length === 0) {
-                await this.seedDefaultTypes();
-                types = await api.cropTypes.getAll();
+            // Intelligent Seeding:
+            // If we lack basic defaults (heuristic: "Avocado" or "Maize" missing),
+            // we try to ensure defaults exist.
+            // We pass existing types to seedDefaultTypes to avoid duplicates.
+            const hasBasicDefaults = types.some(t => ['Avocado', 'Maize', 'Corn', 'Cassava'].includes(t.name));
+
+            // If total types are few (e.g. just the one custom one), let's ensure defaults are there.
+            // Or if we specifically don't see our flagships.
+            if (!hasBasicDefaults || types.length < 3) {
+                await this.seedDefaultTypes(types);
+                types = await api.cropTypes.getAll(); // Reload after seeding
             }
 
             // Separate into categories
@@ -1920,15 +1927,21 @@ Object.assign(app, {
         }
     },
 
-    async seedDefaultTypes() {
+    async seedDefaultTypes(existingTypes = []) {
         try {
+            const existingNames = new Set(existingTypes.map(t => t.name.toLowerCase()));
+
             // Seed Fruit
             for (const name of this.defaultCropTypes.fruit) {
-                await api.cropTypes.create({ category: 'fruit', name });
+                if (!existingNames.has(name.toLowerCase())) {
+                    await api.cropTypes.create({ category: 'fruit', name });
+                }
             }
             // Seed Cash
             for (const name of this.defaultCropTypes.cash) {
-                await api.cropTypes.create({ category: 'cash', name });
+                if (!existingNames.has(name.toLowerCase())) {
+                    await api.cropTypes.create({ category: 'cash', name });
+                }
             }
         } catch (e) {
             console.error('Seeding failed', e);
