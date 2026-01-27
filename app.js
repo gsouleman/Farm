@@ -1,4 +1,10 @@
 ﻿// ===================================
+// GLOBAL CONFIGURATION
+// ===================================
+const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:3000'
+    : 'https://farm-backend-uq2z.onrender.com';
+
 // ===================================
 // Multi-Language Support
 // ===================================
