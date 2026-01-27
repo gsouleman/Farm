@@ -5782,97 +5782,96 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
- 
- a p p . g e n e r a t e R i s k R e p o r t   =   f u n c t i o n   ( )   {  
-         c o n s t   f a r m   =   t h i s . g e t C u r r e n t F a r m ( ) ;  
-         i f   ( ! f a r m )   r e t u r n   a l e r t ( ' P l e a s e   s e l e c t   a   f a r m   t o   g e n e r a t e   r e p o r t . ' ) ;  
-  
-         / /   E n s u r e   i n c i d e n t s   a r e   l o a d e d  
-         i f   ( ! t h i s . i n c i d e n t s )   {  
-                 t h i s . l o a d I n c i d e n t s ( ) . t h e n ( ( )   = >   t h i s . r e n d e r R i s k R e p o r t ( f a r m ) ) ;  
-         }   e l s e   {  
-                 t h i s . r e n d e r R i s k R e p o r t ( f a r m ) ;  
-         }  
- } ;  
-  
- a p p . r e n d e r R i s k R e p o r t   =   f u n c t i o n   ( f a r m )   {  
-         c o n s t   i n c i d e n t s   =   t h i s . i n c i d e n t s   | |   [ ] ;  
-  
-         / /   C a l c u l a t e   S t a t s  
-         c o n s t   t o t a l   =   i n c i d e n t s . l e n g t h ;  
-         c o n s t   c r i t i c a l   =   i n c i d e n t s . f i l t e r ( i   = >   i . s e v e r i t y   = = =   ' C r i t i c a l ' ) . l e n g t h ;  
-         c o n s t   r e s o l v e d   =   i n c i d e n t s . f i l t e r ( i   = >   i . s t a t u s   = = =   ' R e s o l v e d ' ) . l e n g t h ;  
-         c o n s t   o p e n   =   i n c i d e n t s . f i l t e r ( i   = >   i . s t a t u s   = = =   ' O p e n ' ) . l e n g t h ;  
-         c o n s t   t o t a l I m p a c t   =   i n c i d e n t s . r e d u c e ( ( s u m ,   i )   = >   s u m   +   N u m b e r ( i . f i n a n c i a l _ i m p a c t   | |   0 ) ,   0 ) ;  
-  
-         c o n s t   t o d a y   =   n e w   D a t e ( ) . t o L o c a l e D a t e S t r i n g ( ) ;  
-  
-         c o n s t   h t m l   =   `  
-                 < d i v   c l a s s = " r e p o r t - h e a d e r " >  
-                         < h 1   c l a s s = " r e p o r t - t i t l e " > R i s k   &   I n c i d e n t   R e p o r t < / h 1 >  
-                         < d i v   c l a s s = " r e p o r t - m e t a " >  
-                                 < s t r o n g > F a r m : < / s t r o n g >   $ { f a r m . n a m e }   < b r >  
-                                 < s t r o n g > D a t e : < / s t r o n g >   $ { t o d a y }   < b r >  
-                                 < s t r o n g > G e n e r a t e d   B y : < / s t r o n g >   F a r m   M a n a g e m e n t   S y s t e m  
-                         < / d i v >  
-                 < / d i v >  
-                  
-                 < d i v   c l a s s = " r e p o r t - s u m m a r y " >  
-                         < d i v   c l a s s = " s u m m a r y - c a r d " >  
-                                 < d i v   c l a s s = " s u m m a r y - l a b e l " > T o t a l   I n c i d e n t s < / d i v >  
-                                 < d i v   c l a s s = " s u m m a r y - v a l u e " > $ { t o t a l } < / d i v >  
-                         < / d i v >  
-                         < d i v   c l a s s = " s u m m a r y - c a r d " >  
-                                 < d i v   c l a s s = " s u m m a r y - l a b e l " > C r i t i c a l   R i s k s < / d i v >  
-                                 < d i v   c l a s s = " s u m m a r y - v a l u e "   s t y l e = " c o l o r :   # d c 3 5 4 5 ; " > $ { c r i t i c a l } < / d i v >  
-                         < / d i v >  
-                           < d i v   c l a s s = " s u m m a r y - c a r d " >  
-                                 < d i v   c l a s s = " s u m m a r y - l a b e l " > O p e n   I s s u e s < / d i v >  
-                                 < d i v   c l a s s = " s u m m a r y - v a l u e " > $ { o p e n } < / d i v >  
-                         < / d i v >  
-                           < d i v   c l a s s = " s u m m a r y - c a r d " >  
-                                 < d i v   c l a s s = " s u m m a r y - l a b e l " > T o t a l   F i n a n c i a l   I m p a c t < / d i v >  
-                                 < d i v   c l a s s = " s u m m a r y - v a l u e " > $ { t h i s . f o r m a t C u r r e n c y ( t o t a l I m p a c t ) } < / d i v >  
-                         < / d i v >  
-                 < / d i v >  
-                  
-                 < h 3 > D e t a i l e d   I n c i d e n t   L o g < / h 3 >  
-                 < t a b l e   c l a s s = " r e p o r t - t a b l e " >  
-                         < t h e a d >  
-                                 < t r >  
-                                         < t h > D a t e < / t h >  
-                                         < t h > C a t e g o r y < / t h >  
-                                         < t h > S u b c a t e g o r y < / t h >  
-                                         < t h > S e v e r i t y < / t h >  
-                                         < t h > A s s e t / A r e a < / t h >  
-                                         < t h > I m p a c t < / t h >  
-                                         < t h > S t a t u s < / t h >  
-                                 < / t r >  
-                         < / t h e a d >  
-                         < t b o d y >  
-                                 $ { i n c i d e n t s . l e n g t h   >   0   ?   i n c i d e n t s . m a p ( i n c   = >   `  
-                                         < t r >  
-                                                 < t d > $ { n e w   D a t e ( i n c . d a t e _ d e t e c t e d ) . t o L o c a l e D a t e S t r i n g ( ) } < / t d >  
-                                                 < t d > $ { i n c . c a t e g o r y } < / t d >  
-                                                 < t d > $ { i n c . s u b c a t e g o r y } < / t d >  
-                                                 < t d   c l a s s = " s e v e r i t y - $ { i n c . s e v e r i t y   ?   i n c . s e v e r i t y . t o L o w e r C a s e ( )   :   ' l o w ' } " > $ { i n c . s e v e r i t y } < / t d >  
-                                                 < t d > $ { i n c . a f f e c t e d _ a s s e t s   | |   ' - ' } < / t d >  
-                                                 < t d > $ { t h i s . f o r m a t C u r r e n c y ( i n c . f i n a n c i a l _ i m p a c t ) } < / t d >  
-                                                 < t d   c l a s s = " s t a t u s - $ { i n c . s t a t u s   = = =   ' I n   P r o g r e s s '   ?   ' p r o g r e s s '   :   i n c . s t a t u s . t o L o w e r C a s e ( ) } " > $ { i n c . s t a t u s } < / t d >  
-                                         < / t r >  
-                                 ` ) . j o i n ( ' ' )   :   ' < t r > < t d   c o l s p a n = " 7 "   s t y l e = " t e x t - a l i g n :   c e n t e r ; " > N o   i n c i d e n t s   r e c o r d e d . < / t d > < / t r > ' }  
-                         < / t b o d y >  
-                 < / t a b l e >  
-                  
-                 < d i v   c l a s s = " n o - p r i n t "   s t y l e = " m a r g i n - t o p :   2 r e m ;   t e x t - a l i g n :   c e n t e r ; " >  
-                         < p > E n d   o f   R e p o r t < / p >  
-                 < / d i v >  
-         ` ;  
-  
-         d o c u m e n t . g e t E l e m e n t B y I d ( ' r e p o r t C o n t e n t ' ) . i n n e r H T M L   =   h t m l ;  
-         d o c u m e n t . g e t E l e m e n t B y I d ( ' r e p o r t P r e v i e w ' ) . s t y l e . d i s p l a y   =   ' b l o c k ' ;  
-  
-         / /   S c r o l l   t o   p r e v i e w  
-         d o c u m e n t . g e t E l e m e n t B y I d ( ' r e p o r t P r e v i e w ' ) . s c r o l l I n t o V i e w ( {   b e h a v i o r :   ' s m o o t h '   } ) ;  
- } ;  
- 
+
+app.generateRiskReport = function () {
+    const farm = this.getCurrentFarm();
+    if (!farm) return alert('Please select a farm to generate report.');
+
+    // Ensure incidents are loaded
+    if (!this.incidents) {
+        this.loadIncidents().then(() => this.renderRiskReport(farm));
+    } else {
+        this.renderRiskReport(farm);
+    }
+};
+
+app.renderRiskReport = function (farm) {
+    const incidents = this.incidents || [];
+
+    // Calculate Stats
+    const total = incidents.length;
+    const critical = incidents.filter(i => i.severity === 'Critical').length;
+    const resolved = incidents.filter(i => i.status === 'Resolved').length;
+    const open = incidents.filter(i => i.status === 'Open').length;
+    const totalImpact = incidents.reduce((sum, i) => sum + Number(i.financial_impact || 0), 0);
+
+    const today = new Date().toLocaleDateString();
+
+    const html = `
+        <div class="report-header">
+            <h1 class="report-title">Risk & Incident Report</h1>
+            <div class="report-meta">
+                <strong>Farm:</strong> ${farm.name} <br>
+                <strong>Date:</strong> ${today} <br>
+                <strong>Generated By:</strong> Farm Management System
+            </div>
+        </div>
+        
+        <div class="report-summary">
+            <div class="summary-card">
+                <div class="summary-label">Total Incidents</div>
+                <div class="summary-value">${total}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Critical Risks</div>
+                <div class="summary-value" style="color: #dc3545;">${critical}</div>
+            </div>
+             <div class="summary-card">
+                <div class="summary-label">Open Issues</div>
+                <div class="summary-value">${open}</div>
+            </div>
+             <div class="summary-card">
+                <div class="summary-label">Total Financial Impact</div>
+                <div class="summary-value">${this.formatCurrency(totalImpact)}</div>
+            </div>
+        </div>
+        
+        <h3>Detailed Incident Log</h3>
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Subcategory</th>
+                    <th>Severity</th>
+                    <th>Asset/Area</th>
+                    <th>Impact</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${incidents.length > 0 ? incidents.map(inc => `
+                    <tr>
+                        <td>${new Date(inc.date_detected).toLocaleDateString()}</td>
+                        <td>${inc.category}</td>
+                        <td>${inc.subcategory}</td>
+                        <td class="severity-${inc.severity ? inc.severity.toLowerCase() : 'low'}">${inc.severity}</td>
+                        <td>${inc.affected_assets || '-'}</td>
+                        <td>${this.formatCurrency(inc.financial_impact)}</td>
+                        <td class="status-${inc.status === 'In Progress' ? 'progress' : inc.status.toLowerCase()}">${inc.status}</td>
+                    </tr>
+                `).join('') : '<tr><td colspan="7" style="text-align: center;">No incidents recorded.</td></tr>'}
+            </tbody>
+        </table>
+        
+        <div class="no-print" style="margin-top: 2rem; text-align: center;">
+            <p>End of Report</p>
+        </div>
+    `;
+
+    document.getElementById('reportContent').innerHTML = html;
+    document.getElementById('reportPreview').style.display = 'block';
+
+    // Scroll to preview
+    document.getElementById('reportPreview').scrollIntoView({ behavior: 'smooth' });
+};
