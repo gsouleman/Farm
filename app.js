@@ -1468,7 +1468,6 @@ Object.assign(app, {
 
     // Render crops
     renderCrops() {
-        console.log(`Debug: renderCrops called. FruitTrees: ${this.fruitTrees.length}, CashCrops: ${this.cashCrops.length}`);
         // Fruit trees
         const fruitBody = document.getElementById('fruitTreesBody');
         if (this.fruitTrees.length === 0) {
