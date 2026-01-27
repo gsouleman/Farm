@@ -231,22 +231,42 @@ const api = {
 
     // Crop APIs
     crops: {
+        // Helper to normalize DB snake_case to frontend camelCase
+        normalize(crop) {
+            if (!crop) return null;
+            return {
+                ...crop,
+                plantedDate: crop.planted_date || crop.plantedDate,
+                harvestDate: crop.harvest_date || crop.harvestDate,
+                farmId: crop.farm_id || crop.farmId,
+                createdAt: crop.created_at || crop.createdAt,
+                updatedAt: crop.updated_at || crop.updatedAt,
+                // Ensure numbers are numbers
+                count: crop.count ? parseInt(crop.count) : null,
+                area: crop.area ? parseFloat(crop.area) : null,
+                yield: crop.yield ? parseFloat(crop.yield) : null
+            };
+        },
+
         async getByFarm(farmId) {
-            return await api.request(`${API_CONFIG.endpoints.crops}/farm/${farmId}`);
+            const crops = await api.request(`${API_CONFIG.endpoints.crops}/farm/${farmId}`);
+            return Array.isArray(crops) ? crops.map(this.normalize) : [];
         },
 
         async create(farmId, cropData) {
-            return await api.request(`${API_CONFIG.endpoints.crops}/farm/${farmId}`, {
+            const crop = await api.request(`${API_CONFIG.endpoints.crops}/farm/${farmId}`, {
                 method: 'POST',
                 body: JSON.stringify(cropData)
             });
+            return this.normalize(crop);
         },
 
         async update(id, cropData) {
-            return await api.request(`${API_CONFIG.endpoints.crops}/${id}`, {
+            const crop = await api.request(`${API_CONFIG.endpoints.crops}/${id}`, {
                 method: 'PUT',
                 body: JSON.stringify(cropData)
             });
+            return this.normalize(crop);
         },
 
         async delete(id) {
