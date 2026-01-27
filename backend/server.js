@@ -32,15 +32,7 @@ app.use('/api/transactions', transactionRoutes);
 app.use('/api/crops', cropRoutes);
 app.use('/api/sections', sectionRoutes);
 app.use('/api/employees', require('./routes/employees'));
-const cropTypeRoutes = require('./routes/crop_types');
-console.log('Mounting /api/crop-types route (Object keys):', Object.keys(cropTypeRoutes || {}));
-
-// Debug Test Route
-app.get('/api/test-crop-types', (req, res) => {
-    res.json({ message: 'Direct route works', timestamp: new Date() });
-});
-
-app.use('/api/crop-types', cropTypeRoutes);
+app.use('/api/crop-types', require('./routes/crop_types'));
 
 // Health check
 app.get('/health', (req, res) => {
