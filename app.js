@@ -7077,3 +7077,53 @@ app.saveClaim = async function () {
         this.showError('Failed to file claim.');
     }
 };
+
+// ==========================================
+// FIX: Notification Helpers (Polyfill)
+// ==========================================
+// These functions are required for incident logging and other features.
+// Adding them here ensures they exist even if defined elsewhere.
+
+app.showMessage = function (title, message, isError = false) {
+    const modal = document.getElementById('alertModal');
+    if (modal) {
+        const titleEl = document.getElementById('alertTitle');
+        const msgEl = document.getElementById('alertMessage');
+
+        if (titleEl) {
+            titleEl.textContent = title;
+            titleEl.style.color = isError ? '#dc3545' : '#28a745'; // Bootstrap danger/success colors
+        }
+        if (msgEl) msgEl.textContent = message;
+
+        if (typeof app.openModal === 'function') {
+            app.openModal('alertModal');
+        } else {
+            modal.classList.add('active'); // Fallback
+        }
+    } else {
+        alert(message);
+    }
+};
+
+if (typeof app.showSuccess !== 'function') {
+    app.showSuccess = function (message) {
+        this.showMessage('Success', message, false);
+    };
+}
+
+if (typeof app.showError !== 'function') {
+    app.showError = function (message) {
+        this.showMessage('Error', message, true);
+    };
+}
+
+if (typeof app.showNotification !== 'function') {
+    app.showNotification = function (message, type) {
+        if (type === 'success') this.showSuccess(message);
+        else if (type === 'error') this.showError(message);
+        else this.showMessage('Info', message, false);
+    };
+}
+// End of Notification Fix
+
