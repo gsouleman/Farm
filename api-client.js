@@ -27,7 +27,8 @@ const API_CONFIG = {
         crops: '/api/crops',
         cropTypes: '/api/crop-types',
         sections: '/api/sections',
-        employees: '/api/employees'
+        employees: '/api/employees',
+        analysis: '/api/analysis'
     }
 };
 
@@ -379,6 +380,26 @@ const api = {
 
         async delete(id) {
             return await api.request(`${API_CONFIG.endpoints.employees}/${id}`, {
+                method: 'DELETE'
+            });
+        }
+    },
+
+    // Analysis APIs
+    analysis: {
+        async get(farmId) {
+            return await api.request(`${API_CONFIG.endpoints.analysis}/${farmId}`);
+        },
+
+        async save(farmId, data) {
+            return await api.request(API_CONFIG.endpoints.analysis, {
+                method: 'POST',
+                body: JSON.stringify({ farm_id: farmId, data })
+            });
+        },
+
+        async delete(farmId) {
+            return await api.request(`${API_CONFIG.endpoints.analysis}/${farmId}`, {
                 method: 'DELETE'
             });
         }

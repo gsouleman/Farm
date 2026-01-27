@@ -234,13 +234,47 @@ Object.assign(app, {
         // 4. Fruit Trees: ~40%
         // 5. Cash Crops: ~40%
 
-        const allocations = [
+        // 5. Cash Crops: ~40%
+
+        // Check for Analysis Data to optimize allocation
+        let slopeMod = 0;
+        let waterMod = false;
+        let analysisNote = "Standard Best Practices";
+
+        try {
+            const savedAnalysis = await api.analysis.get(farm.id).catch(() => null);
+            if (savedAnalysis && savedAnalysis.data) {
+                const data = savedAnalysis.data;
+                console.log("Using Analysis Data:", data);
+
+                if (data.slope > 10) {
+                    slopeMod = 0.15; // Shift 15% to trees
+                    analysisNote = `Steep Slope (${data.slope}°) - Optimized for Soil Conservation`;
+                }
+
+                if (data.waterFeature && (data.waterFeature.includes('stream') || data.waterFeature.includes('river'))) {
+                    waterMod = true;
+                    analysisNote += " + Water Buffer Zone";
+                }
+            }
+        } catch (e) { console.warn("Auto-allocate: No analysis found", e); }
+
+        this.showNotification(`Allocating sections based on: ${analysisNote}`, 'info');
+
+        let allocations = [
             { name: 'Farm House Area', type: 'infrastructure', percent: 0.02, color: '#A9A9A9' }, // Grey
             { name: 'Residential Area', type: 'infrastructure', percent: 0.05, color: '#778899' }, // SlateGrey
             { name: 'Poultry House', type: 'infrastructure', percent: 0.03, color: '#F0E68C' },   // Khaki
-            { name: 'Fruit Trees Zone', type: 'fruit-trees', percent: 0.45, color: '#90EE90' },  // LightGreen
-            { name: 'Cash Crops Zone', type: 'cash-crops', percent: 0.45, color: '#FFD700' }     // Gold
+            { name: 'Fruit Trees Zone', type: 'fruit-trees', percent: 0.45 + slopeMod, color: '#90EE90' },  // LightGreen
+            { name: 'Cash Crops Zone', type: 'cash-crops', percent: 0.45 - slopeMod, color: '#FFD700' }     // Gold
         ];
+
+        if (waterMod) {
+            // Add a buffer zone for water protection
+            allocations.unshift({ name: 'Riparian Buffer Zone', type: 'fallow-land', percent: 0.05, color: '#00CED1' });
+            // Reduce others slightly to compensate
+            allocations.forEach((a, i) => { if (i > 0) a.percent *= 0.95; });
+        }
 
         // Fetch crop types to assign specific crops
         let fruitCrops = [];

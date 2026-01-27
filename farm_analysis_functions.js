@@ -6,14 +6,15 @@
 Object.assign(app, {
 
     // Main Entry Point
-    async generateFarmAnalysis() {
+    async generateFarmAnalysis(isViewMode = false) {
         const contentDiv = document.getElementById('farmAnalysisContent');
         if (!contentDiv) return;
 
-        contentDiv.innerHTML = '<div class="text-center p-5"><span class="spinner-border" role="status"></span><p>Contacting Satellite Provider... Analyzing Terrain...</p></div>';
-
-        // Simulate network delay for "Satellite" feel
-        await new Promise(r => setTimeout(r, 2000));
+        if (!isViewMode) {
+            contentDiv.innerHTML = '<div class="text-center p-5"><span class="spinner-border" role="status"></span><p>Contacting Satellite Provider... Analyzing Terrain...</p></div>';
+            // Simulate network delay for "Satellite" feel
+            await new Promise(r => setTimeout(r, 2000));
+        }
 
         const farm = this.getCurrentFarm();
         if (!farm || !farm.id) {
@@ -21,28 +22,128 @@ Object.assign(app, {
             return;
         }
 
-        // Use center coordinates or fallback
-        const lat = farm.centerCoordinates?.lat || (farm.boundaries && farm.boundaries[0]?.lat) || 0;
-        const lng = farm.centerCoordinates?.lng || (farm.boundaries && farm.boundaries[0]?.lng) || 0;
+        let analysisData;
 
-        if (lat === 0 && lng === 0) {
-            contentDiv.innerHTML = this.renderAnalysisError("No coordinates found. Please define farm boundaries in 'Farm Profile' or 'Edit Coordinates'.");
-            return;
+        try {
+            if (isViewMode) {
+                // Fetch saved data
+                const saved = await api.analysis.get(farm.id);
+                if (saved && saved.data) {
+                    analysisData = saved.data;
+                } else {
+                    contentDiv.innerHTML = this.renderAnalysisError("Report not found. Please regenerate.");
+                    return;
+                }
+            } else {
+                // New Generation
+                // Use center coordinates or fallback
+                const lat = farm.centerCoordinates?.lat || (farm.boundaries && farm.boundaries[0]?.lat) || 0;
+                const lng = farm.centerCoordinates?.lng || (farm.boundaries && farm.boundaries[0]?.lng) || 0;
+
+                if (lat === 0 && lng === 0) {
+                    contentDiv.innerHTML = this.renderAnalysisError("No coordinates found. Please define farm boundaries in 'Farm Profile' or 'Edit Coordinates'.");
+                    return;
+                }
+
+                // Mock Data
+                analysisData = this.mockSatelliteData(lat, lng);
+
+                // Save to Backend immediately
+                await api.analysis.save(farm.id, analysisData);
+
+                // Reload UI to show "View" state buttons
+                this.loadFarmAnalysisUI();
+            }
+
+            // Cross Reference with Risk Log (Real-time check even on saved data to keep alerts fresh)
+            const risks = await this.analyzeRisksAgainstLog(analysisData);
+
+            this.renderAnalysisReport(farm, analysisData, risks);
+
+        } catch (error) {
+            console.error(error);
+            contentDiv.innerHTML = this.renderAnalysisError("Failed to process analysis. Please try again.");
         }
+    },
 
-        // Mock Data Generation (Deterministic based on coords so it feels "real" and consistent)
-        const analysisData = this.mockSatelliteData(lat, lng);
+    // Initialize UI based on saved state
+    async loadFarmAnalysisUI() {
+        const contentDiv = document.getElementById('farmAnalysisContent');
+        const headerDiv = document.querySelector('#analysis .card-header');
+        if (!contentDiv || !headerDiv) return;
 
-        // Cross Reference with Risk Log
-        const risks = await this.analyzeRisksAgainstLog(analysisData);
+        try {
+            const farm = this.getCurrentFarm();
+            if (!farm || !farm.id) {
+                contentDiv.innerHTML = '<div class="text-center p-5 text-muted">Select a farm to view analysis.</div>';
+                return;
+            }
 
-        // Render Report
+            const saved = await api.analysis.get(farm.id).catch(() => null);
+
+            if (saved && saved.data) {
+                // Saved Report Exists
+                headerDiv.innerHTML = `
+                      <h3 class="card-title">📡 Satellite Analysis Report</h3>
+                      <div class="flex gap-2">
+                        <button class="btn btn-outline-primary" onclick="app.generateFarmAnalysis(true)">👁️ View Report</button>
+                        <button class="btn btn-outline-danger" onclick="app.deleteFarmAnalysis()">🗑️ Delete</button>
+                        <button class="btn btn-primary" onclick="app.generateFarmAnalysis(false)">🔄 Regenerate</button>
+                      </div>
+                 `;
+
+                // Show concise summary or placeholder
+                contentDiv.innerHTML = `
+                    <div class="text-center p-5">
+                        <i class="fas fa-check-circle text-success" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <h4>Analysis Available</h4>
+                        <p class="text-muted">Generated on ${new Date(saved.created_at).toLocaleDateString()}</p>
+                        <button class="btn btn-lg btn-success mt-3" onclick="app.generateFarmAnalysis(true)">Open Report</button>
+                    </div>
+                 `;
+            } else {
+                // No Report
+                headerDiv.innerHTML = `
+                      <h3 class="card-title">📡 Satellite Analysis Generation</h3>
+                      <button class="btn btn-primary" onclick="app.generateFarmAnalysis(false)">
+                          🔄 Generate New Analysis
+                      </button>
+                 `;
+                contentDiv.innerHTML = `
+                      <div class="text-center text-muted p-5">
+                          <i class="fas fa-satellite" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                          <p>Click "Generate New Analysis" to create a detailed report based on your farm's location.</p>
+                      </div>
+                 `;
+            }
+        } catch (e) { console.error(e); }
+    },
+
+    async deleteFarmAnalysis() {
+        if (!confirm("Are you sure you want to delete this analysis report?")) return;
+
+        try {
+            const farm = this.getCurrentFarm();
+            await api.analysis.delete(farm.id);
+            this.showSuccess("Analysis deleted.");
+            this.loadFarmAnalysisUI();
+        } catch (e) {
+            this.showError("Failed to delete analysis.");
+        }
+    },
+
+    renderAnalysisReport(farm, analysisData, risks) {
+        const contentDiv = document.getElementById('farmAnalysisContent');
         const reportHtml = `
             <div class="report-container" style="font-family: 'Courier New', Courier, monospace; background: #fff; padding: 2rem; border: 1px solid #ddd; max-width: 800px; margin: 0 auto;">
                 <div class="report-header" style="border-bottom: 2px solid #333; margin-bottom: 1.5rem; padding-bottom: 1rem;">
+                    <div style="float:right;">
+                        <button class="btn btn-sm btn-outline-secondary" onclick="app.printElement('farmAnalysisContent')">🖨️ Print</button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="app.loadFarmAnalysisUI()">✕ Close</button>
+                    </div>
                     <h2 style="margin: 0; color: #2c3e50;">📡 SATELLITE ANALYSIS REPORT</h2>
                     <p style="margin: 0.5rem 0 0; color: #666;">Target: ${farm.name}</p>
-                    <p style="margin: 0; color: #666;">Coordinates: ${lat.toFixed(6)}, ${lng.toFixed(6)}</p>
+                    <p style="margin: 0; color: #666;">Coordinates: ${farm.centerCoordinates?.lat?.toFixed(6) || 0}, ${farm.centerCoordinates?.lng?.toFixed(6) || 0}</p>
                     <p style="margin: 0; color: #666;">Date: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
                 </div>
 
