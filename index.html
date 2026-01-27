@@ -926,6 +926,11 @@
           <input type="date" class="form-control" id="cropHarvestDate">
         </div>
 
+        <div class="form-group" id="cropYieldGroup" style="display: none;">
+          <label class="form-label" for="cropYield">Expected Yield (kg)</label>
+          <input type="number" class="form-control" id="cropYield" min="0" step="0.01" placeholder="e.g. 1000">
+        </div>
+
         <div class="flex" style="justify-content: flex-end; gap: 1rem;">
           <button type="button" class="btn btn-outline" onclick="app.closeModal('addCropModal')">Cancel</button>
           <button type="submit" class="btn btn-success">Add Crop</button>
@@ -1273,4 +1278,4 @@ Example:
     </div>
   </div>
 
-  <script src="app.js?v=12"></script>
+  <script src="app.js?v=13"></script>

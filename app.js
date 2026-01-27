@@ -1809,6 +1809,7 @@ Object.assign(app, {
             areaGroup.style.display = 'none';
             document.getElementById('cropExpectedHarvestGroup').style.display = 'block';
             document.getElementById('cropHarvestDateGroup').style.display = 'none';
+            document.getElementById('cropYieldGroup').style.display = 'none';
 
             document.getElementById('cropCount').required = true;
             document.getElementById('cropArea').required = false;
@@ -1827,6 +1828,7 @@ Object.assign(app, {
             areaGroup.style.display = 'block';
             document.getElementById('cropExpectedHarvestGroup').style.display = 'none';
             document.getElementById('cropHarvestDateGroup').style.display = 'block';
+            document.getElementById('cropYieldGroup').style.display = 'block';
 
             document.getElementById('cropCount').required = false;
             document.getElementById('cropArea').required = true;
@@ -2388,7 +2390,8 @@ Object.assign(app, {
             plantedDate: document.getElementById('cropPlantedDate').value,
             status: document.getElementById('cropStatus').value,
             expectedHarvest: document.getElementById('cropExpectedHarvest').value,
-            harvestDate: document.getElementById('cropHarvestDate').value // Cash crops only
+            harvestDate: document.getElementById('cropHarvestDate').value, // Cash crops only
+            yield: parseFloat(document.getElementById('cropYield').value) || 0 // Cash crops only
         };
 
         // Remove empty strings to keep checks clean
@@ -2397,10 +2400,11 @@ Object.assign(app, {
 
         if (category === 'fruit') {
             cropData.count = parseInt(document.getElementById('cropCount').value) || 0;
-            // cropData.expectedHarvest = 'TBD'; // Not in DB schema yet, maybe add to notes? Or status covers it?
+            // Yield is not used for fruit trees in this form context (yet)
+            delete cropData.yield;
         } else {
             cropData.area = parseFloat(document.getElementById('cropArea').value) || 0;
-            cropData.yield = 0;
+            // cropData.yield is already set above
         }
 
         try {
@@ -2519,8 +2523,11 @@ Object.assign(app, {
         document.getElementById('cropType').value = crop.type;
         if (category === 'fruit') {
             document.getElementById('cropCount').value = crop.count;
+            document.getElementById('cropExpectedHarvest').value = crop.expectedHarvest || '';
         } else {
             document.getElementById('cropArea').value = crop.area;
+            document.getElementById('cropHarvestDate').value = crop.harvestDate ? crop.harvestDate.split('T')[0] : '';
+            document.getElementById('cropYield').value = crop.yield || '';
         }
         document.getElementById('cropPlantedDate').value = crop.plantedDate ? crop.plantedDate.split('T')[0] : '';
         document.getElementById('cropStatus').value = crop.status;
