@@ -1928,23 +1928,55 @@ Object.assign(app, {
     },
 
     async seedDefaultTypes(existingTypes = []) {
+        console.log('Beginning seedDefaultTypes...'); // Debug
         try {
             const existingNames = new Set(existingTypes.map(t => t.name.toLowerCase()));
+            let addedCount = 0;
 
             // Seed Fruit
             for (const name of this.defaultCropTypes.fruit) {
                 if (!existingNames.has(name.toLowerCase())) {
+                    console.log(`Seeding default: ${name}`); // Debug
                     await api.cropTypes.create({ category: 'fruit', name });
+                    addedCount++;
                 }
             }
             // Seed Cash
             for (const name of this.defaultCropTypes.cash) {
                 if (!existingNames.has(name.toLowerCase())) {
+                    console.log(`Seeding default: ${name}`); // Debug
                     await api.cropTypes.create({ category: 'cash', name });
+                    addedCount++;
                 }
             }
+            console.log(`Seeding complete. Added ${addedCount} types.`); // Debug
+            return addedCount;
         } catch (e) {
             console.error('Seeding failed', e);
+            throw e; // Rethrow so caller knows
+        }
+    },
+
+    async restoreDefaultTypes() {
+        if (!confirm('This will add any missing default crop types (like Avocado, Corn) to your list. Continue?')) {
+            return;
+        }
+
+        try {
+            // Fetch current to avoid duplicates
+            const current = await api.cropTypes.getAll();
+            const added = await this.seedDefaultTypes(current);
+
+            await this.loadCropTypes(); // Reload UI
+            this.switchTypeTab('fruit'); // Refresh modal view
+
+            if (added > 0) {
+                this.showSuccess(`Restored ${added} default types.`);
+            } else {
+                this.showSuccess('All default types are already present.');
+            }
+        } catch (error) {
+            this.showError('Failed to restore defaults: ' + error.message);
         }
     },
 
