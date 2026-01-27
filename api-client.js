@@ -333,22 +333,40 @@ const api = {
 
     // Section APIs
     sections: {
+        normalize(section) {
+            if (!section) return null;
+            return {
+                ...section,
+                cropType: section.crop_type || section.cropType,
+                farmId: section.farm_id || section.farmId,
+                createdAt: section.created_at || section.createdAt,
+                // Ensure boundaries are parsed if stringified
+                boundaries: typeof section.boundaries === 'string' ? JSON.parse(section.boundaries) : section.boundaries,
+                area: parseFloat(section.area) || 0,
+                percentage: parseFloat(section.percentage) || 0
+            };
+        },
+
         async getByFarm(farmId) {
-            return await api.request(`${API_CONFIG.endpoints.sections}/farm/${farmId}`);
+            const sections = await api.request(`${API_CONFIG.endpoints.sections}/farm/${farmId}`);
+            if (!Array.isArray(sections)) return [];
+            return sections.map(s => this.normalize(s));
         },
 
         async create(farmId, sectionData) {
-            return await api.request(`${API_CONFIG.endpoints.sections}/farm/${farmId}`, {
+            const section = await api.request(`${API_CONFIG.endpoints.sections}/farm/${farmId}`, {
                 method: 'POST',
                 body: JSON.stringify(sectionData)
             });
+            return this.normalize(section);
         },
 
         async update(id, sectionData) {
-            return await api.request(`${API_CONFIG.endpoints.sections}/${id}`, {
+            const section = await api.request(`${API_CONFIG.endpoints.sections}/${id}`, {
                 method: 'PUT',
                 body: JSON.stringify(sectionData)
             });
+            return this.normalize(section);
         },
 
         async delete(id) {

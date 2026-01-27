@@ -58,6 +58,7 @@ router.post('/farm/:farmId', [
         }
 
         const { name, type, cropType, area, percentage, color, boundaries, notes } = req.body;
+        console.log(`Debug: Creating section for farm ${req.params.farmId}:`, { name, type, area });
 
         const result = await db.query(
             `INSERT INTO sections (farm_id, name, type, crop_type, area, percentage, color, boundaries, notes)
@@ -76,10 +77,11 @@ router.post('/farm/:farmId', [
             ]
         );
 
+        console.log('Debug: Section created successfully:', result.rows[0].id);
         res.status(201).json(result.rows[0]);
     } catch (error) {
         console.error('Create section error:', error);
-        res.status(500).json({ error: { message: 'Failed to create section' } });
+        res.status(500).json({ error: { message: 'Failed to create section', details: error.message } });
     }
 });
 
