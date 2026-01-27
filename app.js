@@ -1471,7 +1471,7 @@ Object.assign(app, {
           <td><span class="badge badge-${this.getStatusColor(crop.status)}">${crop.status}</span></td>
           <td>${crop.expectedHarvest || 'TBD'}</td>
           <td>
-            <button class="btn btn-danger btn-sm" onclick="app.deleteFruitTree(${index})">ðŸ—‘ï¸</button>
+            <button class="btn btn-info btn-sm" onclick="app.viewCrop('fruit', ${index})" title="View Details">👁️</button><button class="btn btn-primary btn-sm" onclick="app.editCrop('fruit', ${index})" title="Edit">✏️</button><button class="btn btn-danger btn-sm" onclick="app.deleteFruitTree(${index})" title="Delete">🗑️</button>
           </td>
         </tr>
       `).join('');
@@ -1491,7 +1491,7 @@ Object.assign(app, {
           <td>${crop.harvestDate ? this.formatDate(crop.harvestDate) : 'TBD'}</td>
           <td>${crop.yield || 0} kg</td>
           <td>
-            <button class="btn btn-danger btn-sm" onclick="app.deleteCashCrop(${index})">ðŸ—‘ï¸</button>
+            <button class="btn btn-info btn-sm" onclick="app.viewCrop('cash', ${index})" title="View Details">👁️</button><button class="btn btn-primary btn-sm" onclick="app.editCrop('cash', ${index})" title="Edit">✏️</button><button class="btn btn-danger btn-sm" onclick="app.deleteCashCrop(${index})" title="Delete">🗑️</button>
           </td>
         </tr>
       `).join('');
@@ -1794,6 +1794,7 @@ Object.assign(app, {
         <option value="Orange">Orange</option>
         <option value="Mango">Mango</option>
         <option value="Other">Other</option>
+        <option value="__NEW__">➕ New...</option>
       `;
             countGroup.style.display = 'block';
             areaGroup.style.display = 'none';
@@ -1808,12 +1809,30 @@ Object.assign(app, {
         <option value="Pepper">Pepper</option>
         <option value="Corn">Corn</option>
         <option value="Other">Other</option>
+        <option value="__NEW__">➕ New...</option>
       `;
             countGroup.style.display = 'none';
             areaGroup.style.display = 'block';
             document.getElementById('cropCount').required = false;
             document.getElementById('cropArea').required = true;
         }
+
+        // Add event listener for custom crop type
+        cropTypeSelect.onchange = () => {
+            if (cropTypeSelect.value === '__NEW__') {
+                const customType = prompt('Enter custom crop type name:');
+                if (customType && customType.trim()) {
+                    const newOption = document.createElement('option');
+                    newOption.value = customType.trim();
+                    newOption.textContent = customType.trim();
+                    // Insert before the "New..." option
+                    cropTypeSelect.insertBefore(newOption, cropTypeSelect.lastElementChild);
+                    cropTypeSelect.value = customType.trim();
+                } else {
+                    cropTypeSelect.value = '';
+                }
+            }
+        };
 
         document.getElementById('cropPlantedDate').value = new Date().toISOString().split('T')[0];
     },
@@ -2364,21 +2383,41 @@ Object.assign(app, {
         }
 
         try {
-            const newCrop = await api.crops.create(this.currentFarmId, cropData);
+            // Check if editing existing crop
+            if (this.editingCropIndex !== undefined && this.editingCropCategory) {
+                const crops = this.editingCropCategory === 'fruit' ? this.fruitTrees : this.cashCrops;
+                const existingCrop = crops[this.editingCropIndex];
 
-            // Add to appropriate local array
-            if (category === 'fruit') {
-                this.fruitTrees.push(newCrop);
+                // Update via API
+                const updatedCrop = await api.crops.update(existingCrop.id, cropData);
+
+                // Update local array
+                crops[this.editingCropIndex] = { ...existingCrop, ...updatedCrop };
+
+                this.showSuccess('Crop updated successfully!');
+
+                // Clear editing state
+                this.editingCropIndex = undefined;
+                this.editingCropCategory = null;
             } else {
-                this.cashCrops.push(newCrop);
+                // Create new crop
+                const newCrop = await api.crops.create(this.currentFarmId, cropData);
+
+                // Add to appropriate local array
+                if (category === 'fruit') {
+                    this.fruitTrees.push(newCrop);
+                } else {
+                    this.cashCrops.push(newCrop);
+                }
+
+                this.showSuccess('Crop added successfully!');
             }
 
             this.renderCrops();
             this.closeModal('addCropModal');
-            this.showSuccess('Crop added successfully!');
         } catch (error) {
-            console.error('Failed to add crop:', error);
-            this.showError('Failed to add crop: ' + error.message);
+            console.error('Failed to save crop:', error);
+            this.showError('Failed to save crop: ' + error.message);
         }
     },
 
@@ -2414,6 +2453,56 @@ Object.assign(app, {
                 this.showError('Failed to delete crop: ' + error.message);
             }
         });
+    },
+
+    // View crop details
+    viewCrop(category, index) {
+        const crop = category === 'fruit' ? this.fruitTrees[index] : this.cashCrops[index];
+        if (!crop) return;
+
+        const categoryLabel = category === 'fruit' ? 'Fruit Tree' : 'Cash Crop';
+        const info = `
+            <div style="text-align: left;">
+                <h4 style="border-bottom: 1px solid #ccc; padding-bottom: 5px;">${categoryLabel} Details</h4>
+                <p><strong>Type:</strong> ${crop.type}</p>
+                ${category === 'fruit' ? `<p><strong>Count:</strong> ${crop.count}</p>` : `<p><strong>Area:</strong> ${crop.area} ha</p>`}
+                <p><strong>Planted Date:</strong> ${this.formatDate(crop.plantedDate)}</p>
+                <p><strong>Status:</strong> <span class="badge badge-${this.getStatusColor(crop.status)}">${crop.status}</span></p>
+                ${category === 'fruit' ? `<p><strong>Expected Harvest:</strong> ${crop.expectedHarvest || 'TBD'}</p>` : ''}
+                ${category === 'cash' ? `<p><strong>Harvest Date:</strong> ${crop.harvestDate ? this.formatDate(crop.harvestDate) : 'TBD'}</p>` : ''}
+                ${category === 'cash' ? `<p><strong>Yield:</strong> ${crop.yield || 0} kg</p>` : ''}
+                <hr>
+                <p class="text-muted" style="font-size: 0.8rem;">Internal ID: ${crop.id}</p>
+                <button class="btn btn-primary btn-sm mt-2" onclick="app.closeModal('infoModal')">Close</button>
+            </div>
+        `;
+        this.showInfo(info);
+    },
+
+    // Edit crop
+    editCrop(category, index) {
+        const crop = category === 'fruit' ? this.fruitTrees[index] : this.cashCrops[index];
+        if (!crop) return;
+
+        // Store the editing index and category
+        this.editingCropIndex = index;
+        this.editingCropCategory = category;
+
+        // Populate the modal
+        this.openAddCropModal(category);
+
+        // Update modal title
+        document.getElementById('cropModalTitle').textContent = category === 'fruit' ? 'Edit Fruit Tree' : 'Edit Cash Crop';
+
+        // Fill in the form with existing data
+        document.getElementById('cropType').value = crop.type;
+        if (category === 'fruit') {
+            document.getElementById('cropCount').value = crop.count;
+        } else {
+            document.getElementById('cropArea').value = crop.area;
+        }
+        document.getElementById('cropPlantedDate').value = crop.plantedDate ? crop.plantedDate.split('T')[0] : '';
+        document.getElementById('cropStatus').value = crop.status;
     },
 
     // Export transactions
