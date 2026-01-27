@@ -446,4 +446,5 @@ Object.assign(app, {
             this.renderGraphicalMap();
             this.renderLandAllocationTable();
             this.showSuccess('Auto-allocation complete! Sections have been generated based on optimal layout.');
-        },
+        }
+});
