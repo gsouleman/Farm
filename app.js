@@ -5658,23 +5658,22 @@ app.loadIncidents = async function () {
     if (!farm) return;
 
     const tbody = document.querySelector('#incidentsTable tbody');
-    if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center">Loading incidents...</td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="8" class="text-center">Loading incidents...</td></tr>';
 
     try {
         const response = await fetch(`${API_BASE_URL}/api/incidents/${farm.id}`);
         if (response.ok) {
-            const incidents = await response.json();
-            this.renderIncidentTable(incidents);
-            this.updateIncidentStats(incidents);
+            this.incidents = await response.json(); // Store locally
+            this.renderIncidentTable(this.incidents);
+            this.updateIncidentStats(this.incidents);
         } else {
-            if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Failed to load incidents. Server returned ' + response.status + '</td></tr>';
+            if (tbody) tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Failed to load incidents. Server returned ' + response.status + '</td></tr>';
         }
     } catch (error) {
         console.error('Error loading incidents:', error);
-        if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error connecting to server. Please check your connection.</td></tr>';
+        if (tbody) tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Error connecting to server. Please check your connection.</td></tr>';
     }
 };
-
 
 app.renderIncidentTable = function (incidents) {
     const tbody = document.querySelector('#incidentsTable tbody');
@@ -5682,8 +5681,8 @@ app.renderIncidentTable = function (incidents) {
 
     tbody.innerHTML = '';
 
-    if (incidents.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center">No incidents logged yet.</td></tr>';
+    if (!incidents || incidents.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">No incidents logged yet.</td></tr>';
         return;
     }
 
@@ -5691,17 +5690,41 @@ app.renderIncidentTable = function (incidents) {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${new Date(inc.date_detected).toLocaleDateString()}</td>
-            <td><span class="badge badge-${this.getSeverityClass(inc.severity)}">${inc.severity}</span></td>
             <td>${inc.category}</td>
             <td>${inc.subcategory}</td>
-            <td><span class="badge badge-${this.getStatusClass(inc.status)}">${inc.status}</span></td>
+            <td><span class="badge badge-${this.getSeverityClass(inc.severity)}">${inc.severity}</span></td>
+            <td>${inc.affected_assets || '-'}</td>
             <td>${this.formatCurrency(inc.financial_impact)}</td>
+            <td><span class="badge badge-${this.getStatusClass(inc.status)}">${inc.status}</span></td>
             <td>
-                <button class="btn btn-sm btn-outline-danger" onclick="app.deleteIncident('${inc.id}')">🗑️</button>
+                <button class="btn btn-sm btn-outline-danger" onclick="app.deleteIncident('${inc.id}')" title="Delete">🗑️</button>
             </td>
         `;
         tbody.appendChild(tr);
     });
+};
+
+app.filterIncidents = function () {
+    const query = document.getElementById('incidentSearch').value.toLowerCase();
+    const category = document.getElementById('incidentFilterCategory').value;
+    const status = document.getElementById('incidentFilterStatus').value;
+
+    if (!this.incidents) return;
+
+    const filtered = this.incidents.filter(inc => {
+        const matchesQuery = !query ||
+            inc.category.toLowerCase().includes(query) ||
+            inc.subcategory.toLowerCase().includes(query) ||
+            (inc.affected_assets && inc.affected_assets.toLowerCase().includes(query)) ||
+            (inc.details && JSON.stringify(inc.details).toLowerCase().includes(query));
+
+        const matchesCategory = !category || inc.category === category;
+        const matchesStatus = !status || inc.status === status;
+
+        return matchesQuery && matchesCategory && matchesStatus;
+    });
+
+    this.renderIncidentTable(filtered);
 };
 
 app.updateIncidentStats = function (incidents) {
