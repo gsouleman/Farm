@@ -82,7 +82,7 @@ const api = {
 
         try {
             const url = `${API_CONFIG.baseURL}${endpoint}`;
-            console.log(`Debug: API Request: ${options.method || 'GET'} ${url}`);
+
             const response = await fetch(url, config);
 
             if (response.status === 401) {
@@ -101,7 +101,7 @@ const api = {
             const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
-                console.error(`Debug: API Error [${endpoint}]:`, data);
+
                 throw new Error(data.error?.message || `Request failed with status ${response.status}`);
             }
 
@@ -172,13 +172,13 @@ const api = {
     farms: {
         async getAll() {
             const response = await api.request(API_CONFIG.endpoints.farms);
-            console.log(`Debug: API - getAll() returned ${response.length} farms`);
+
             return response;
         },
 
         async getOne(id) {
             const response = await api.request(`${API_CONFIG.endpoints.farms}/${id}`);
-            console.log(`Debug: API - getOne(${id}) returned farm: ${response ? response.name : 'NULL'}`);
+
             return response;
         },
 
@@ -276,19 +276,19 @@ const api = {
         },
 
         async getByFarm(farmId) {
-            console.log(`Debug: api.crops.getByFarm(${farmId}) called`);
+
             try {
                 const crops = await api.request(`${API_CONFIG.endpoints.crops}/farm/${farmId}`);
-                console.log(`Debug: api.crops.getByFarm response length: ${crops ? crops.length : 'null'}`);
+
 
                 if (!Array.isArray(crops)) {
-                    console.warn('Debug: api.crops.getByFarm received non-array:', crops);
+
                     return [];
                 }
 
                 return crops.map(c => this.normalize(c));
             } catch (error) {
-                console.error('Debug: api.crops.getByFarm failed:', error);
+
                 throw error;
             }
         },

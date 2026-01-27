@@ -272,7 +272,7 @@ Object.assign(app, {
         };
 
         if (!this.farms || this.farms.length === 0) {
-            console.log('Debug: getCurrentFarm - No farms loaded in memory, returning default.');
+
             return defaultFarm;
         }
 
@@ -285,7 +285,7 @@ Object.assign(app, {
         }
 
         // Fallback to first farm if list not empty
-        console.log(`Debug: getCurrentFarm - Farm ID ${this.currentFarmId} not found in ${this.farms.length} loaded farms. Falling back to first: ${this.farms[0].id}`);
+
         return this.farms[0];
     },
     get farmData() {
@@ -560,7 +560,7 @@ Object.assign(app, {
     },
     async init() {
         const currentUser = api.getUser();
-        console.log('Debug: Logged in as:', currentUser ? `${currentUser.email} (ID: ${currentUser.id})` : 'NOT LOGGED IN');
+
 
         // Load data from API
         await this.loadData();
@@ -605,7 +605,7 @@ Object.assign(app, {
         if (!api.getToken()) return;
 
         try {
-            console.log('Debug: loadData - Fetching farms...');
+
 
             // 1. Fetch Farms
             const farms = await api.farms.getAll();
@@ -613,17 +613,17 @@ Object.assign(app, {
             // 2. Fetch Custom Crop Types (Parallel-ish)
             this.loadCropTypes(); // Don't await, let it populate available lists
 
-            console.log('Debug: loadData - Received ' + farms.length + ' farms: ', farms.map(f => f.name));
-            console.log('Debug: loadData - Raw farms data: ', farms); // Log raw farm details
+
+
 
             this.farms = farms.map(f => this.sanitizeFarmData(f));
-            console.log(`Debug: loadData - Sanitized ${this.farms.length} farms:`);
+
             this.farms.forEach(f => {
-                console.log(`  > Farm: ${f.name} (ID: ${f.id})`);
-                console.log(`    - Boundaries: ${Array.isArray(f.boundaries) ? f.boundaries.length : 'NOT ARRAY'}`);
-                console.log(`    - Sections: ${Array.isArray(f.sections) ? f.sections.length : 'NOT ARRAY'}`);
+
+
+
                 if (f.boundaries && f.boundaries.length > 0) {
-                    console.log(`    - First Bound: ${JSON.stringify(f.boundaries[0])}`);
+
                 }
             });
 
@@ -632,18 +632,18 @@ Object.assign(app, {
                 if (this.farms.length === 1) {
                     this.currentFarmId = this.farms[0].id;
                     localStorage.setItem('currentFarmId', this.currentFarmId);
-                    console.log(`Debug: loadData - Single farm detected, auto-selecting ID: ${this.currentFarmId}`);
+
                 } else {
                     // Restore current farm from local storage preference or default to first
                     const savedFarmId = localStorage.getItem('currentFarmId');
-                    console.log(`Debug: loadData - Saved Farm ID from Storage: ${savedFarmId} (type: ${typeof savedFarmId})`);
+
 
                     const farmExists = this.farms.find(f => f.id == savedFarmId);
 
                     this.currentFarmId = farmExists ? farmExists.id : this.farms[0].id;
                 }
 
-                console.log(`Debug: loadData - Resolved currentFarmId: ${this.currentFarmId} (Final Type: ${typeof this.currentFarmId})`);
+
                 await this.loadFarmDetails(this.currentFarmId);
 
                 // Force an explicit map render to ensure canvas is drawn
@@ -652,21 +652,21 @@ Object.assign(app, {
                     this.renderGraphicalMap(farm); // Pass explicit farm
                 }, 500);
             } else {
-                console.warn('Debug: loadData - No farms found for user account');
+
                 this.renderDashboard();
                 this.renderLandAllocationTable();
             }
 
             this.updateFarmSelector();
         } catch (error) {
-            console.error('Debug: loadData - ERROR:', error);
+
             this.showError('Failed to load farm data: ' + error.message);
         }
     },
 
     // Load details for a specific farm
     async loadFarmDetails(farmId) {
-        console.log(`Debug: loadFarmDetails called for Farm ID: ${farmId} (type: ${typeof farmId})`);
+
         try {
             const farm = this.farms.find(f => f.id == farmId);
             if (!farm) return;
@@ -681,7 +681,7 @@ Object.assign(app, {
 
             // Attach to farm object in memory
             this.transactions = transactions;
-            console.log(`Debug: Fetched ${transactions.length} transactions for Farm ${farmId}`);
+
 
 
 
@@ -705,11 +705,8 @@ Object.assign(app, {
 
             // REMOVED: this.farmData = farm; (Shadows getter)
 
-            console.log(`Debug: loadFarmDetails - Farm ${farmId} Metadata:`, {
-                name: farm.name,
-                boundaries: farm.boundaries ? farm.boundaries.length : 'NULL',
-                sections: farm.sections ? farm.sections.length : 'NULL'
-            });
+
+
 
             // Update UI
             this.renderFarmDetails();
@@ -858,7 +855,7 @@ Object.assign(app, {
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                     const jsonData = XLSX.utils.sheet_to_json(firstSheet, { defval: "", raw: false });
 
-                    console.log('Debug: Raw Excel Data First Row:', jsonData[0]);
+
 
                     const processed = this.processMomoData(jsonData);
                     resolve(processed);
