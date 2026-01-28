@@ -70,6 +70,15 @@
       <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; justify-content: center;">
         <ul class="navbar-nav"
           style="display: flex; gap: 0.25rem; margin: 0; padding: 0; list-style: none; align-items: center;">
+          <!-- Farm Selection (Prioritized) -->
+          <li style="display: flex; align-items: center; gap: 0.5rem; position: relative; margin-right: 0.5rem;">
+            <label for="farmSelector" style="color: white; font-weight: 500; white-space: nowrap;">Select Farm</label>
+            <select id="farmSelector" class="form-control" onchange="app.handleFarmDropdown(this.value)"
+              style="height: 40px; padding: 0.5rem 2rem 0.5rem 1rem; border-radius: 4px; cursor: pointer; background: rgba(255,255,255,0.95); border: none; font-weight: 500;">
+              <option value="create-new">Create New Farm</option>
+            </select>
+          </li>
+
           <li><a href="#dashboard" id="nav-dashboard" class="nav-link active"
               onclick="app.showTab('dashboard')">Dashboard</a></li>
 
@@ -85,25 +94,23 @@
             </div>
           </li>
 
-          <li><a href="#financial" id="nav-finances" class="nav-link" onclick="app.showTab('financial')">Finances</a>
-          </li>
-          <li><a href="#reports" id="nav-reports" class="nav-link" onclick="app.showTab('reports')">Analytics &
-              Reports</a></li>
-          <li><a href="#farm-info" id="nav-farm-profile" class="nav-link" onclick="app.showTab('farm-info')">Farm
-              Profile</a></li>
-          <li><a href="#advanced" id="nav-advanced" class="nav-link" onclick="app.showTab('advanced')">Advanced
-              Features</a></li>
-
-          <!-- Dropdown Menu -->
-          <li style="display: flex; align-items: center; gap: 0.5rem; position: relative;">
-            <label for="farmSelector" style="color: white; font-weight: 500; white-space: nowrap;">Select Farm</label>
-            <select id="farmSelector" class="form-control" onchange="app.handleFarmDropdown(this.value)"
-              style="height: 40px; padding: 0.5rem 2rem 0.5rem 1rem; border-radius: 4px; cursor: pointer; background: rgba(255,255,255,0.95); border: none; font-weight: 500;">
-              <option value="create-new">Create New Farm</option>
-            </select>
+          <!-- Financials Dropdown -->
+          <li class="dropdown">
+            <a href="#" id="nav-financials" class="nav-link" onclick="event.preventDefault()">Financials ▼</a>
+            <div class="dropdown-content">
+              <a href="#financial" onclick="app.showTab('financial')">Finance Console</a>
+              <a href="#reports" onclick="app.showTab('reports')">Analytics & Reports</a>
+            </div>
           </li>
 
-
+          <!-- Administration Dropdown -->
+          <li class="dropdown">
+            <a href="#" id="nav-administration" class="nav-link" onclick="event.preventDefault()">Administration ▼</a>
+            <div class="dropdown-content">
+              <a href="#farm-info" onclick="app.showTab('farm-info')">Farm Profile</a>
+              <a href="#advanced" onclick="app.showTab('advanced')">Advanced Features</a>
+            </div>
+          </li>
         </ul>
       </div>
       <div style="display: flex; align-items: center; gap: 1rem;">
