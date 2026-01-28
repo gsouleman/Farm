@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const { body, validationResult } = require('express-validator');
 const db = require('../config/database');
 const authMiddleware = require('../middleware/auth');
@@ -11,13 +11,11 @@ router.use(authMiddleware);
 // Get all farms for current user
 router.get('/', async (req, res) => {
     try {
-        console.log(`Debug: GET /api/farms - req.userId: ${req.userId} (type: ${typeof req.userId})`);
         const result = await db.query(
             'SELECT * FROM farms WHERE user_id = $1 ORDER BY created_at DESC',
             [req.userId]
         );
 
-        console.log(`Debug: GET /api/farms - Found ${result.rows.length} farms for user ${req.userId}`);
         const farms = result.rows.map(f => {
             // Ensure boundaries is always a valid object/array, never a string
             let boundaries = f.boundaries;
@@ -37,7 +35,6 @@ router.get('/', async (req, res) => {
         if (farms.length > 0) {
             farms.forEach(f => {
                 const bCount = f.boundaries ? (Array.isArray(f.boundaries) ? f.boundaries.length : 'NOT_ARRAY') : 'NULL';
-                console.log(`Debug: Farm ${f.id} (${f.name}) - Boundaries in DB: ${bCount}`);
             });
         }
         res.json(farms);
@@ -146,8 +143,6 @@ router.put('/:id', [
 
         const { name = null, location = null, area = null, perimeter = null, centerLat = null, centerLng = null, boundaries = null, zones = null, altitude = null } = req.body;
 
-        console.log(`Debug: PUT /api/farms/${req.params.id} - Current User: ${req.userId}`);
-        console.log(`Debug: PUT boundaries: ${boundaries ? (Array.isArray(boundaries) ? boundaries.length : 'NOT ARRAY') : 'NULL'}`);
 
         const result = await db.query(
             `UPDATE farms 

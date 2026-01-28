@@ -1054,7 +1054,6 @@ Object.assign(app, {
 
     async saveImportedTransactions(transactions) {
         this.showLoading(`Saving ${transactions.length} transactions...`);
-        console.log(`Debug: Saving transactions to Farm ID: ${this.currentFarmId}`);
         let savedCount = 0;
         let errors = 0;
 
@@ -2626,7 +2625,6 @@ Object.assign(app, {
         };
 
         try {
-            console.log(`Debug: Saving ${this.tempCoordinates.length} coordinates to Farm ${currentFarm.id}...`);
             await api.farms.update(currentFarm.id, updateData);
 
             // Update local memory
@@ -5907,7 +5905,6 @@ app.showTab = function (tabName) {
         } else if (tabName === 'farm-info') {
             setTimeout(() => {
                 const farm = this.getCurrentFarm();
-                console.log(`Debug: showTab('farm-info') - Triggering map render with farm: ${farm ? farm.name : 'NULL'}`);
                 this.renderGraphicalMap(farm); // Pass explicit farm
                 this.renderFarmMap(farm);
             }, 100);
@@ -6971,7 +6968,6 @@ app.checkAutoTaskGeneration = function (incident) {
     }
 
     if (taskTitle) {
-        console.log(`Debug: Triggering auto-task generation for ${incident.category}`);
         // For better UX, we prompt the user
         if (confirm(`Would you like to create a preventive follow-up task: "${taskTitle}"?`)) {
             this.openAddTaskModal({
