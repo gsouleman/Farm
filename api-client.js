@@ -104,9 +104,14 @@ const api = {
                 // Token expired or invalid
                 this.removeToken();
                 this.removeUser();
-                // Redirect to login
-                if (window.location.pathname !== '/landing.html') {
-                    window.location.href = '/landing.html';
+
+                // Only redirect if we're not already on the landing page or login page
+                const isAuthPage = window.location.pathname.endsWith('landing.html') ||
+                    window.location.pathname.endsWith('login.html') ||
+                    window.location.pathname === '/';
+
+                if (!isAuthPage) {
+                    window.location.href = 'landing.html';
                 }
                 throw new Error('Authentication required');
             }

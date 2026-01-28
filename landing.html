@@ -266,7 +266,10 @@
 
             try {
                 await api.auth.login(email, password);
-                window.location.href = 'index.html';
+                // Add a small delay for browser extensions to process the successful login
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 200);
             } catch (error) {
                 errorMessage.textContent = error.message || 'Login failed. Please check your credentials.';
                 errorMessage.style.display = 'block';
