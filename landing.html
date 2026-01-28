@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farm Management | Professional Agricultural Solutions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        :root {
+            --landing-dark: #0a0a0a;
+            --landing-accent: #cc0000;
+        }
+
+        body {
+            background-color: var(--color-white);
+            color: var(--color-dark);
+            overflow-x: hidden;
+        }
+
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=2000') no-repeat center center/cover;
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .hero-content {
+            max-width: 900px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .features {
+            padding: 5rem 0;
+            background: var(--color-light);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2.5rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            text-align: center;
+            border-top: 5px solid var(--color-primary);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .feature-card i {
+            font-size: 3rem;
+            color: var(--color-primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-card h3 {
+            margin-bottom: 1rem;
+            color: var(--color-primary-dark);
+        }
+
+        .auth-section {
+            padding: 5rem 0;
+            background: var(--color-white);
+            display: flex;
+            justify-content: center;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 450px;
+            background: white;
+            padding: 3rem;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--color-gray-200);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-header h2 {
+            font-size: 2rem;
+            color: var(--color-primary-dark);
+        }
+
+        .footer {
+            background: var(--color-secondary-dark);
+            color: white;
+            padding: 3rem 0;
+            text-align: center;
+        }
+
+        .badge-premium {
+            background: var(--color-primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-content">
+            <span class="badge-premium">Intelligent Agriculture</span>
+            <h1>Farm Management System</h1>
+            <p>Empowering modern farmers with precision tools, data-driven insights, and integrated financial management
+                to maximize yield and operational efficiency.</p>
+            <a href="#login" class="btn btn-primary btn-lg">Get Started</a>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2 class="text-center">Cutting-Edge Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <h3>Precision Mapping</h3>
+                    <p>Interactive satellite and graphical mapping tools for accurate land measurement and crop
+                        allocation management.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Financial Intelligence</h3>
+                    <p>Real-time tracking of revenue, expenses, and cash flow with professional investor-ready
+                        reporting.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-seedling"></i>
+                    <h3>Crop Lifecycle Management</h3>
+                    <p>Comprehensive tracking for fruit trees and cash crops, from planting to harvest with automated
+                        status updates.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-calendar-alt"></i>
+                    <h3>Agri-Calendar & Alerts</h3>
+                    <p>Smart alerts and scheduling for planting cycles, ensuring timely operations and harvest
+                        optimization.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Risk Management</h3>
+                    <p>Detailed incident logging and risk assessment to mitigate environmental and operational threats.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-users-cog"></i>
+                    <h3>Workforce Analytics</h3>
+                    <p>Manage your farm laborers, payroll, and tasks within a unified dashboard.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Login Section -->
+    <section id="login" class="auth-section">
+        <div class="auth-container">
+            <div class="auth-header">
+                <h2>Secure Access</h2>
+                <p>Login to manage your farm assets</p>
+            </div>
+
+            <div class="error-message" id="errorMessage"
+                style="background: #fee; color: #c33; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; display: none;">
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-control" id="email" required placeholder="you@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" required placeholder="••••••••">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;" id="loginBtn">Sign In to
+                    Dashboard</button>
+            </form>
+
+            <p class="text-center mt-3 text-muted">
+                Contact your administrator for access credentials.
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Farm Management System. All rights reserved.</p>
+            <p class="text-muted"><small>Precision Agriculture | Sustainable Growth | Financial Transparency</small></p>
+        </div>
+    </footer>
+
+    <script src="api-client.js"></script>
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Redirect if already logged in
+        if (isAuthenticated()) {
+            window.location.href = 'index.html';
+        }
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            errorMessage.style.display = 'none';
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Authenticating...';
+
+            try {
+                await api.auth.login(email, password);
+                window.location.href = 'index.html';
+            } catch (error) {
+                errorMessage.textContent = error.message || 'Login failed. Please check your credentials.';
+                errorMessage.style.display = 'block';
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Sign In to Dashboard';
+            }
+        });
+    </script>
+</body>
+
+</html>

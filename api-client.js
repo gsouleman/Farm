@@ -105,8 +105,8 @@ const api = {
                 this.removeToken();
                 this.removeUser();
                 // Redirect to login
-                if (window.location.pathname !== '/login.html') {
-                    window.location.href = '/login.html';
+                if (window.location.pathname !== '/landing.html') {
+                    window.location.href = '/landing.html';
                 }
                 throw new Error('Authentication required');
             }
@@ -158,7 +158,7 @@ const api = {
         async logout() {
             api.removeToken();
             api.removeUser();
-            window.location.href = '/login.html';
+            window.location.href = '/landing.html';
         },
 
         async me() {
@@ -432,6 +432,6 @@ function isAuthenticated() {
 // Protect routes (call this on page load for protected pages)
 function requireAuth() {
     if (!isAuthenticated()) {
-        window.location.href = '/login.html';
+        window.location.href = '/landing.html';
     }
 }
