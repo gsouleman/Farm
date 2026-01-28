@@ -3749,19 +3749,38 @@ Object.assign(app, {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     },
 
-    // Update farm selector dropdown
+    // Update farm switcher in sidebar (radio card style)
     updateFarmSelector() {
-        const selector = document.getElementById('farmSelector');
-        if (!selector) return;
+        const container = document.getElementById('farmSelectorContainer');
+        if (!container) return;
 
-        // Build options: farms, then create option
-        const options = this.farms.map(farm =>
-            `<option value="${farm.id}" ${farm.id === this.currentFarmId ? 'selected' : ''}>${farm.name}</option>`
-        );
-        options.push('<option value="create-new">Create New Farm</option>');
+        if (!this.farms || this.farms.length === 0) {
+            container.innerHTML = '<div class="text-center p-3 text-muted">No farms found</div>';
+            return;
+        }
 
-        selector.innerHTML = options.join('');
-        selector.value = this.currentFarmId;
+        // Build radio cards
+        const html = this.farms.map(farm => `
+            <label class="farm-radio-card">
+                <input type="radio" name="farm-select" value="${farm.id}" 
+                    ${farm.id === this.currentFarmId ? 'checked' : ''} 
+                    onchange="app.switchFarm(this.value)">
+                <div class="farm-card-content">
+                    <div class="farm-card-icon">
+                        <i class="fas fa-mountain"></i>
+                    </div>
+                    <div class="farm-card-info">
+                        <span class="farm-card-name">${farm.name}</span>
+                        <span class="farm-card-tag">Farm ID: #${farm.id.toString().substring(0, 4)}</span>
+                    </div>
+                    <div class="farm-card-check">
+                        <i class="fas fa-check"></i>
+                    </div>
+                </div>
+            </label>
+        `).join('');
+
+        container.innerHTML = html;
     },
 
     // Custom category management
