@@ -1138,10 +1138,10 @@ Object.assign(app, {
         // Update trends (simplified - calculate based on income/expense ratio)
         const cashFlowTrendEl = document.getElementById('cashFlowTrend');
         if (netCashFlow > 0) {
-            cashFlowTrendEl.textContent = 'â†‘ Positive';
+            cashFlowTrendEl.textContent = '↑ Positive';
             cashFlowTrendEl.className = 'stat-card-trend trend-up';
         } else if (netCashFlow < 0) {
-            cashFlowTrendEl.textContent = 'â†“ Negative';
+            cashFlowTrendEl.textContent = '↓ Negative';
             cashFlowTrendEl.className = 'stat-card-trend trend-down';
         } else {
             cashFlowTrendEl.textContent = '-- Neutral';
@@ -1722,29 +1722,48 @@ Object.assign(app, {
     // Land utilization chart
     initLandUtilizationChart() {
         const ctx = document.getElementById('landUtilizationChart');
-        if (!ctx || !this.farmData || !this.farmData.zones) return;
+        const farm = this.getCurrentFarm();
+        if (!ctx || !farm || !farm.sections) return;
 
         if (this.charts.landUtilization) {
             this.charts.landUtilization.destroy();
         }
 
+        // Aggregate areas by type
+        const areasByType = {};
+        farm.sections.forEach(s => {
+            const type = s.type || 'Other';
+            areasByType[type] = (areasByType[type] || 0) + (parseFloat(s.area) || 0);
+        });
+
+        // Add unallocated area if applicable
+        const totalAllocated = Object.values(areasByType).reduce((a, b) => a + b, 0);
+        const farmArea = parseFloat(farm.area) || 0;
+        if (farmArea > totalAllocated) {
+            areasByType['Unallocated'] = farmArea - totalAllocated;
+        }
+
+        const labels = Object.keys(areasByType);
+        const data = Object.values(areasByType);
+
+        // Predefined colors for common types
+        const colorMap = {
+            'Fruit Trees': '#90ee90',
+            'Cash Crops': '#ffd700',
+            'Farm House': '#8b4513',
+            'Residential Area': '#2d5016',
+            'Unallocated': '#e0e0e0'
+        };
+
+        const backgroundColors = labels.map(label => colorMap[label] || '#' + Math.floor(Math.random() * 16777215).toString(16));
+
         this.charts.landUtilization = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Fruit Trees', 'Cash Crops', 'Farm House', 'Residential'],
+                labels: labels,
                 datasets: [{
-                    data: [
-                        this.farmData.zones.fruitTrees.area,
-                        this.farmData.zones.cashCrops.area,
-                        this.farmData.zones.farmHouse.area,
-                        this.farmData.zones.residential.area
-                    ],
-                    backgroundColor: [
-                        '#90ee90',
-                        '#ffd700',
-                        '#8b4513',
-                        '#2d5016'
-                    ]
+                    data: data,
+                    backgroundColor: backgroundColors
                 }]
             },
             options: {
@@ -1753,6 +1772,17 @@ Object.assign(app, {
                 plugins: {
                     legend: {
                         position: 'bottom',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percent = ((value / total) * 100).toFixed(1);
+                                return `${label}: ${value.toFixed(4)} ha (${percent}%)`;
+                            }
+                        }
                     }
                 }
             }
