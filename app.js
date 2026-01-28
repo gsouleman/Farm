@@ -3549,7 +3549,9 @@ Object.assign(app, {
                     this.farms = this.farms.filter(f => f.id !== farm.id);
 
                     this.hideLoading();
-                    this.showAlert('Farm deleted successfully', 'success');
+
+                    // Show success with proper title and message
+                    this.showAlert('Success', `${farm.name} has been deleted permanently.`);
 
                     // Switch to another farm or reset
                     if (this.farms.length > 0) {
@@ -3557,7 +3559,10 @@ Object.assign(app, {
                     } else {
                         this.currentFarmId = null;
                         localStorage.removeItem('currentFarmId');
-                        location.reload(); // Reload to show empty state
+                        // Add a small delay before reload so they can see the message
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000);
                     }
 
                     this.saveData(); // Keep this for currentFarmId persistence
@@ -3565,7 +3570,8 @@ Object.assign(app, {
                 } catch (error) {
                     this.hideLoading();
                     console.error('Delete farm error:', error);
-                    this.showAlert('Failed to delete farm: ' + (error.message || 'Unknown error'), 'error');
+                    // Show error with proper title and message
+                    this.showAlert('Deletion Failed', error.message || 'There was an error deleting the farm.');
                 }
             }
         );
