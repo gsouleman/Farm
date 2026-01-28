@@ -3531,27 +3531,42 @@ Object.assign(app, {
     },
 
     // Delete current farm
-    deleteFarm() {
+    async deleteFarm() {
         const farm = this.getCurrentFarm();
         if (!farm) return;
 
         this.showConfirmation(
             `Are you sure you want to delete ${farm.name}? This action cannot be undone.`,
-            () => {
-                // Remove farm
-                this.farms = this.farms.filter(f => f.id !== farm.id);
+            async () => {
+                try {
+                    // Show loading state if needed or just proceed
+                    this.showLoading('Deleting farm...');
 
-                // Switch to another farm or reset
-                if (this.farms.length > 0) {
-                    this.switchFarm(this.farms[0].id);
-                } else {
-                    this.currentFarmId = null;
-                    localStorage.removeItem('currentFarmId');
-                    location.reload(); // Reload to show empty state
+                    // Call backend API to delete the farm
+                    await api.farms.delete(farm.id);
+
+                    // Remove farm from local array
+                    this.farms = this.farms.filter(f => f.id !== farm.id);
+
+                    this.hideLoading();
+                    this.showAlert('Farm deleted successfully', 'success');
+
+                    // Switch to another farm or reset
+                    if (this.farms.length > 0) {
+                        this.switchFarm(this.farms[0].id);
+                    } else {
+                        this.currentFarmId = null;
+                        localStorage.removeItem('currentFarmId');
+                        location.reload(); // Reload to show empty state
+                    }
+
+                    this.saveData(); // Keep this for currentFarmId persistence
+                    this.updateFarmSelector();
+                } catch (error) {
+                    this.hideLoading();
+                    console.error('Delete farm error:', error);
+                    this.showAlert('Failed to delete farm: ' + (error.message || 'Unknown error'), 'error');
                 }
-
-                this.saveData();
-                this.updateFarmSelector();
             }
         );
     },
