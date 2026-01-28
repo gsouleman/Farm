@@ -14,25 +14,35 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="data:,">
     <script>
-        // Suppress known third-party extension errors from the console
-        window.addEventListener('error', function (e) {
-            const ignoredErrors = [
-                'message channel closed',
-                't.forEach is not a function',
-                'content-all.js',
-                'extension'
-            ];
-            if (ignoredErrors.some(err => e.message?.toLowerCase().includes(err) || e.filename?.toLowerCase().includes(err))) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        }, true);
-        window.addEventListener('unhandledrejection', function (e) {
-            if (e.reason?.message?.toLowerCase().includes('message channel closed')) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        }, true);
+        // Suppress known third-party extension errors by proxying the console
+        (function () {
+            const ignoredStrings = ['message channel closed', 't.forEach is not a function', 'content-all.js', 'extension'];
+            const originalError = console.error;
+            const originalWarn = console.warn;
+
+            const filter = (original, args) => {
+                const msg = args.map(arg => String(arg)).join(' ').toLowerCase();
+                if (ignoredStrings.some(str => msg.includes(str))) return;
+                original.apply(console, args);
+            };
+
+            console.error = (...args) => filter(originalError, args);
+            console.warn = (...args) => filter(originalWarn, args);
+
+            window.addEventListener('error', (e) => {
+                if (ignoredStrings.some(str => e.message?.toLowerCase().includes(str))) {
+                    e.stopImmediatePropagation();
+                }
+            }, true);
+
+            window.addEventListener('unhandledrejection', (e) => {
+                const msg = String(e.reason?.message || e.reason || '').toLowerCase();
+                if (ignoredStrings.some(str => msg.includes(str))) {
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                }
+            }, true);
+        })();
     </script>
     <style>
         :root {

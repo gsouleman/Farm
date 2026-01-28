@@ -111,7 +111,9 @@ const api = {
                     window.location.pathname === '/';
 
                 if (!isAuthPage) {
-                    window.location.href = 'landing.html';
+                    setTimeout(() => {
+                        window.location.href = 'landing.html';
+                    }, 300);
                 }
                 throw new Error('Authentication required');
             }
