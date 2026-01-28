@@ -78,6 +78,7 @@ const api = {
         });
     },
 
+    isRedirecting: false,
     // Make authenticated API request
     async request(endpoint, options = {}) {
         const token = this.getToken();
@@ -105,17 +106,20 @@ const api = {
                 this.removeToken();
                 this.removeUser();
 
-                // Only redirect if we're not already on the landing page or login page
                 const isAuthPage = window.location.pathname.endsWith('landing.html') ||
                     window.location.pathname.endsWith('login.html') ||
                     window.location.pathname === '/';
 
-                if (!isAuthPage) {
+                if (!isAuthPage && !this.isRedirecting) {
+                    this.isRedirecting = true;
                     setTimeout(() => {
                         window.location.href = 'landing.html';
                     }, 300);
                 }
-                throw new Error('Authentication required');
+
+                // Try to get a better error message from the response if available
+                const data = await response.json().catch(() => ({}));
+                throw new Error(data.error?.message || 'Authentication required');
             }
 
             // const data = await response.json(); // Moved below the !response.ok check
