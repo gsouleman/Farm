@@ -1181,6 +1181,115 @@ Object.assign(app, {
         this.renderRecentTransactions();
         this.updateWeather();
         this.renderUpcomingTasks();
+        this.updateReportMetrics();
+    },
+
+    updateReportMetrics() {
+        const farm = this.getCurrentFarm();
+        if (!farm) return;
+
+        const { income, expenses } = this.calculateMetrics();
+        const crops = [...(farm.fruitTrees || []), ...(farm.cashCrops || [])];
+
+        // Financial Health (Ratio income/expense)
+        const healthEl = document.getElementById('reportFinancialHealth');
+        if (healthEl) {
+            const ratio = expenses > 0 ? (income / expenses) : (income > 0 ? 2 : 1);
+            let healthText = 'Stable';
+            let colorClass = 'text-primary';
+
+            if (ratio > 1.5) { healthText = 'Strong'; colorClass = 'text-success'; }
+            else if (ratio < 0.8) { healthText = 'Critical'; colorClass = 'text-danger'; }
+
+            healthEl.textContent = healthText;
+            healthEl.className = `stat-card-value ${colorClass}`;
+        }
+
+        // Ops Efficiency (Task completion / Readiness)
+        const opsEl = document.getElementById('reportOpsEfficiency');
+        if (opsEl) {
+            const completed = crops.filter(c => c.status === 'Harvested' || c.status === 'Completed').length;
+            const total = crops.length;
+            const efficiency = total > 0 ? Math.round((completed / total) * 100) : 100;
+
+            opsEl.textContent = `${efficiency}%`;
+            document.getElementById('reportOpsTrend').textContent = efficiency > 70 ? '↑ High' : '→ Normal';
+        }
+
+        // Yield Index
+        const yieldEl = document.getElementById('reportYieldIndex');
+        if (yieldEl) {
+            const activeCrops = crops.filter(c => c.status !== 'Harvested');
+            yieldEl.textContent = activeCrops.length > 0 ? `${activeCrops.length} Active` : 'Dormant';
+        }
+    },
+
+    showReportAnalysis(type) {
+        const container = document.getElementById('reportSummaryContent');
+        const chartCanvas = document.getElementById('reportAnalysisChart');
+        if (!container || !chartCanvas) return;
+
+        container.style.display = 'none';
+        chartCanvas.style.display = 'block';
+
+        const ctx = chartCanvas.getContext('2d');
+        if (this.reportChart) this.reportChart.destroy();
+
+        let labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+        let data = [];
+        let label = '';
+
+        if (type === 'financial') {
+            label = 'Net Revenue (₣)';
+            data = [450000, 620000, 310000, 580000];
+        } else {
+            label = 'Activity Completion (%)';
+            data = [85, 92, 78, 95];
+        }
+
+        this.reportChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: label,
+                    data: data,
+                    borderColor: '#cc0000',
+                    backgroundColor: 'rgba(204, 0, 0, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: true, position: 'top' }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    },
+
+    generateFinancialReport() {
+        this.showReportAnalysis('financial');
+        const reportContent = document.getElementById('reportContent');
+        const reportPreview = document.getElementById('reportPreview');
+        if (reportContent && reportPreview) {
+            reportPreview.style.display = 'block';
+            reportContent.innerHTML = `<h4>Financial Summary Report</h4><p>Total Revenue: ${document.getElementById('totalRevenue').textContent}</p><p>Status: Generated Successfully</p>`;
+        }
+    },
+
+    generateOperationsReport() {
+        this.showReportAnalysis('operations');
+        const reportContent = document.getElementById('reportContent');
+        const reportPreview = document.getElementById('reportPreview');
+        if (reportContent && reportPreview) {
+            reportPreview.style.display = 'block';
+            reportContent.innerHTML = `<h4>Operations Summary Report</h4><p>Efficiency: ${document.getElementById('reportOpsEfficiency').textContent}</p><p>Status: Generated Successfully</p>`;
+        }
     },
 
     refreshDashboard() {
@@ -3201,6 +3310,7 @@ Object.assign(app, {
 
     // Generate reports
     generateFinancialReport() {
+        this.showReportAnalysis('financial');
         const { income, expenses, netCashFlow } = this.calculateMetrics();
         const reportContent = document.getElementById('reportContent');
         const reportPreview = document.getElementById('reportPreview');

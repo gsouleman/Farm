@@ -5,15 +5,15 @@
 
 /* ===== CSS Variables ===== */
 :root {
-  /* Primary Colors - Elegant Deep Green/Teal (AgriXP style) */
-  --color-primary: #1a4d32;
-  --color-primary-light: #2d7a50;
-  --color-primary-dark: #0d2c1d;
+  /* Primary Colors - CNN Red Theme */
+  --color-primary: #cc0000;
+  --color-primary-light: #ff4d4d;
+  --color-primary-dark: #990000;
 
-  /* Secondary Colors - Sophisticated Grays */
-  --color-secondary: #2c3e50;
-  --color-secondary-light: #34495e;
-  --color-secondary-dark: #1a252f;
+  /* Secondary Colors - Professional Grays */
+  --color-secondary: #333333;
+  --color-secondary-light: #4f4f4f;
+  --color-secondary-dark: #1a1a1a;
 
   /* Accent Colors - Gold/Wheat for highlights */
   --color-accent: #d4af37;
@@ -41,11 +41,11 @@
   --color-danger: #e74c3c;
   --color-info: #3498db;
 
-  /* Gradients - Deep Emerald Gradient */
+  /* Gradients - Professional Red Gradient */
   --gradient-primary: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
   --gradient-warm: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-secondary-dark) 100%);
-  --gradient-fresh: linear-gradient(135deg, var(--color-fresh) 0%, var(--color-fresh-dark) 100%);
-  --gradient-dark: linear-gradient(135deg, #1a202c 0%, #171923 100%);
+  --gradient-fresh: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
+  --gradient-dark: linear-gradient(135deg, #333333 0%, #1a1a1a 100%);
 
   /* Shadows - More subtle for elegant feel */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -115,7 +115,7 @@ body {
   font-size: var(--font-size-base);
   line-height: 1.6;
   color: var(--color-dark);
-  background: #ffffff;
+  background: var(--color-gray-100);
   overflow-x: hidden;
 }
 
@@ -451,6 +451,26 @@ a:hover {
 .btn-lg {
   padding: var(--spacing-md) var(--spacing-xl);
   font-size: var(--font-size-lg);
+}
+
+/* ===== Ivory Card - Clean Professional Style */
+.ivory-card {
+  background: #ffffff;
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-base);
+}
+
+.ivory-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-primary-light);
+}
+
+.ivory-card .card-header {
+  background: #f8f9fa;
+  border-bottom: 1px solid var(--color-gray-200);
+  color: var(--color-primary);
 }
 
 /* ===== Dashboard Layout ===== */

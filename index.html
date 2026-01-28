@@ -713,29 +713,78 @@
         </div>
       </section>
 
-      <!-- Reports Section -->
       <section id="reports" class="section">
         <div class="container">
-          <h2 class="text-center mb-4">Investor Reports</h2>
-
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Generate Professional Reports</h3>
+          <div class="dashboard-header mb-4">
+            <div>
+              <h2 class="mb-1">📊 AgriXP Reporting Module</h2>
+              <p class="text-muted">Comprehensive analytics and professional report extraction.</p>
             </div>
-            <div class="card-body">
-              <div class="grid grid-3">
-                <button class="btn btn-primary btn-lg" onclick="app.generateFinancialReport()">
-                  📊 Financial Report
-                </button>
-                <button class="btn btn-primary btn-lg" onclick="app.generateOperationsReport()">
-                  🌾 Operations Report
-                </button>
-                <button class="btn btn-primary btn-lg" onclick="app.generateInvestorPresentation()">
-                  💼 Investor Presentation
-                </button>
-                <button class="btn btn-primary btn-lg" onclick="app.generateRiskReport()">
-                  ⚠️ Risk & Incident Report
-                </button>
+          </div>
+
+          <!-- Quick Report Metrics (AgriXP Style) -->
+          <div class="metrics-grid mb-4">
+            <div class="card ivory-card">
+              <div class="card-body">
+                <div class="stat-card-label">Financial Health</div>
+                <div class="stat-card-value" id="reportFinancialHealth">--</div>
+                <div class="metric-trend text-success" id="reportFinancialTrend">↑ Optimal</div>
+              </div>
+            </div>
+            <div class="card ivory-card">
+              <div class="card-body">
+                <div class="stat-card-label">Operational Efficiency</div>
+                <div class="stat-card-value" id="reportOpsEfficiency">--</div>
+                <div class="metric-trend text-warning" id="reportOpsTrend">→ Tracking</div>
+              </div>
+            </div>
+            <div class="card ivory-card">
+              <div class="card-body">
+                <div class="stat-card-label">Yield Index</div>
+                <div class="stat-card-value" id="reportYieldIndex">--</div>
+                <div class="metric-trend text-primary" id="reportYieldTrend">Stable</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-grid mb-4">
+            <!-- Analytics Column -->
+            <div class="dashboard-col-main">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title"><i class="fas fa-chart-area"></i> Forecasts & Analysis</h3>
+                </div>
+                <div class="card-body">
+                  <div id="reportSummaryContent">
+                    <p class="text-muted text-center p-4">Select a report type below to view detailed analytics.</p>
+                  </div>
+                  <canvas id="reportAnalysisChart" style="display: none;"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Extraction Column -->
+            <div class="dashboard-col-side">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title"><i class="fas fa-file-export"></i> Export Center</h3>
+                </div>
+                <div class="card-body">
+                  <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <button class="btn btn-primary btn-block text-left" onclick="app.generateFinancialReport()">
+                      <i class="fas fa-file-invoice-dollar"></i> Financial Report
+                    </button>
+                    <button class="btn btn-primary btn-block text-left" onclick="app.generateOperationsReport()">
+                      <i class="fas fa-tractor"></i> Operations Report
+                    </button>
+                    <button class="btn btn-primary btn-block text-left" onclick="app.generateInvestorPresentation()">
+                      <i class="fas fa-briefcase"></i> Investor Presentation
+                    </button>
+                    <button class="btn btn-primary btn-block text-left" onclick="app.generateRiskReport()">
+                      <i class="fas fa-exclamation-triangle"></i> Risk & Incident Report
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
