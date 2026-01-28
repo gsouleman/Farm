@@ -53,6 +53,28 @@
 
   <!-- Custom Styles -->
   <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:,">
+  <script>
+    // Suppress known third-party extension errors from the console
+    window.addEventListener('error', function (e) {
+      const ignoredErrors = [
+        'message channel closed',
+        't.forEach is not a function',
+        'content-all.js',
+        'extension'
+      ];
+      if (ignoredErrors.some(err => e.message?.toLowerCase().includes(err) || e.filename?.toLowerCase().includes(err))) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, true);
+    window.addEventListener('unhandledrejection', function (e) {
+      if (e.reason?.message?.toLowerCase().includes('message channel closed')) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, true);
+  </script>
 </head>
 
 <body onload="requireAuth()">
