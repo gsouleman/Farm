@@ -249,9 +249,11 @@
         const loginBtn = document.getElementById('loginBtn');
         const errorMessage = document.getElementById('errorMessage');
 
-        // Redirect if already logged in
+        // Redirect if already logged in (with small delay for extensions)
         if (isAuthenticated()) {
-            window.location.href = 'index.html';
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 500);
         }
 
         loginForm.addEventListener('submit', async (e) => {
@@ -269,7 +271,7 @@
                 // Add a small delay for browser extensions to process the successful login
                 setTimeout(() => {
                     window.location.href = 'index.html';
-                }, 200);
+                }, 500);
             } catch (error) {
                 errorMessage.textContent = error.message || 'Login failed. Please check your credentials.';
                 errorMessage.style.display = 'block';
