@@ -1154,7 +1154,9 @@ Object.assign(app, {
         const areaPerimeterEl = document.getElementById('areaPerimeter');
 
         if (totalAreaEl) {
-            totalAreaEl.textContent = `${farm ? (parseFloat(farm.area) || 0).toFixed(4) : '0.0000'} ha`;
+            const areaHa = farm ? (parseFloat(farm.area) || 0) : 0;
+            const areaAcres = areaHa * 2.47105;
+            totalAreaEl.textContent = `${areaHa.toFixed(2)} ha / ${areaAcres.toFixed(2)} acres`;
         }
         if (areaPerimeterEl) {
             areaPerimeterEl.textContent = `${farm ? (parseFloat(farm.perimeter) || 0).toFixed(2) : '0.00'} m perimeter`;
