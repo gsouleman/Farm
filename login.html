@@ -13,7 +13,14 @@
     <script>
         // Suppress known third-party extension errors by proxying the console
         (function () {
-            const ignoredStrings = ['message channel closed', 't.forEach is not a function', 'content-all.js', 'extension'];
+            const ignoredStrings = [
+                'message channel closed',
+                't.forEach is not a function',
+                'content-all.js',
+                'extension',
+                'asynchronous response',
+                'returning true'
+            ];
             const originalError = console.error;
             const originalWarn = console.warn;
 
