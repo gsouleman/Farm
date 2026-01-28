@@ -512,7 +512,7 @@ Object.assign(app, {
             // In a real app we might fetch user by ID, but we can find them in the current list if we want to save a request
             // Or just fetch all users again and find. Let's fetch all to be safe and simple.
             const users = await api.auth.getUsers();
-            const user = users.find(u => u.id === userId);
+            const user = users.find(u => String(u.id) === String(userId));
 
             if (!user) {
                 this.showError('User not found');
@@ -566,7 +566,7 @@ Object.assign(app, {
     async deleteUser(id, email) {
         this.showConfirmation(`Are you sure you want to delete user <strong>${email}</strong>?<br><br>This action cannot be undone.`, async () => {
             try {
-                await api.auth.deleteUser(id);
+                await api.auth.deleteUser(String(id));
                 this.showSuccess('User deleted successfully!');
                 await this.loadUsers();
             } catch (error) {
