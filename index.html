@@ -107,7 +107,7 @@
             <label for="farmSelector" style="color: white; font-weight: 500; white-space: nowrap;">Select Farm</label>
             <select id="farmSelector" class="form-control" onchange="app.handleFarmDropdown(this.value)"
               style="height: 40px; padding: 0.5rem 2rem 0.5rem 1rem; border-radius: 4px; cursor: pointer; background: rgba(255,255,255,0.95); border: none; font-weight: 500;">
-              <option value="create-new">Create New Farm</option>
+              <option value="">Loading Farms...</option>
             </select>
           </li>
 
@@ -139,6 +139,7 @@
           <li class="dropdown">
             <a href="#" id="nav-farm-setup" class="nav-link" onclick="event.preventDefault()">Farm Setup ▼</a>
             <div class="dropdown-content">
+              <a href="#" onclick="app.openCreateFarmModal(); event.preventDefault()">Create New Farm</a>
               <a href="#farm-info" onclick="app.showTab('farm-info')">Farm Profile</a>
               <a href="#crops" onclick="app.showTab('crops')">Crops & Harvest</a>
             </div>
