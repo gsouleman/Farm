@@ -601,6 +601,13 @@ select.form-control {
   border-bottom: none;
 }
 
+.table-actions {
+  display: flex;
+  gap: var(--spacing-xs);
+  white-space: nowrap;
+  align-items: center;
+}
+
 /* ===== Badges ===== */
 .badge {
   display: inline-flex;

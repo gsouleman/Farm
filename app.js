@@ -1623,7 +1623,9 @@ Object.assign(app, {
           <td><span class="badge badge-${badgeClass}">${alertLevel}</span></td>
           <td style="font-size: 0.8rem; max-width: 200px;">${alertDescription}</td>
           <td>
-            <button class="btn btn-info btn-sm" onclick="app.viewCrop('fruit', ${index})" title="View Details">👁️</button><button class="btn btn-primary btn-sm" onclick="app.editCrop('fruit', ${index})" title="Edit">✏️</button><button class="btn btn-danger btn-sm" onclick="app.deleteFruitTree(${index})" title="Delete">🗑️</button>
+            <div class="table-actions">
+              <button class="btn btn-info btn-sm" onclick="app.viewCrop('fruit', ${index})" title="View Details">👁️</button><button class="btn btn-primary btn-sm" onclick="app.editCrop('fruit', ${index})" title="Edit">✏️</button><button class="btn btn-danger btn-sm" onclick="app.deleteFruitTree(${index})" title="Delete">🗑️</button>
+            </div>
           </td>
         </tr>
       `;
@@ -1652,7 +1654,9 @@ Object.assign(app, {
           <td><span class="badge badge-${badgeClass}">${alertLevel}</span></td>
           <td style="font-size: 0.8rem; max-width: 200px;">${alertDescription}</td>
           <td>
-            <button class="btn btn-info btn-sm" onclick="app.viewCrop('cash', ${index})" title="View Details">👁️</button><button class="btn btn-primary btn-sm" onclick="app.editCrop('cash', ${index})" title="Edit">✏️</button><button class="btn btn-danger btn-sm" onclick="app.deleteCashCrop(${index})" title="Delete">🗑️</button>
+            <div class="table-actions">
+              <button class="btn btn-info btn-sm" onclick="app.viewCrop('cash', ${index})" title="View Details">👁️</button><button class="btn btn-primary btn-sm" onclick="app.editCrop('cash', ${index})" title="Edit">✏️</button><button class="btn btn-danger btn-sm" onclick="app.deleteCashCrop(${index})" title="Delete">🗑️</button>
+            </div>
           </td>
         </tr>
       `;
