@@ -57,7 +57,15 @@
   <script>
     // Suppress known third-party extension errors by proxying the console
     (function () {
-      const ignoredStrings = ['message channel closed', 't.forEach is not a function', 'content-all.js', 'extension'];
+      const ignoredStrings = [
+        'message channel closed',
+        't.forEach is not a function',
+        'content-all.js',
+        'extension',
+        'asynchronous response',
+        'returning true'
+      ];
+
       const originalError = console.error;
       const originalWarn = console.warn;
 
@@ -1846,24 +1854,25 @@ Example:
   </main>
   </div>
 
-<!-- Footer -->
-<footer class='app-footer'>
-  <div class='container container-footer'>
-    <div class='footer-content'>
-      <div class='footer-brand'>
-        <h4 class='footer-logo'>Farm Management</h4>
-        <p class='footer-tagline'>Advanced Agricultural Solutions</p>
-      </div>
-      <div class='footer-nav'>
-        <p>&copy; 2026 Farm Management System. All rights reserved.</p>
-        <p class='footer-subtitle'>Professional farm management for sustainable agriculture</p>
-      </div>
-      <div class='footer-status'>
-        <span class='status-indicator'></span> System Active
+  <!-- Footer -->
+  <footer class='app-footer'>
+    <div class='container container-footer'>
+      <div class='footer-content'>
+        <div class='footer-brand'>
+          <h4 class='footer-logo'>Farm Management</h4>
+          <p class='footer-tagline'>Advanced Agricultural Solutions</p>
+        </div>
+        <div class='footer-nav'>
+          <p>&copy; 2026 Farm Management System. All rights reserved.</p>
+          <p class='footer-subtitle'>Professional farm management for sustainable agriculture</p>
+        </div>
+        <div class='footer-status'>
+          <span class='status-indicator'></span> System Active
+        </div>
       </div>
     </div>
-  </div>
-</footer>
+  </footer>
 
 </body>
+
 </html>
