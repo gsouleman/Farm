@@ -102,14 +102,6 @@
       <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; justify-content: center;">
         <ul class="navbar-nav"
           style="display: flex; gap: 0.25rem; margin: 0; padding: 0; list-style: none; align-items: center;">
-          <!-- Farm Selection (Prioritized) -->
-          <li style="display: flex; align-items: center; gap: 0.5rem; position: relative; margin-right: 0.5rem;">
-            <label for="farmSelector" style="color: white; font-weight: 500; white-space: nowrap;">Select Farm</label>
-            <select id="farmSelector" class="form-control" onchange="app.handleFarmDropdown(this.value)"
-              style="height: 40px; padding: 0.5rem 2rem 0.5rem 1rem; border-radius: 4px; cursor: pointer; background: rgba(255,255,255,0.95); border: none; font-weight: 500;">
-              <option value="">Loading Farms...</option>
-            </select>
-          </li>
 
           <li><a href="#dashboard" id="nav-dashboard" class="nav-link active"
               onclick="app.showTab('dashboard')">Dashboard</a></li>
@@ -154,545 +146,1443 @@
     </div>
   </nav>
 
-  <!-- Main Content -->
-  <main>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h4 class="sidebar-title"><i class="fas fa-tractor"></i> My Farms</h4>
+        <p class="sidebar-subtitle">Select a farm to manage</p>
+      </div>
+      <div id="farmSelectorContainer" class="farm-switcher">
+        <div class="text-center p-3 text-muted">Loading farms...</div>
+      </div>
+    </aside>
 
-    <!-- Dashboard Section -->
-    <section id="dashboard" class="section">
-      <div class="container">
-        <h1 class="text-center mb-4">Farm Overview Dashboard</h1>
+    <!-- Main Content -->
+    <main class="main-content">
 
-        <!-- Key Metrics -->
-        <div class="grid grid-4 mb-4">
-          <div class="stat-card">
-            <div class="stat-card-icon">📍</div>
-            <div class="stat-card-label">Total Area</div>
-            <div class="stat-card-value" id="totalArea">0 ha</div>
-            <div class="stat-card-info" id="areaPerimeter">0 m perimeter</div>
-          </div>
+      <!-- Dashboard Section -->
+      <section id="dashboard" class="section">
+        <div class="container">
+          <h1 class="text-center mb-4">Farm Overview Dashboard</h1>
 
-          <div class="stat-card">
-            <div class="stat-card-icon">💰</div>
-            <div class="stat-card-label">Total Revenue</div>
-            <div class="stat-card-value" id="totalRevenue">₣0</div>
-            <div class="stat-card-trend trend-up" id="revenueTrend">↑ 0%</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-card-icon">📊</div>
-            <div class="stat-card-label">Total Expenses</div>
-            <div class="stat-card-value" id="totalExpenses">₣0</div>
-            <div class="stat-card-trend trend-down" id="expenseTrend">↓ 0%</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-card-icon">💵</div>
-            <div class="stat-card-label">Net Cash Flow</div>
-            <div class="stat-card-value" id="netCashFlow">₣0</div>
-            <div class="stat-card-trend" id="cashFlowTrend">--</div>
-          </div>
-        </div>
-
-        <!-- Change Password Modal -->
-        <div class="modal-overlay" id="changePasswordModal" style="z-index: 2000;">
-          <div class="modal">
-            <div class="modal-header">
-              <h3 class="modal-title">Change Password</h3>
+          <!-- Key Metrics -->
+          <div class="grid grid-4 mb-4">
+            <div class="stat-card">
+              <div class="stat-card-icon">📍</div>
+              <div class="stat-card-label">Total Area</div>
+              <div class="stat-card-value" id="totalArea">0 ha</div>
+              <div class="stat-card-info" id="areaPerimeter">0 m perimeter</div>
             </div>
-            <div class="modal-body">
-              <div class="alert alert-warning" id="passwordChangeAlert">
-                You must change your password before continuing.
+
+            <div class="stat-card">
+              <div class="stat-card-icon">💰</div>
+              <div class="stat-card-label">Total Revenue</div>
+              <div class="stat-card-value" id="totalRevenue">₣0</div>
+              <div class="stat-card-trend trend-up" id="revenueTrend">↑ 0%</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-icon">📊</div>
+              <div class="stat-card-label">Total Expenses</div>
+              <div class="stat-card-value" id="totalExpenses">₣0</div>
+              <div class="stat-card-trend trend-down" id="expenseTrend">↓ 0%</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-icon">💵</div>
+              <div class="stat-card-label">Net Cash Flow</div>
+              <div class="stat-card-value" id="netCashFlow">₣0</div>
+              <div class="stat-card-trend" id="cashFlowTrend">--</div>
+            </div>
+          </div>
+
+          <!-- Change Password Modal -->
+          <div class="modal-overlay" id="changePasswordModal" style="z-index: 2000;">
+            <div class="modal">
+              <div class="modal-header">
+                <h3 class="modal-title">Change Password</h3>
               </div>
-              <form id="changePasswordForm">
-                <div class="form-group">
-                  <label class="form-label" for="currentPassword">Current Password</label>
-                  <input type="password" class="form-control" id="currentPassword" required>
+              <div class="modal-body">
+                <div class="alert alert-warning" id="passwordChangeAlert">
+                  You must change your password before continuing.
                 </div>
-                <div class="form-group">
-                  <label class="form-label" for="newPassword">New Password</label>
-                  <input type="password" class="form-control" id="newPassword" required minlength="6">
-                  <small class="text-muted">Minimum 6 characters</small>
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="confirmNewPassword">Confirm New Password</label>
-                  <input type="password" class="form-control" id="confirmNewPassword" required>
-                </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-primary" onclick="app.submitPasswordChange()">Update
-                Password</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- User Management Modal (Admin Only) -->
-        <div class="modal-overlay" id="userManagementModal">
-          <div class="modal modal-xl">
-            <div class="modal-header">
-              <h3 class="modal-title">User Management</h3>
-              <button class="modal-close" onclick="app.closeModal('userManagementModal')"><i
-                  class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-              <div class="tabs-container">
-                <div class="modal-tabs">
-                  <button class="modal-tab active" id="btnUserList" onclick="app.switchUserTab('list')">
-                    <i class="fas fa-users"></i> Users List
-                  </button>
-                  <button class="modal-tab" id="btnUserCreate" onclick="app.switchUserTab('create')">
-                    <i class="fas fa-user-plus"></i> Create User
-                  </button>
-                </div>
-              </div>
-
-              <div id="userListTab" class="tab-content active">
-                <div class="table-container improved-table">
-                  <table class="table">
-                    <thead>
-                      <tr>
-                        <th>NAME</th>
-                        <th>EMAIL</th>
-                        <th>ROLE</th>
-                        <th>CREATED AT</th>
-                        <th style="width: 100px; text-align: center;">ACTIONS</th>
-                      </tr>
-                    </thead>
-                    <tbody id="usersTableBody">
-                      <!-- Loaded via JS -->
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <div id="createUserTab" class="tab-content" style="display: none;">
-                <form id="createUserForm" onsubmit="event.preventDefault(); app.saveUser();">
-                  <input type="hidden" id="editUserId">
+                <form id="changePasswordForm">
                   <div class="form-group">
-                    <label class="form-label" for="newUserFullName">Full Name</label>
-                    <input type="text" class="form-control" id="newUserFullName" required
-                      placeholder="e.g. Jean Dupont">
+                    <label class="form-label" for="currentPassword">Current Password</label>
+                    <input type="password" class="form-control" id="currentPassword" required>
                   </div>
                   <div class="form-group">
-                    <label class="form-label" for="newUserEmail">Email Address</label>
-                    <input type="email" class="form-control" id="newUserEmail" required placeholder="email@example.com">
+                    <label class="form-label" for="newPassword">New Password</label>
+                    <input type="password" class="form-control" id="newPassword" required minlength="6">
+                    <small class="text-muted">Minimum 6 characters</small>
                   </div>
                   <div class="form-group">
-                    <label class="form-label" for="newUserPassword">Password</label>
-                    <input type="password" class="form-control" id="newUserPassword" required minlength="6"
-                      placeholder="••••••••">
-                    <small class="text-muted" id="passwordNotice">Required for new users (min 6 chars)</small>
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label" for="newUserRole">User Role</label>
-                    <select class="form-control" id="newUserRole">
-                      <option value="user">User</option>
-                      <option value="admin">Admin</option>
-                      <option value="guest">Guest</option>
-                    </select>
-                  </div>
-                  <div class="modal-footer" style="padding: 1.5rem 0 0 0; border-top: none;">
-                    <button type="submit" class="btn btn-primary" id="saveUserBtn">💾 Create User</button>
-                    <button type="button" class="btn btn-outline" onclick="app.switchUserTab('list')">Cancel</button>
+                    <label class="form-label" for="confirmNewPassword">Confirm New Password</label>
+                    <input type="password" class="form-control" id="confirmNewPassword" required>
                   </div>
                 </form>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Charts -->
-        <div class="grid grid-2 mb-4">
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Cash Flow Trend</h3>
-            </div>
-            <div class="card-body">
-              <canvas id="cashFlowChart"></canvas>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Land Utilization</h3>
-            </div>
-            <div class="card-body">
-              <canvas id="landUtilizationChart"></canvas>
-            </div>
-          </div>
-        </div>
-
-        <!-- Recent Transactions -->
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Recent Transactions</h3>
-            <button class="btn btn-primary btn-sm" onclick="app.openAddTransactionModal()">
-              ➕ Add Transaction
-            </button>
-          </div>
-          <div class="card-body">
-            <div class="table-container">
-              <table class="table" id="recentTransactionsTable">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Type</th>
-                    <th>Category</th>
-                    <th>Description</th>
-                    <th>Amount</th>
-                  </tr>
-                </thead>
-                <tbody id="recentTransactionsBody">
-                  <tr>
-                    <td colspan="5" class="text-center text-muted">No transactions yet</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Farm Information Section -->
-    <section id="farm-info" class="section" style="display: none;">
-      <div class="container">
-        <h2 class="section-title">Farm Overview</h2>
-
-        <!-- Single Column Layout for Better Button Fit -->
-        <!-- Stacked Layout: Overview (Top) and Allocation (Bottom) -->
-        <div style="display: flex; flex-direction: column; gap: 2rem;">
-
-          <!-- Top Card: Location & Specifications (Full Width) -->
-          <div class="card">
-            <div class="card-header">
-              <div class="d-flex justify-content-between align-items-center">
-                <h3 class="card-title mb-0">📍 Location & Specifications</h3>
-                <div class="farm-actions">
-                  <button class="btn btn-sm btn-outline-primary me-2" onclick="app.editFarm()">
-                    <i class="fas fa-edit"></i> Edit
-                  </button>
-                  <button class="btn btn-sm btn-outline-danger" onclick="app.deleteFarm()">
-                    <i class="fas fa-trash"></i> Delete
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div class="card-body">
-              <!-- Grid-based Specs -->
-              <div class="info-grid">
-                <div class="info-item">
-                  <label>Farm Name</label>
-                  <span id="farmNameDisplay">-</span>
-                </div>
-                <div class="info-item">
-                  <label>Location</label>
-                  <span id="farmLocationDisplay">-</span>
-                </div>
-                <div class="info-item">
-                  <label>Total Area</label>
-                  <span id="farmAreaDisplay">-</span>
-                </div>
-                <div class="info-item">
-                  <label>Perimeter</label>
-                  <span id="farmPerimeterDisplay">-</span>
-                </div>
-                <div class="info-item">
-                  <label>Center Coordinates</label>
-                  <span id="farmCoordinatesDisplay">-</span>
-                </div>
-                <div class="info-item">
-                  <label>Altitude</label>
-                  <span id="farmAltitudeDisplay">-</span>
-                </div>
-              </div>
-
-              <!-- Land Allocation Table -->
-              <div style="margin-top: 2rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                  <h4 style="margin: 0; color: var(--color-primary-dark);">📊 Land Allocation Summary</h4>
-                  <button class="btn btn-sm btn-secondary" onclick="app.printLandAllocationTable()"
-                    title="Print Land Allocation">
-                    🖨️ Print
-                  </button>
-                </div>
-                <div class="table-container">
-                  <table class="table">
-                    <thead>
-                      <tr>
-                        <th>SECTION</th>
-                        <th>AREA (HA)</th>
-                        <th>PERCENTAGE</th>
-                        <th>REVENUE</th>
-                        <th>EXPENSES</th>
-                        <th>NET FLOW</th>
-                      </tr>
-                    </thead>
-                    <tbody id="landAllocationBody">
-                      <tr>
-                        <td colspan="3" class="text-center text-muted">No allocations defined yet.</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="app.submitPasswordChange()">Update
+                  Password</button>
               </div>
             </div>
           </div>
 
-          <!-- Bottom Card: Farm Map & Crop Allocation (Full Width) -->
-          <div class="card">
-            <div class="card-header">
-              <div style="display: flex; gap: 0.5rem; align-items: center;">
-                <button class="btn btn-secondary btn-sm" onclick="app.toggleMapView('satellite')" id="satelliteViewBtn">
-                  Satellite View
-                </button>
-                <button class="btn btn-outline btn-sm" onclick="app.toggleMapView('graphical')" id="graphicalViewBtn">
-                  📊 Graphical
-                </button>
-                <button class="btn btn-success btn-sm" onclick="app.openCoordinateEditorModal()"
-                  title="Edit farm plot coordinates">
-                  ✏️ Edit Coordinates
-                </button>
-                <button class="btn btn-primary btn-sm" onclick="app.toggleDrawingMode()" id="drawSectionBtn">
-                  Crop Allocation
-                </button>
-                <button class="btn btn-warning btn-sm" onclick="app.autoAllocateSections()"
-                  title="Automatically generate layout">
-                  ✨ Auto Allocation
-                </button>
+          <!-- User Management Modal (Admin Only) -->
+          <div class="modal-overlay" id="userManagementModal">
+            <div class="modal modal-xl">
+              <div class="modal-header">
+                <h3 class="modal-title">User Management</h3>
+                <button class="modal-close" onclick="app.closeModal('userManagementModal')"><i
+                    class="fas fa-times"></i></button>
               </div>
-            </div>
-            <div class="card-body">
-              <!-- Google Maps Container -->
-              <div id="farmMap"
-                style="width: 100%; height: 700px; border-radius: 8px; background: #e5e5e5; display: none;">
-                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666;">
-                  <div style="text-align: center;">
-                    <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">📍 Loading Map...</p>
-                    <small>If map doesn't load, please add your Google Maps API key in index.html</small>
+              <div class="modal-body">
+                <div class="tabs-container">
+                  <div class="modal-tabs">
+                    <button class="modal-tab active" id="btnUserList" onclick="app.switchUserTab('list')">
+                      <i class="fas fa-users"></i> Users List
+                    </button>
+                    <button class="modal-tab" id="btnUserCreate" onclick="app.switchUserTab('create')">
+                      <i class="fas fa-user-plus"></i> Create User
+                    </button>
                   </div>
                 </div>
-              </div>
 
-              <!-- Graphical Map Stats Header -->
-              <div id="graphicalStatsHeader"
-                style="display: none; justify-content: space-between; align-items: center; background: white; padding: 10px 20px; border-radius: 8px 8px 0 0; border: 1px solid #ddd; border-bottom: none; margin-bottom: 0;">
-                <div style="display: flex; gap: 1.5rem;">
-                  <div style="text-align: center;">
-                    <span style="font-size: 0.8rem; color: #666; display: block;">Total Farm</span>
-                    <span id="graphicalTotalArea" style="color: #333; font-weight: 600; font-size: 1.1rem;">0.00
-                      ha</span>
-                  </div>
-                  <div style="width: 1px; background: #ddd;"></div>
-                  <div style="text-align: center;">
-                    <span style="font-size: 0.8rem; color: #2e7d32; display: block;">Allocated</span>
-                    <span id="graphicalAllocatedArea" style="color: #2e7d32; font-weight: 600; font-size: 1.1rem;">0.00
-                      ha</span>
-                  </div>
-                  <div style="width: 1px; background: #ddd;"></div>
-                  <div style="text-align: center;">
-                    <span style="font-size: 0.8rem; color: #2196F3; display: block;">Selected</span>
-                    <span id="graphicalSelectedArea" style="color: #2196F3; font-weight: 600; font-size: 1.1rem;">0.00
-                      ha</span>
-                  </div>
-                  <div style="width: 1px; background: #ddd;"></div>
-                  <div style="text-align: center;">
-                    <span style="font-size: 0.8rem; color: #c62828; display: block;">Empty Space</span>
-                    <span id="graphicalUnallocatedArea"
-                      style="color: #c62828; font-weight: 600; font-size: 1.1rem;">0.00 ha</span>
+                <div id="userListTab" class="tab-content active">
+                  <div class="table-container improved-table">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th>NAME</th>
+                          <th>EMAIL</th>
+                          <th>ROLE</th>
+                          <th>CREATED AT</th>
+                          <th style="width: 100px; text-align: center;">ACTIONS</th>
+                        </tr>
+                      </thead>
+                      <tbody id="usersTableBody">
+                        <!-- Loaded via JS -->
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-                <h3 style="margin: 0; color: #333; font-size: 1.2rem;">Detailed Map</h3>
-                <div style="text-align: right;">
-                  <span style="font-size: 0.8rem; color: #666; display: block;">Sections</span>
-                  <span id="graphicalSectionCount" style="color: #333; font-weight: 600; font-size: 1.1rem;">0</span>
-                </div>
-              </div>
 
-              <!-- Graphical Map Canvas -->
-              <canvas id="farmMapCanvas" width="1200" height="700"
-                style="width: 100%; height: 700px; border-radius: 0 0 8px 8px; background: #f8faf9; border: 1px solid #ddd; margin-bottom: 1.5rem;">
-              </canvas>
-
-              <!-- Sections Table -->
-              <div id="sectionsTableContainer">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                  <h4 style="margin: 0; color: var(--color-primary);">📐 Detailed Crop Allocation Sections</h4>
-                  <button class="btn btn-sm btn-secondary" onclick="app.printCropAllocationSections()"
-                    title="Print Crop Allocation Sections">
-                    🖨️ Print
-                  </button>
-                </div>
-                <div class="table-container">
-                  <table class="table">
-                    <thead>
-                      <tr>
-                        <th style="width: 50px;">COLOR</th>
-                        <th>TYPE</th>
-                        <th>CROP</th>
-                        <th>AREA (HA)</th>
-                        <th>% OF FARM</th>
-                        <th>ACTIONS</th>
-                      </tr>
-                    </thead>
-                    <tbody id="farmSectionsTable">
-                    </tbody>
-                  </table>
+                <div id="createUserTab" class="tab-content" style="display: none;">
+                  <form id="createUserForm" onsubmit="event.preventDefault(); app.saveUser();">
+                    <input type="hidden" id="editUserId">
+                    <div class="form-group">
+                      <label class="form-label" for="newUserFullName">Full Name</label>
+                      <input type="text" class="form-control" id="newUserFullName" required
+                        placeholder="e.g. Jean Dupont">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="newUserEmail">Email Address</label>
+                      <input type="email" class="form-control" id="newUserEmail" required
+                        placeholder="email@example.com">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="newUserPassword">Password</label>
+                      <input type="password" class="form-control" id="newUserPassword" required minlength="6"
+                        placeholder="••••••••">
+                      <small class="text-muted" id="passwordNotice">Required for new users (min 6 chars)</small>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="newUserRole">User Role</label>
+                      <select class="form-control" id="newUserRole">
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                        <option value="guest">Guest</option>
+                      </select>
+                    </div>
+                    <div class="modal-footer" style="padding: 1.5rem 0 0 0; border-top: none;">
+                      <button type="submit" class="btn btn-primary" id="saveUserBtn">💾 Create User</button>
+                      <button type="button" class="btn btn-outline" onclick="app.switchUserTab('list')">Cancel</button>
+                    </div>
+                  </form>
                 </div>
               </div>
             </div>
           </div>
 
-        </div>
-      </div>
-    </section>
+          <!-- Charts -->
+          <div class="grid grid-2 mb-4">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Cash Flow Trend</h3>
+              </div>
+              <div class="card-body">
+                <canvas id="cashFlowChart"></canvas>
+              </div>
+            </div>
 
-    <!-- Financial Management Section -->
-    <section id="financial" class="section">
-      <div class="container">
-        <h2 class="text-center mb-4">Financial Management</h2>
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Land Utilization</h3>
+              </div>
+              <div class="card-body">
+                <canvas id="landUtilizationChart"></canvas>
+              </div>
+            </div>
+          </div>
 
-        <div class="grid grid-3">
-          <!-- Expense Categories -->
+          <!-- Recent Transactions -->
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">Expense Breakdown</h3>
-            </div>
-            <div class="card-body">
-              <canvas id="expenseBreakdownChart"></canvas>
-            </div>
-          </div>
-
-          <!-- Income Sources -->
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Income Sources</h3>
-            </div>
-            <div class="card-body">
-              <canvas id="incomeSourcesChart"></canvas>
-            </div>
-          </div>
-
-          <!-- Monthly Summary -->
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Monthly Summary</h3>
-            </div>
-            <div class="card-body">
-              <div class="stat-card-label">Current Month</div>
-              <div class="stat-card-value text-primary" id="currentMonth">January 2026</div>
-
-              <div class="mt-3">
-                <p><strong>Income:</strong> <span id="monthlyIncome">₣0</span></p>
-                <p><strong>Expenses:</strong> <span id="monthlyExpenses">₣0</span></p>
-                <p><strong>Net:</strong> <span id="monthlyNet" class="text-success">₣0</span></p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- All Transactions -->
-        <div class="card mt-4">
-          <div class="card-header">
-            <h3 class="card-title">All Transactions</h3>
-            <div class="flex" style="gap: 1rem;">
+              <h3 class="card-title">Recent Transactions</h3>
               <button class="btn btn-primary btn-sm" onclick="app.openAddTransactionModal()">
                 ➕ Add Transaction
               </button>
-              <button class="btn btn-info btn-sm" onclick="app.importMomoTransactions()"
-                style="background-color: #ffcc00; color: #000; border: none;">
-                📂 Import MOMO
-              </button>
-              <button class="btn btn-secondary btn-sm" onclick="app.exportTransactions()">
-                📥 Export
-              </button>
             </div>
-          </div>
-          <div class="card-body">
-            <!-- Filter Bar -->
-            <div class="mb-3 p-2 bg-light rounded"
-              style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-              <div style="flex: 1; min-width: 200px;">
-                <input type="text" id="filterSearch" class="form-control" placeholder="Search transactions..."
-                  onkeyup="app.applyFilters()">
+            <div class="card-body">
+              <div class="table-container">
+                <table class="table" id="recentTransactionsTable">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Type</th>
+                      <th>Category</th>
+                      <th>Description</th>
+                      <th>Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recentTransactionsBody">
+                    <tr>
+                      <td colspan="5" class="text-center text-muted">No transactions yet</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-              <div style="width: 150px;">
-                <select id="filterType" class="form-control" onchange="app.applyFilters()">
-                  <option value="">All Types</option>
-                  <option value="income">Income</option>
-                  <option value="expense">Expense</option>
-                </select>
-              </div>
-              <div style="width: 180px;">
-                <select id="filterCategory" class="form-control" onchange="app.applyFilters()">
-                  <option value="">All Categories</option>
-                </select>
-              </div>
-              <button class="btn btn-outline-secondary btn-sm" onclick="app.clearFilters()">Clear</button>
-            </div>
-
-            <div class="table-container">
-              <table class="table" id="allTransactionsTable">
-                <thead>
-                  <tr>
-                    <th style="cursor: pointer; user-select: none;" onclick="app.sortTransactions('date')">Date <span
-                        id="sort-date">↕</span></th>
-                    <th style="cursor: pointer; user-select: none;" onclick="app.sortTransactions('type')">Type <span
-                        id="sort-type">↕</span></th>
-                    <th style="cursor: pointer; user-select: none;" onclick="app.sortTransactions('category')">Category
-                      <span id="sort-category">↕</span>
-                    </th>
-                    <th style="cursor: pointer; user-select: none;" onclick="app.sortTransactions('description')">
-                      Description <span id="sort-description">↕</span></th>
-                    <th style="cursor: pointer; user-select: none;" onclick="app.sortTransactions('amount')">Amount
-                      <span id="sort-amount">↕</span>
-                    </th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="allTransactionsBody">
-                  <tr>
-                    <td colspan="6" class="text-center text-muted">No transactions yet</td>
-                  </tr>
-                </tbody>
-              </table>
             </div>
           </div>
         </div>
+      </section>
+
+      <!-- Farm Information Section -->
+      <section id="farm-info" class="section" style="display: none;">
+        <div class="container">
+          <h2 class="section-title">Farm Overview</h2>
+
+          <!-- Single Column Layout for Better Button Fit -->
+          <!-- Stacked Layout: Overview (Top) and Allocation (Bottom) -->
+          <div style="display: flex; flex-direction: column; gap: 2rem;">
+
+            <!-- Top Card: Location & Specifications (Full Width) -->
+            <div class="card">
+              <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h3 class="card-title mb-0">📍 Location & Specifications</h3>
+                  <div class="farm-actions">
+                    <button class="btn btn-sm btn-outline-primary me-2" onclick="app.editFarm()">
+                      <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="app.deleteFarm()">
+                      <i class="fas fa-trash"></i> Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <!-- Grid-based Specs -->
+                <div class="info-grid">
+                  <div class="info-item">
+                    <label>Farm Name</label>
+                    <span id="farmNameDisplay">-</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Location</label>
+                    <span id="farmLocationDisplay">-</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Total Area</label>
+                    <span id="farmAreaDisplay">-</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Perimeter</label>
+                    <span id="farmPerimeterDisplay">-</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Center Coordinates</label>
+                    <span id="farmCoordinatesDisplay">-</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Altitude</label>
+                    <span id="farmAltitudeDisplay">-</span>
+                  </div>
+                </div>
+
+                <!-- Land Allocation Table -->
+                <div style="margin-top: 2rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h4 style="margin: 0; color: var(--color-primary-dark);">📊 Land Allocation Summary</h4>
+                    <button class="btn btn-sm btn-secondary" onclick="app.printLandAllocationTable()"
+                      title="Print Land Allocation">
+                      🖨️ Print
+                    </button>
+                  </div>
+                  <div class="table-container">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th>SECTION</th>
+                          <th>AREA (HA)</th>
+                          <th>PERCENTAGE</th>
+                          <th>REVENUE</th>
+                          <th>EXPENSES</th>
+                          <th>NET FLOW</th>
+                        </tr>
+                      </thead>
+                      <tbody id="landAllocationBody">
+                        <tr>
+                          <td colspan="3" class="text-center text-muted">No allocations defined yet.</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom Card: Farm Map & Crop Allocation (Full Width) -->
+            <div class="card">
+              <div class="card-header">
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                  <button class="btn btn-secondary btn-sm" onclick="app.toggleMapView('satellite')"
+                    id="satelliteViewBtn">
+                    Satellite View
+                  </button>
+                  <button class="btn btn-outline btn-sm" onclick="app.toggleMapView('graphical')" id="graphicalViewBtn">
+                    📊 Graphical
+                  </button>
+                  <button class="btn btn-success btn-sm" onclick="app.openCoordinateEditorModal()"
+                    title="Edit farm plot coordinates">
+                    ✏️ Edit Coordinates
+                  </button>
+                  <button class="btn btn-primary btn-sm" onclick="app.toggleDrawingMode()" id="drawSectionBtn">
+                    Crop Allocation
+                  </button>
+                  <button class="btn btn-warning btn-sm" onclick="app.autoAllocateSections()"
+                    title="Automatically generate layout">
+                    ✨ Auto Allocation
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <!-- Google Maps Container -->
+                <div id="farmMap"
+                  style="width: 100%; height: 700px; border-radius: 8px; background: #e5e5e5; display: none;">
+                  <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666;">
+                    <div style="text-align: center;">
+                      <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">📍 Loading Map...</p>
+                      <small>If map doesn't load, please add your Google Maps API key in index.html</small>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Graphical Map Stats Header -->
+                <div id="graphicalStatsHeader"
+                  style="display: none; justify-content: space-between; align-items: center; background: white; padding: 10px 20px; border-radius: 8px 8px 0 0; border: 1px solid #ddd; border-bottom: none; margin-bottom: 0;">
+                  <div style="display: flex; gap: 1.5rem;">
+                    <div style="text-align: center;">
+                      <span style="font-size: 0.8rem; color: #666; display: block;">Total Farm</span>
+                      <span id="graphicalTotalArea" style="color: #333; font-weight: 600; font-size: 1.1rem;">0.00
+                        ha</span>
+                    </div>
+                    <div style="width: 1px; background: #ddd;"></div>
+                    <div style="text-align: center;">
+                      <span style="font-size: 0.8rem; color: #2e7d32; display: block;">Allocated</span>
+                      <span id="graphicalAllocatedArea"
+                        style="color: #2e7d32; font-weight: 600; font-size: 1.1rem;">0.00
+                        ha</span>
+                    </div>
+                    <div style="width: 1px; background: #ddd;"></div>
+                    <div style="text-align: center;">
+                      <span style="font-size: 0.8rem; color: #2196F3; display: block;">Selected</span>
+                      <span id="graphicalSelectedArea" style="color: #2196F3; font-weight: 600; font-size: 1.1rem;">0.00
+                        ha</span>
+                    </div>
+                    <div style="width: 1px; background: #ddd;"></div>
+                    <div style="text-align: center;">
+                      <span style="font-size: 0.8rem; color: #c62828; display: block;">Empty Space</span>
+                      <span id="graphicalUnallocatedArea"
+                        style="color: #c62828; font-weight: 600; font-size: 1.1rem;">0.00 ha</span>
+                    </div>
+                  </div>
+                  <h3 style="margin: 0; color: #333; font-size: 1.2rem;">Detailed Map</h3>
+                  <div style="text-align: right;">
+                    <span style="font-size: 0.8rem; color: #666; display: block;">Sections</span>
+                    <span id="graphicalSectionCount" style="color: #333; font-weight: 600; font-size: 1.1rem;">0</span>
+                  </div>
+                </div>
+
+                <!-- Graphical Map Canvas -->
+                <canvas id="farmMapCanvas" width="1200" height="700"
+                  style="width: 100%; height: 700px; border-radius: 0 0 8px 8px; background: #f8faf9; border: 1px solid #ddd; margin-bottom: 1.5rem;">
+                </canvas>
+
+                <!-- Sections Table -->
+                <div id="sectionsTableContainer">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h4 style="margin: 0; color: var(--color-primary);">📐 Detailed Crop Allocation Sections</h4>
+                    <button class="btn btn-sm btn-secondary" onclick="app.printCropAllocationSections()"
+                      title="Print Crop Allocation Sections">
+                      🖨️ Print
+                    </button>
+                  </div>
+                  <div class="table-container">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th style="width: 50px;">COLOR</th>
+                          <th>TYPE</th>
+                          <th>CROP</th>
+                          <th>AREA (HA)</th>
+                          <th>% OF FARM</th>
+                          <th>ACTIONS</th>
+                        </tr>
+                      </thead>
+                      <tbody id="farmSectionsTable">
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- Financial Management Section -->
+      <section id="financial" class="section">
+        <div class="container">
+          <h2 class="text-center mb-4">Financial Management</h2>
+
+          <div class="grid grid-3">
+            <!-- Expense Categories -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Expense Breakdown</h3>
+              </div>
+              <div class="card-body">
+                <canvas id="expenseBreakdownChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Income Sources -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Income Sources</h3>
+              </div>
+              <div class="card-body">
+                <canvas id="incomeSourcesChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Monthly Summary -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Monthly Summary</h3>
+              </div>
+              <div class="card-body">
+                <div class="stat-card-label">Current Month</div>
+                <div class="stat-card-value text-primary" id="currentMonth">January 2026</div>
+
+                <div class="mt-3">
+                  <p><strong>Income:</strong> <span id="monthlyIncome">₣0</span></p>
+                  <p><strong>Expenses:</strong> <span id="monthlyExpenses">₣0</span></p>
+                  <p><strong>Net:</strong> <span id="monthlyNet" class="text-success">₣0</span></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- All Transactions -->
+          <div class="card mt-4">
+            <div class="card-header">
+              <h3 class="card-title">All Transactions</h3>
+              <div class="flex" style="gap: 1rem;">
+                <button class="btn btn-primary btn-sm" onclick="app.openAddTransactionModal()">
+                  ➕ Add Transaction
+                </button>
+                <button class="btn btn-info btn-sm" onclick="app.importMomoTransactions()"
+                  style="background-color: #ffcc00; color: #000; border: none;">
+                  📂 Import MOMO
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="app.exportTransactions()">
+                  📥 Export
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <!-- Filter Bar -->
+              <div class="mb-3 p-2 bg-light rounded"
+                style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px;">
+                  <input type="text" id="filterSearch" class="form-control" placeholder="Search transactions..."
+                    onkeyup="app.applyFilters()">
+                </div>
+                <div style="width: 150px;">
+                  <select id="filterType" class="form-control" onchange="app.applyFilters()">
+                    <option value="">All Types</option>
+                    <option value="income">Income</option>
+                    <option value="expense">Expense</option>
+                  </select>
+                </div>
+                <div style="width: 180px;">
+                  <select id="filterCategory" class="form-control" onchange="app.applyFilters()">
+                    <option value="">All Categories</option>
+                  </select>
+                </div>
+                <button class="btn btn-outline-secondary btn-sm" onclick="app.clearFilters()">Clear</button>
+              </div>
+
+              <div class="table-container">
+                <table class="table" id="allTransactionsTable">
+                  <thead>
+                    <tr>
+                      <th style="cursor: pointer; user-select: none;" onclick="app.sortTransactions('date')">Date <span
+                          id="sort-date">↕</span></th>
+                      <th style="cursor: pointer; user-select: none;" onclick="app.sortTransactions('type')">Type <span
+                          id="sort-type">↕</span></th>
+                      <th style="cursor: pointer; user-select: none;" onclick="app.sortTransactions('category')">
+                        Category
+                        <span id="sort-category">↕</span>
+                      </th>
+                      <th style="cursor: pointer; user-select: none;" onclick="app.sortTransactions('description')">
+                        Description <span id="sort-description">↕</span></th>
+                      <th style="cursor: pointer; user-select: none;" onclick="app.sortTransactions('amount')">Amount
+                        <span id="sort-amount">↕</span>
+                      </th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="allTransactionsBody">
+                    <tr>
+                      <td colspan="6" class="text-center text-muted">No transactions yet</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Crops Management Section -->
+      <section id="crops" class="section bg-light">
+        <div class="container">
+          <h2 class="text-center mb-4">Crop Management</h2>
+
+          <!-- Fruit Trees -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h3 class="card-title">🍋 Fruit Trees</h3>
+              <button class="btn btn-success btn-sm" onclick="app.openAddCropModal('fruit')">
+                ➕ Add Fruit Tree
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="table-container">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>Count</th>
+                      <th>Planted Date</th>
+                      <th>Status</th>
+                      <th>Expected Harvest</th>
+                      <th>Alert</th>
+                      <th>Description</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="fruitTreesBody">
+                    <tr>
+                      <td colspan="8" class="text-center text-muted">No fruit trees recorded yet</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cash Crops -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">🌾 Cash Crops</h3>
+              <button class="btn btn-success btn-sm" onclick="app.openAddCropModal('cash')">
+                ➕ Add Cash Crop
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="table-container">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>Area (ha)</th>
+                      <th>Planted Date</th>
+                      <th>Status</th>
+                      <th>Harvest Date</th>
+                      <th>Yield (kg)</th>
+                      <th>Alert</th>
+                      <th>Description</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="cashCropsBody">
+                    <tr>
+                      <td colspan="9" class="text-center text-muted">No cash crops recorded yet</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Reports Section -->
+      <section id="reports" class="section">
+        <div class="container">
+          <h2 class="text-center mb-4">Investor Reports</h2>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Generate Professional Reports</h3>
+            </div>
+            <div class="card-body">
+              <div class="grid grid-3">
+                <button class="btn btn-primary btn-lg" onclick="app.generateFinancialReport()">
+                  📊 Financial Report
+                </button>
+                <button class="btn btn-primary btn-lg" onclick="app.generateOperationsReport()">
+                  🌾 Operations Report
+                </button>
+                <button class="btn btn-primary btn-lg" onclick="app.generateInvestorPresentation()">
+                  💼 Investor Presentation
+                </button>
+                <button class="btn btn-primary btn-lg" onclick="app.generateRiskReport()">
+                  ⚠️ Risk & Incident Report
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Report Preview -->
+          <div class="card mt-4" id="reportPreview" style="display: none;">
+            <div class="card-header">
+              <h3 class="card-title">Report Preview</h3>
+              <button class="btn btn-secondary btn-sm" onclick="window.print()">
+                🖨️ Print
+              </button>
+            </div>
+            <div class="card-body" id="reportContent">
+              <!-- Report content will be dynamically inserted here -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Risk & Incident Log Section -->
+      <section id="incidents" class="section" style="display: none;">
+        <div class="container">
+          <h2 class="text-center mb-4">Risk & Incident Log</h2>
+
+          <!-- Incident Stats -->
+          <div class="grid grid-4 mb-4">
+            <div class="stat-card">
+              <div class="stat-card-icon">⚠️</div>
+              <div class="stat-card-label">Open Incidents</div>
+              <div class="stat-card-value" id="statsOpenIncidents">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-icon" style="background: rgba(220, 53, 69, 0.1); color: #dc3545;">🔥</div>
+              <div class="stat-card-label">Critical Risks</div>
+              <div class="stat-card-value text-danger" id="statsCriticalRisks">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-icon" style="background: rgba(40, 167, 69, 0.1); color: #28a745;">✅</div>
+              <div class="stat-card-label">Resolved (Month)</div>
+              <div class="stat-card-value text-success" id="statsResolvedMonth">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-icon">💰</div>
+              <div class="stat-card-label">Total Impact (YTD)</div>
+              <div class="stat-card-value" id="statsTotalImpact">₣0</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Incident History</h3>
+              <button class="btn btn-danger btn-sm" onclick="app.openLogIncidentModal()">
+                ⚠️ Log New Incident
+              </button>
+            </div>
+            <div class="card-body">
+              <!-- Filters -->
+              <div class="mb-3 p-2 bg-light rounded"
+                style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px;">
+                  <input type="text" id="incidentSearch" class="form-control" placeholder="Search incidents..."
+                    onkeyup="app.filterIncidents()">
+                </div>
+                <div style="width: 180px;">
+                  <select id="incidentFilterCategory" class="form-control" onchange="app.filterIncidents()">
+                    <option value="">All Categories</option>
+                    <option value="CLIMATE">Climate</option>
+                    <option value="BIOLOGICAL">Biological</option>
+                    <option value="OPERATIONAL">Operational</option>
+                    <option value="SECURITY">Security</option>
+                    <option value="MARKET">Market</option>
+                    <option value="MANAGEMENT">Management</option>
+                    <option value="INFRASTRUCTURE">Infrastructure</option>
+                  </select>
+                </div>
+                <div style="width: 150px;">
+                  <select id="incidentFilterStatus" class="form-control" onchange="app.filterIncidents()">
+                    <option value="">All Statuses</option>
+                    <option value="Open">Open</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Resolved">Resolved</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="table-container">
+                <table class="table" id="incidentsTable">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Category</th>
+                      <th>Subcategory</th>
+                      <th>Severity</th>
+                      <th>Asset/Area</th>
+                      <th>Impact</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="incidentsTableBody">
+                    <tr>
+                      <td colspan="8" class="text-center text-muted">Loading incidents...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Employees Section -->
+      <section id="employees" class="section hidden">
+        <div class="container">
+          <div class="flex-between mb-4">
+            <h1>👥 Employee Management</h1>
+            <button class="btn btn-primary" onclick="app.openAddEmployeeModal()">
+              ➕ Add Employee
+            </button>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Staff List</h3>
+            </div>
+            <div class="card-body">
+              <div class="table-container">
+                <table class="table" id="employeesTable">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Role</th>
+                      <th>Type</th>
+                      <th>Status</th>
+                      <th>Phone</th>
+                      <th>Pay Basis</th>
+                      <th>Pay Rate (Xaf)</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="employeesTableBody">
+                    <!-- Employee rows will be inserted here -->
+                  </tbody>
+                </table>
+              </div>
+              <div id="noEmployeesMessage" class="text-center p-4 text-muted hidden">
+                No employees added yet. Click "Add Employee" to get started.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Advanced Features Section -->
+      <section id="advanced" class="section hidden">
+        <div class="container">
+          <h2 class="text-center mb-4">Advanced Features</h2>
+
+          <!-- Weather Integration -->
+          <div class="card mb-4" id="weather-card">
+            <div class="card-header">
+              <h3 class="card-title">☀️ Weather Forecast & Planting Advice</h3>
+            </div>
+            <div class="card-body">
+              <p class="text-muted text-center">Loading weather data...</p>
+            </div>
+          </div>
+
+          <!-- Alert System -->
+          <div class="card mb-4" id="alerts-card">
+            <div class="card-header">
+              <h3 class="card-title">🔔 Alert System</h3>
+            </div>
+            <div class="card-body">
+              <p class="text-muted text-center">Coming soon...</p>
+            </div>
+          </div>
+
+          <!-- Trend Analysis -->
+          <div class="card mb-4" id="trends-card">
+            <div class="card-header">
+              <h3 class="card-title">📈 Trend Analysis</h3>
+            </div>
+            <div class="card-body">
+              <p class="text-muted text-center">Coming soon...</p>
+            </div>
+          </div>
+
+          <!-- Preventive Tasks -->
+          <div class="card mb-4" id="tasks-card">
+            <div class="card-header">
+              <h3 class="card-title">✅ Preventive Tasks</h3>
+            </div>
+            <div class="card-body">
+              <p class="text-muted text-center">Coming soon...</p>
+            </div>
+          </div>
+
+          <!-- Insurance Log -->
+          <div class="card mb-4" id="insurance-card">
+            <div class="card-header">
+              <h3 class="card-title">🛡️ Insurance Log</h3>
+            </div>
+            <div class="card-body">
+              <p class="text-muted text-center">Coming soon...</p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Add/Edit Employee Modal -->
+    <div class="modal-overlay" id="employeeModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title" id="employeeModalTitle">Add New Employee</h3>
+          <button class="modal-close" onclick="app.closeModal('employeeModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="employeeForm" onsubmit="app.saveEmployee(event)">
+          <input type="hidden" id="employeeId">
+
+          <div class="form-group">
+            <label class="form-label" for="empName">Full Name</label>
+            <input type="text" class="form-control" id="empName" required placeholder="e.g. John Doe">
+          </div>
+
+          <div class="grid-3">
+            <div class="form-group">
+              <label class="form-label" for="empRole">Role</label>
+              <select class="form-control" id="empRole" required>
+                <option value="Manager">Manager</option>
+                <option value="Field Worker">Field Worker</option>
+                <option value="Driver">Driver</option>
+                <option value="Security">Security</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="empType">Type</label>
+              <select class="form-control" id="empType" required>
+                <option value="Full-time">Full-time</option>
+                <option value="Part-time">Part-time</option>
+                <option value="Casual">Casual/Labourer</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="empStatus">Status</label>
+              <select class="form-control" id="empStatus" required>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid-3">
+            <div class="form-group">
+              <label class="form-label" for="empPhone">Phone</label>
+              <input type="tel" class="form-control" id="empPhone" placeholder="+237...">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="empPayFrequency">Pay Frequency</label>
+              <select class="form-control" id="empPayFrequency" required>
+                <option value="Monthly">Monthly</option>
+                <option value="Weekly">Weekly</option>
+                <option value="Daily">Daily</option>
+                <option value="Hourly">Hourly</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="empSalary">Pay Rate (Xaf)</label>
+              <input type="number" class="form-control" id="empSalary" min="0" step="1000" placeholder="0">
+            </div>
+          </div>
+
+          <div class="flex" style="justify-content: flex-end; gap: 1rem;">
+            <button type="button" class="btn btn-outline" onclick="app.closeModal('employeeModal')">Cancel</button>
+            <button type="submit" class="btn btn-primary">💾 Save Employee</button>
+          </div>
+        </form>
       </div>
-    </section>
+    </div>
 
-    <!-- Crops Management Section -->
-    <section id="crops" class="section bg-light">
+    <!-- Add Transaction Modal -->
+    <div class="modal-overlay" id="addTransactionModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title" id="transactionModalTitle">Add Transaction</h3>
+          <button class="modal-close" onclick="app.closeModal('addTransactionModal')"><i
+              class="fas fa-times"></i></button>
+        </div>
+        <form id="transactionForm" onsubmit="app.addTransaction(event)">
+          <div class="form-group">
+            <label class="form-label" for="transactionDate">Date</label>
+            <input type="date" class="form-control" id="transactionDate" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="transactionType">Type</label>
+            <select class="form-control" id="transactionType" required onchange="app.updateCategoryOptions()">
+              <option value="">Select type...</option>
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="transactionCategory">Category</label>
+            <select class="form-control" id="transactionCategory" required>
+              <option value="">Select type first...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="transactionDescription">Description</label>
+            <input type="text" class="form-control" id="transactionDescription" required
+              placeholder="Brief description">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="transactionSection">Farm Section (Optional)</label>
+            <select class="form-control" id="transactionSection">
+              <option value="">Link to section...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="transactionAmount">Amount (Xaf)</label>
+            <input type="number" class="form-control" id="transactionAmount" required min="0" step="0.01">
+          </div>
+
+          <div class="flex" style="justify-content: flex-end; gap: 1rem;">
+            <button type="button" class="btn btn-outline"
+              onclick="app.closeModal('addTransactionModal')">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="saveTransactionBtn">Add Transaction</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Add Crop Modal -->
+    <div class="modal-overlay" id="addCropModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title" id="cropModalTitle">Add Crop</h3>
+          <button class="modal-close" onclick="app.closeModal('addCropModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="cropForm" onsubmit="app.addCrop(event)">
+          <input type="hidden" id="cropCategory">
+
+          <div class="form-group">
+            <label class="form-label" for="cropType">Type</label>
+            <select class="form-control" id="cropType" required onchange="app.checkCropAltitudeAlert()">
+              <option value="">Select type...</option>
+            </select>
+            <div id="cropAltitudeAlert" style="margin-top: 0.5rem; display: none;"></div>
+          </div>
+
+          <div class="form-group" id="cropCountGroup">
+            <label class="form-label" for="cropCount">Count</label>
+            <input type="number" class="form-control" id="cropCount" min="1">
+          </div>
+
+          <div class="form-group" id="cropAreaGroup">
+            <label class="form-label" for="cropArea">Area (hectares)</label>
+            <input type="number" class="form-control" id="cropArea" min="0" step="any">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="cropPlantedDate">Planted Date</label>
+            <input type="date" class="form-control" id="cropPlantedDate" required
+              onchange="app.checkCropAltitudeAlert()">
+          </div>
+
+          <div class="form-group" id="contingencyGroup"
+            style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+            <input type="checkbox" id="cropHasContingency" onchange="app.checkCropAltitudeAlert()">
+            <label for="cropHasContingency" class="form-label" style="margin: 0;">Irrigation / Contingency Plan
+              available?</label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="cropStatus">Status</label>
+            <select class="form-control" id="cropStatus" required>
+              <option value="planted">Planted</option>
+              <option value="growing">Growing</option>
+              <option value="flowering">Flowering</option>
+              <option value="fruiting">Fruiting</option>
+              <option value="ready">Ready for Harvest</option>
+              <option value="harvested">Harvested</option>
+            </select>
+          </div>
+
+          <!-- Dynamic Fields -->
+          <div class="form-group" id="cropExpectedHarvestGroup" style="display: none;">
+            <label class="form-label" for="cropExpectedHarvest">Expected Harvest</label>
+            <input type="text" class="form-control" id="cropExpectedHarvest" placeholder="e.g. 500kg or 50 bags">
+          </div>
+
+          <div class="form-group" id="cropHarvestDateGroup" style="display: none;">
+            <label class="form-label" for="cropHarvestDate">Expected Harvest Date</label>
+            <input type="date" class="form-control" id="cropHarvestDate">
+          </div>
+
+          <div class="form-group" id="cropYieldGroup" style="display: none;">
+            <label class="form-label" for="cropYield">Expected Yield (kg)</label>
+            <input type="number" class="form-control" id="cropYield" min="0" step="0.01" placeholder="e.g. 1000">
+          </div>
+
+          <div class="flex" style="justify-content: flex-end; gap: 1rem;">
+            <button type="button" class="btn btn-outline" onclick="app.closeModal('addCropModal')">Cancel</button>
+            <button type="submit" class="btn btn-success">Add Crop</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Create New Farm Modal -->
+    <div class="modal-overlay" id="createFarmModal">
+      <div class="modal modal-xl">
+        <div class="modal-header">
+          <h3 class="modal-title">Create New Farm</h3>
+          <button class="modal-close" onclick="app.closeModal('createFarmModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="farmForm" onsubmit="app.createNewFarm(event)">
+          <div class="form-group">
+            <label class="form-label" for="newFarmName">Farm Name</label>
+            <input type="text" class="form-control" id="newFarmName" required placeholder="e.g., Maloure Farm">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="newFarmLocation">Location</label>
+            <input type="text" class="form-control" id="newFarmLocation" required
+              placeholder="e.g., Maloure Village, Njimoun, Foumban">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="newFarmAltitude">Altitude (meters)</label>
+            <input type="number" class="form-control" id="newFarmAltitude" placeholder="e.g., 950" value="0">
+            <small class="text-muted">Used for Agri Calendar season calculations.</small>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="newFarmBoundaries">Boundary Coordinates (Optional)</label>
+            <textarea class="form-control" id="newFarmBoundaries" rows="5" placeholder="Paste coordinates in format: lat,lng (one per line)
+Example:
+5.916982,11.043742
+5.916911,11.043793
+5.916782,11.043831"></textarea>
+            <small class="text-muted">If provided, area will be calculated automatically. Otherwise, enter manually
+              below.</small>
+          </div>
+
+          <div class="flex" style="gap: 1rem; margin-bottom: 1rem;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="app.calculateAreaFromBoundaries()">📐
+              Calculate Area from Boundaries</button>
+            <span id="calculatedAreaDisplay" style="font-weight: bold; color: var(--color-success);"></span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="newFarmArea">Total Area (hectares)</label>
+            <input type="number" class="form-control" id="newFarmArea" required min="0" step="any"
+              placeholder="e.g., 2.7516">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="newFarmPerimeter">Perimeter (meters) - Optional</label>
+            <input type="number" class="form-control" id="newFarmPerimeter" min="0" step="any"
+              placeholder="e.g., 680.16">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="newFarmLat">Center Latitude</label>
+            <input type="number" class="form-control" id="newFarmLat" required step="0.000001"
+              placeholder="e.g., 5.916982">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="newFarmLng">Center Longitude</label>
+            <input type="number" class="form-control" id="newFarmLng" required step="0.000001"
+              placeholder="e.g., 11.043742">
+          </div>
+
+          <div class="flex" style="justify-content: flex-end; gap: 1rem;">
+            <button type="button" class="btn btn-outline" onclick="app.closeModal('createFarmModal')">Cancel</button>
+            <button type="submit" class="btn btn-primary">➕ Create Farm</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Section Configuration Modal -->
+    <div class="modal-overlay" id="sectionModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Configure Farm Section</h3>
+          <button class="modal-close" onclick="app.closeModal('sectionModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="sectionForm" onsubmit="app.saveFarmSection(event)">
+          <div class="form-group">
+            <label class="form-label" for="sectionName">Section Name</label>
+            <input type="text" class="form-control" id="sectionName" required placeholder="e.g., Apple Orchard">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="sectionType">Section Type</label>
+            <select class="form-control" id="sectionType" required onchange="app.handleSectionTypeChange(this.value)">
+              <option value="">Select type...</option>
+              <option value="fruit-trees">Fruit Trees</option>
+              <option value="cash-crops">Cash Crops</option>
+              <option value="infrastructure">Infrastructure</option>
+              <option value="fallow">Fallow Land</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <input type="hidden" id="sectionId">
+
+          <div class="form-group">
+            <label class="form-label" for="sectionCrop">Crop Type (if applicable)</label>
+            <input type="text" class="form-control" id="sectionCrop" placeholder="e.g., Avocado, Cassava">
+            <select class="form-control" id="sectionCropSelect" style="display: none;">
+              <option value="">Select crop...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="sectionArea">Area (hectares)</label>
+            <input type="number" class="form-control" id="sectionArea" step="any" min="0" required
+              placeholder="e.g., 1.5025" readonly>
+            <small style="color: #666; font-size: 0.85rem;">Calculated automatically from map</small>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="sectionPercentage">Percentage of Farm (%)</label>
+            <input type="number" class="form-control" id="sectionPercentage" readonly>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="sectionColor">Section Color</label>
+            <input type="color" class="form-control" id="sectionColor" value="#4CAF50">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="sectionNotes">Notes</label>
+            <textarea class="form-control" id="sectionNotes" rows="3"
+              placeholder="Additional notes about this section"></textarea>
+          </div>
+
+          <div class="flex" style="justify-content: flex-end; gap: 1rem;">
+            <button type="button" class="btn btn-outline" onclick="app.closeModal('sectionModal')">Cancel</button>
+            <button type="submit" class="btn btn-primary">💾 Save Section</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Custom Category Modal -->
+    <div class="modal-overlay" id="customCategoryModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Add Custom Category</h3>
+          <button class="modal-close" onclick="app.closeModal('customCategoryModal')"><i
+              class="fas fa-times"></i></button>
+        </div>
+        <form id="customCategoryForm" onsubmit="app.addCustomCategory(event)">
+          <div class="form-group">
+            <label class="form-label" for="customCategoryName">Category Name</label>
+            <input type="text" class="form-control" id="customCategoryName" required placeholder="Enter category name">
+          </div>
+
+          <div class="flex" style="justify-content: flex-end; gap: 1rem;">
+            <button type="button" class="btn btn-outline"
+              onclick="app.closeModal('customCategoryModal')">Cancel</button>
+            <button type="submit" class="btn btn-primary">Add Category</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Coordinate Editor Modal -->
+    <div class="modal-overlay" id="coordinateEditorModal">
+      <div class="modal modal-xl">
+        <div class="modal-header">
+          <h3 class="modal-title">✏️ Edit Farm Boundary Coordinates</h3>
+          <button class="modal-close" onclick="app.closeModal('coordinateEditorModal')"><i
+              class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <p style="margin-bottom: 1rem; color: #666;">
+            Enter coordinates for the farm plot boundaries. At least 3 points are required to form a polygon.
+          </p>
+
+          <!-- Add New Coordinate -->
+          <div class="card" style="margin-bottom: 1.5rem; background: #f8faf9;">
+            <div class="card-header">
+              <h4 style="margin: 0; font-size: 1rem;">➕ Add New Point</h4>
+            </div>
+            <div class="card-body">
+              <div style="display: flex; gap: 1rem; align-items: flex-end;">
+                <div class="form-group" style="flex: 1; margin: 0;">
+                  <label class="form-label" for="newPointLat">Latitude (-90 to 90)</label>
+                  <input type="number" class="form-control" id="newPointLat" step="0.000001"
+                    placeholder="e.g., 5.916982" min="-90" max="90">
+                </div>
+                <div class="form-group" style="flex: 1; margin: 0;">
+                  <label class="form-label" for="newPointLng">Longitude (-180 to 180)</label>
+                  <input type="number" class="form-control" id="newPointLng" step="0.000001"
+                    placeholder="e.g., 11.043742" min="-180" max="180">
+                </div>
+                <button class="btn btn-primary" onclick="app.addCoordinatePoint()" style="margin-bottom: 0;">
+                  ➕ Add Point
+                </button>
+              </div>
+              <div id="coordinateError" style="color: #cc0000; margin-top: 0.5rem; display: none;"></div>
+            </div>
+          </div>
+
+          <!-- Bulk Import Coordinates -->
+          <div class="card" style="margin-bottom: 1.5rem; background: #f0f8ff;">
+            <div class="card-header">
+              <h4 style="margin: 0; font-size: 1rem;">📋 Bulk Import Coordinates</h4>
+            </div>
+            <div class="card-body">
+              <p style="margin-bottom: 0.5rem; font-size: 0.9rem; color: #666;">
+                <label for="bulkCoordinatesInput">Paste multiple coordinates (one per line). Supported formats:</label>
+              </p>
+              <ul style="margin: 0.5rem 0; padding-left: 1.5rem; font-size: 0.85rem; color: #666;">
+                <li><code>lat,lng</code> - Example: <code>5.916982,11.043742</code></li>
+                <li><code>lat lng</code> - Example: <code>5.916982 11.043742</code></li>
+                <li><code>lat, lng</code> - Example: <code>5.916982, 11.043742</code></li>
+              </ul>
+              <textarea class="form-control" id="bulkCoordinatesInput" rows="5" placeholder="Paste coordinates here (one per line)
+Example:
+5.916982,11.043742
+5.916911,11.043793
+5.916782,11.043831" style="font-family: monospace; font-size: 0.9rem; margin-bottom: 0.5rem;"></textarea>
+              <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <button class="btn btn-primary" onclick="app.importBulkCoordinates()" style="margin: 0;">
+                  📥 Import Coordinates
+                </button>
+                <button class="btn btn-outline" onclick="document.getElementById('bulkCoordinatesInput').value = ''"
+                  style="margin: 0;">
+                  Clear
+                </button>
+                <span id="bulkImportStatus" style="font-size: 0.9rem; color: #4caf50; display: none;"></span>
+              </div>
+              <div id="bulkImportError" style="color: #cc0000; margin-top: 0.5rem; font-size: 0.9rem; display: none;">
+              </div>
+            </div>
+          </div>
+
+          <!-- Current Coordinates Table -->
+          <div class="card">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <h4 style="margin: 0; font-size: 1rem;">📍 Current Boundary Points (<span id="coordinateCount">0</span>)
+              </h4>
+              <button class="btn btn-danger btn-sm" onclick="app.clearAllCoordinates()" style="margin: 0;">
+                🗑️ Clear All
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th style="width: 50px;">#</th>
+                      <th>LATITUDE</th>
+                      <th>LONGITUDE</th>
+                      <th style="width: 100px;">ACTIONS</th>
+                    </tr>
+                  </thead>
+                  <tbody id="coordinatesTableBody">
+                    <tr>
+                      <td colspan="4" class="text-center text-muted">No coordinates defined</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer"
+          style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-top: 1px solid #e0e0e0;">
+          <div style="color: #666; font-size: 0.9rem;">
+            <span id="validationMessage">✓ Ready to save</span>
+          </div>
+          <div style="display: flex; gap: 1rem;">
+            <button type="button" class="btn btn-outline"
+              onclick="app.closeModal('coordinateEditorModal')">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="app.saveCoordinates()" id="saveCoordinatesBtn">
+              💾 Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agri Calendar Section -->
+    <section id="agri-calendar" class="section" style="display: none;">
       <div class="container">
-        <h2 class="text-center mb-4">Crop Management</h2>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2 class="text-center mb-0">📅 Agri Calendar & Planting Guide</h2>
+          <div id="farmZoneBadge" class="badge badge-info" style="font-size: 1rem; padding: 0.5rem 1rem;">
+            Loading zone...
+          </div>
+        </div>
 
-        <!-- Fruit Trees -->
+        <!-- Farm Location Context -->
+        <div class="alert alert-info mb-4" id="calendarFarmInfo"
+          style="background-color: #e7f3ff; color: #004085; border: 1px solid #b8daff; border-radius: 8px; padding: 1rem;">
+          <i class="fas fa-info-circle"></i> Based on your farm's altitude and coordinates, we've generated a
+          personalized
+          planting summary to optimize your yield and reduce climate risks.
+        </div>
+
+        <!-- Risk Alerts Container -->
+        <div id="calendarAlerts" class="mb-4">
+          <!-- Alerts will be injected here -->
+        </div>
+
+        <!-- Season Summary Grid -->
+        <div class="grid grid-2 mb-4">
+          <!-- Cereals -->
+          <div class="card h-100">
+            <div class="card-header"
+              style="background-color: #fff3cd; color: #856404; border-bottom: 2px solid #ffeeba;">
+              <h3 class="card-title">🌾 Cereals (Maize, Rice)</h3>
+            </div>
+            <div class="card-body" id="cerealsSummary">
+              <div class="text-center text-muted">Select a farm to view analysis...</div>
+            </div>
+          </div>
+
+          <!-- Tubers -->
+          <div class="card h-100">
+            <div class="card-header"
+              style="background-color: #d4edda; color: #155724; border-bottom: 2px solid #c3e6cb;">
+              <h3 class="card-title">🥔 Tubers (Cassava, Yam)</h3>
+            </div>
+            <div class="card-body" id="tubersSummary">
+              <div class="text-center text-muted">Select a farm to view analysis...</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-2 mb-4">
+          <!-- Fruit Trees -->
+          <div class="card h-100">
+            <div class="card-header"
+              style="background-color: #d1ecf1; color: #0c5460; border-bottom: 2px solid #bee5eb;">
+              <h3 class="card-title">🌳 Fruit Trees (Mango, Citrus)</h3>
+            </div>
+            <div class="card-body" id="fruitTreesSummary">
+              <div class="text-center text-muted">Select a farm to view analysis...</div>
+            </div>
+          </div>
+
+          <!-- Legumes -->
+          <div class="card h-100">
+            <div class="card-header"
+              style="background-color: #e2e3e5; color: #383d41; border-bottom: 2px solid #d6d8db;">
+              <h3 class="card-title">🫘 Legumes (Beans, Cowpeas)</h3>
+            </div>
+            <div class="card-body" id="legumesSummary">
+              <div class="text-center text-muted">Select a farm to view analysis...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Crop Durations & Cycles -->
         <div class="card mb-4">
-          <div class="card-header">
-            <h3 class="card-title">🍋 Fruit Trees</h3>
-            <button class="btn btn-success btn-sm" onclick="app.openAddCropModal('fruit')">
-              ➕ Add Fruit Tree
-            </button>
+          <div class="card-header" style="background-color: #e9ecef;">
+            <h3 class="card-title">🕒 Crop Durations & Growth Cycles</h3>
           </div>
           <div class="card-body">
             <div class="table-container">
               <table class="table">
                 <thead>
                   <tr>
-                    <th>Type</th>
-                    <th>Count</th>
-                    <th>Planted Date</th>
-                    <th>Status</th>
-                    <th>Expected Harvest</th>
-                    <th>Alert</th>
-                    <th>Description</th>
-                    <th>Actions</th>
+                    <th>Category</th>
+                    <th>Crop</th>
+                    <th>Growth Duration</th>
+                    <th>Campaigns per Year</th>
                   </tr>
                 </thead>
-                <tbody id="fruitTreesBody">
+                <tbody id="cropDurationsBody">
+                  <!-- Will be populated by JS -->
                   <tr>
-                    <td colspan="8" class="text-center text-muted">No fruit trees recorded yet</td>
+                    <td>Cereals</td>
+                    <td>Maize / Corn</td>
+                    <td>4 Months</td>
+                    <td>2 Campaigns (Lowland/Midland)</td>
+                  </tr>
+                  <tr>
+                    <td>Tubers</td>
+                    <td>Potato</td>
+                    <td>3 Months</td>
+                    <td>Up to 3 Campaigns</td>
+                  </tr>
+                  <tr>
+                    <td>Tubers</td>
+                    <td>Cassava</td>
+                    <td>12 Months</td>
+                    <td>1 Main Cycle</td>
+                  </tr>
+                  <tr>
+                    <td>Legumes</td>
+                    <td>Beans</td>
+                    <td>3 Months</td>
+                    <td>2-3 Campaigns</td>
                   </tr>
                 </tbody>
               </table>
@@ -700,1125 +1590,255 @@
           </div>
         </div>
 
-        <!-- Cash Crops -->
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">🌾 Cash Crops</h3>
-            <button class="btn btn-success btn-sm" onclick="app.openAddCropModal('cash')">
-              ➕ Add Cash Crop
-            </button>
+        <!-- Historical Risk Analysis -->
+        <div class="card mb-4" id="historicalRiskCard" style="display: none;">
+          <div class="card-header bg-danger text-white">
+            <h3 class="card-title"><i class="fas fa-history"></i> Historical Risk Analysis</h3>
           </div>
           <div class="card-body">
-            <div class="table-container">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th>Type</th>
-                    <th>Area (ha)</th>
-                    <th>Planted Date</th>
-                    <th>Status</th>
-                    <th>Harvest Date</th>
-                    <th>Yield (kg)</th>
-                    <th>Alert</th>
-                    <th>Description</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="cashCropsBody">
-                  <tr>
-                    <td colspan="9" class="text-center text-muted">No cash crops recorded yet</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Reports Section -->
-    <section id="reports" class="section">
-      <div class="container">
-        <h2 class="text-center mb-4">Investor Reports</h2>
-
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Generate Professional Reports</h3>
-          </div>
-          <div class="card-body">
-            <div class="grid grid-3">
-              <button class="btn btn-primary btn-lg" onclick="app.generateFinancialReport()">
-                📊 Financial Report
-              </button>
-              <button class="btn btn-primary btn-lg" onclick="app.generateOperationsReport()">
-                🌾 Operations Report
-              </button>
-              <button class="btn btn-primary btn-lg" onclick="app.generateInvestorPresentation()">
-                💼 Investor Presentation
-              </button>
-              <button class="btn btn-primary btn-lg" onclick="app.generateRiskReport()">
-                ⚠️ Risk & Incident Report
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Report Preview -->
-        <div class="card mt-4" id="reportPreview" style="display: none;">
-          <div class="card-header">
-            <h3 class="card-title">Report Preview</h3>
-            <button class="btn btn-secondary btn-sm" onclick="window.print()">
-              🖨️ Print
-            </button>
-          </div>
-          <div class="card-body" id="reportContent">
-            <!-- Report content will be dynamically inserted here -->
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Risk & Incident Log Section -->
-    <section id="incidents" class="section" style="display: none;">
-      <div class="container">
-        <h2 class="text-center mb-4">Risk & Incident Log</h2>
-
-        <!-- Incident Stats -->
-        <div class="grid grid-4 mb-4">
-          <div class="stat-card">
-            <div class="stat-card-icon">⚠️</div>
-            <div class="stat-card-label">Open Incidents</div>
-            <div class="stat-card-value" id="statsOpenIncidents">0</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-card-icon" style="background: rgba(220, 53, 69, 0.1); color: #dc3545;">🔥</div>
-            <div class="stat-card-label">Critical Risks</div>
-            <div class="stat-card-value text-danger" id="statsCriticalRisks">0</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-card-icon" style="background: rgba(40, 167, 69, 0.1); color: #28a745;">✅</div>
-            <div class="stat-card-label">Resolved (Month)</div>
-            <div class="stat-card-value text-success" id="statsResolvedMonth">0</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-card-icon">💰</div>
-            <div class="stat-card-label">Total Impact (YTD)</div>
-            <div class="stat-card-value" id="statsTotalImpact">₣0</div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Incident History</h3>
-            <button class="btn btn-danger btn-sm" onclick="app.openLogIncidentModal()">
-              ⚠️ Log New Incident
-            </button>
-          </div>
-          <div class="card-body">
-            <!-- Filters -->
-            <div class="mb-3 p-2 bg-light rounded"
-              style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-              <div style="flex: 1; min-width: 200px;">
-                <input type="text" id="incidentSearch" class="form-control" placeholder="Search incidents..."
-                  onkeyup="app.filterIncidents()">
+            <div class="d-flex gap-4 align-items-center">
+              <div id="riskStats" style="flex: 1;">
+                <!-- Incident stats will be injected here -->
               </div>
-              <div style="width: 180px;">
-                <select id="incidentFilterCategory" class="form-control" onchange="app.filterIncidents()">
-                  <option value="">All Categories</option>
-                  <option value="CLIMATE">Climate</option>
-                  <option value="BIOLOGICAL">Biological</option>
-                  <option value="OPERATIONAL">Operational</option>
-                  <option value="SECURITY">Security</option>
-                  <option value="MARKET">Market</option>
-                  <option value="MANAGEMENT">Management</option>
-                  <option value="INFRASTRUCTURE">Infrastructure</option>
+              <div id="riskRecommendation" class="p-4 bg-light rounded"
+                style="flex: 1; border-left: 5px solid #dc3545;">
+                <p class="mb-0" id="riskRecommendationText">Analyzing historical data...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detailed Season Guide -->
+        <div class="card mt-4">
+          <div class="card-header">
+            <h3 class="card-title">✨ Altitude-Based Strategy</h3>
+          </div>
+          <div class="card-body" id="zoneStrategies">
+            <p class="text-muted text-center">Please select a farm with valid coordinates to see specific altitude-based
+              strategies.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="section bg-primary" style="color: white; text-align: center; padding: 2rem 0;">
+      <div class="container">
+        <p>&copy; 2026 Farm Management System</p>
+        <p class="text-muted" style="margin-top: 0.5rem; font-size: 0.875rem;">
+          Professional farm management for sustainable agriculture
+        </p>
+      </div>
+    </footer>
+
+    <!-- Manage Crop Types Modal -->
+    <div class="modal-overlay" id="manageCropTypesModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Manage Crop Types</h3>
+          <button class="modal-close" onclick="app.closeModal('manageCropTypesModal')"><i
+              class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="tabs" style="margin-bottom: 1rem;">
+            <button class="tab-btn active" onclick="app.switchTypeTab('fruit')" id="tabTypeFruit">Fruit Trees</button>
+            <button class="tab-btn" onclick="app.switchTypeTab('cash')" id="tabTypeCash">Cash Crops</button>
+          </div>
+
+          <ul class="list-group" id="cropTypesList" style="max-height: 300px; overflow-y: auto;">
+            <!-- Items injected here -->
+          </ul>
+
+          <div
+            style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+            <button class="btn btn-primary btn-sm" onclick="app.restoreDefaultTypes()"
+              style="background-color: #ff9800; border-color: #ff9800; color: white;">
+              🔄 Restore Defaults
+            </button>
+            <p class="text-muted" style="font-size: 0.85rem; margin: 0;">
+              Add new types via the "Add Crop" dropdown.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Log Incident Modal -->
+    <div id="logIncidentModal" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 class="modal-title">Log New Risk / Incident</h2>
+          <button class="close-btn" onclick="app.closeModal('logIncidentModal')">&times;</button>
+        </div>
+        <form id="logIncidentForm" onsubmit="event.preventDefault(); app.handleLogIncidentSubmit();">
+          <div class="form-group">
+            <label>Category</label>
+            <select id="incidentCategory" class="form-control" required onchange="app.updateIncidentSubcategories()">
+              <option value="">Select Category</option>
+              <option value="CLIMATE">Climate & Environmental</option>
+              <option value="BIOLOGICAL">Biological Threats</option>
+              <option value="OPERATIONAL">Operational & Logistical</option>
+              <option value="SECURITY">Security & Safety</option>
+              <option value="MARKET">Market & Economic</option>
+              <option value="MANAGEMENT">Management & Human Factor</option>
+              <option value="INFRASTRUCTURE">Infrastructure</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Subcategory (Specific Threat)</label>
+            <select id="incidentSubcategory" class="form-control" required>
+              <!-- Populated dynamically -->
+              <option value="">Select Category First</option>
+            </select>
+          </div>
+
+          <div class="row">
+            <div class="col-6">
+              <div class="form-group">
+                <label>Severity Level</label>
+                <select id="incidentSeverity" class="form-control" required>
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                  <option value="Critical" style="color: red; font-weight: bold;">Critical</option>
                 </select>
               </div>
-              <div style="width: 150px;">
-                <select id="incidentFilterStatus" class="form-control" onchange="app.filterIncidents()">
-                  <option value="">All Statuses</option>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label>Date Detected</label>
+                <input type="date" id="incidentDate" class="form-control" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Affected Area / Asset</label>
+            <input type="text" id="incidentAsset" class="form-control"
+              placeholder="e.g., North Field, Tractor A, Storage 1" required>
+          </div>
+
+          <div class="row">
+            <div class="col-6">
+              <div class="form-group">
+                <label>Est. Financial Impact (Xaf)</label>
+                <input type="number" id="incidentImpact" class="form-control" min="0" value="0">
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label>Status</label>
+                <select id="incidentStatus" class="form-control">
                   <option value="Open">Open</option>
                   <option value="In Progress">In Progress</option>
                   <option value="Resolved">Resolved</option>
                 </select>
               </div>
             </div>
-
-            <div class="table-container">
-              <table class="table" id="incidentsTable">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Category</th>
-                    <th>Subcategory</th>
-                    <th>Severity</th>
-                    <th>Asset/Area</th>
-                    <th>Impact</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="incidentsTableBody">
-                  <tr>
-                    <td colspan="8" class="text-center text-muted">Loading incidents...</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
           </div>
+
+          <div class="form-group">
+            <label>Root Cause / Details</label>
+            <textarea id="incidentDetails" class="form-control" rows="3"
+              placeholder="Describe what happened..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Immediate Action Taken</label>
+            <textarea id="incidentAction" class="form-control" rows="2"
+              placeholder="What was done immediately?"></textarea>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="app.closeModal('logIncidentModal')">Cancel</button>
+            <button type="submit" class="btn btn-primary">Log Incident</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="modal-overlay">
+      <div class="modal" style="max-width: 450px;">
+        <div class="modal-header">
+          <h3 class="modal-title">Confirm Action</h3>
+          <button class="modal-close" onclick="app.closeModal('confirmationModal')"><i
+              class="fas fa-times"></i></button>
+        </div>
+        <div style="margin-bottom: 2rem;">
+          <p id="confirmationMessage">Are you sure you want to proceed?</p>
+        </div>
+        <div class="flex" style="justify-content: flex-end; gap: 1rem;">
+          <button class="btn btn-secondary" onclick="app.closeModal('confirmationModal')">Cancel</button>
+          <button class="btn btn-danger" id="confirmActionBtn">⚠️ Confirm</button>
         </div>
       </div>
-    </section>
+    </div>
 
-    <!-- Employees Section -->
-    <section id="employees" class="section hidden">
+    <!-- Alert Modal -->
+    <div id="alertModal" class="modal-overlay">
+      <div class="modal" style="max-width: 450px;">
+        <div class="modal-header" id="alertHeader">
+          <h3 class="modal-title" id="alertTitle">Alert</h3>
+          <button class="modal-close" id="alertCloseBtn" onclick="app.closeModal('alertModal')"><i
+              class="fas fa-times"></i></button>
+        </div>
+        <div style="margin-bottom: 2rem;">
+          <p id="alertMessage" style="color: #666; font-size: 1rem; line-height: 1.5; text-align: center;">
+            Alert Message
+          </p>
+        </div>
+        <div class="flex" style="justify-content: center;">
+          <button class="btn btn-primary" onclick="app.closeModal('alertModal')">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Global App Object -->
+    <script>const app = {};</script>
+
+    <!-- API Client for Database Integration (Already included in head) -->
+    <!-- <script src="api-client.js"></script> -->
+
+
+    <!-- Farm Analysis Section -->
+    <section id="analysis" class="section hidden">
       <div class="container">
-        <div class="flex-between mb-4">
-          <h1>👥 Employee Management</h1>
-          <button class="btn btn-primary" onclick="app.openAddEmployeeModal()">
-            ➕ Add Employee
-          </button>
-        </div>
+        <h2 class="text-center mb-4">Farm Analysis & Satellite Report</h2>
 
-        <div class="card">
+        <div class="card mb-4">
           <div class="card-header">
-            <h3 class="card-title">Staff List</h3>
-          </div>
-          <div class="card-body">
-            <div class="table-container">
-              <table class="table" id="employeesTable">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Role</th>
-                    <th>Type</th>
-                    <th>Status</th>
-                    <th>Phone</th>
-                    <th>Pay Basis</th>
-                    <th>Pay Rate (Xaf)</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="employeesTableBody">
-                  <!-- Employee rows will be inserted here -->
-                </tbody>
-              </table>
-            </div>
-            <div id="noEmployeesMessage" class="text-center p-4 text-muted hidden">
-              No employees added yet. Click "Add Employee" to get started.
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Advanced Features Section -->
-    <section id="advanced" class="section hidden">
-      <div class="container">
-        <h2 class="text-center mb-4">Advanced Features</h2>
-
-        <!-- Weather Integration -->
-        <div class="card mb-4" id="weather-card">
-          <div class="card-header">
-            <h3 class="card-title">☀️ Weather Forecast & Planting Advice</h3>
-          </div>
-          <div class="card-body">
-            <p class="text-muted text-center">Loading weather data...</p>
-          </div>
-        </div>
-
-        <!-- Alert System -->
-        <div class="card mb-4" id="alerts-card">
-          <div class="card-header">
-            <h3 class="card-title">🔔 Alert System</h3>
-          </div>
-          <div class="card-body">
-            <p class="text-muted text-center">Coming soon...</p>
-          </div>
-        </div>
-
-        <!-- Trend Analysis -->
-        <div class="card mb-4" id="trends-card">
-          <div class="card-header">
-            <h3 class="card-title">📈 Trend Analysis</h3>
-          </div>
-          <div class="card-body">
-            <p class="text-muted text-center">Coming soon...</p>
-          </div>
-        </div>
-
-        <!-- Preventive Tasks -->
-        <div class="card mb-4" id="tasks-card">
-          <div class="card-header">
-            <h3 class="card-title">✅ Preventive Tasks</h3>
-          </div>
-          <div class="card-body">
-            <p class="text-muted text-center">Coming soon...</p>
-          </div>
-        </div>
-
-        <!-- Insurance Log -->
-        <div class="card mb-4" id="insurance-card">
-          <div class="card-header">
-            <h3 class="card-title">🛡️ Insurance Log</h3>
-          </div>
-          <div class="card-body">
-            <p class="text-muted text-center">Coming soon...</p>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-  </main>
-
-  <!-- Add/Edit Employee Modal -->
-  <div class="modal-overlay" id="employeeModal">
-    <div class="modal">
-      <div class="modal-header">
-        <h3 class="modal-title" id="employeeModalTitle">Add New Employee</h3>
-        <button class="modal-close" onclick="app.closeModal('employeeModal')"><i class="fas fa-times"></i></button>
-      </div>
-      <form id="employeeForm" onsubmit="app.saveEmployee(event)">
-        <input type="hidden" id="employeeId">
-
-        <div class="form-group">
-          <label class="form-label" for="empName">Full Name</label>
-          <input type="text" class="form-control" id="empName" required placeholder="e.g. John Doe">
-        </div>
-
-        <div class="grid-3">
-          <div class="form-group">
-            <label class="form-label" for="empRole">Role</label>
-            <select class="form-control" id="empRole" required>
-              <option value="Manager">Manager</option>
-              <option value="Field Worker">Field Worker</option>
-              <option value="Driver">Driver</option>
-              <option value="Security">Security</option>
-              <option value="Admin">Admin</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="empType">Type</label>
-            <select class="form-control" id="empType" required>
-              <option value="Full-time">Full-time</option>
-              <option value="Part-time">Part-time</option>
-              <option value="Casual">Casual/Labourer</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="empStatus">Status</label>
-            <select class="form-control" id="empStatus" required>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="grid-3">
-          <div class="form-group">
-            <label class="form-label" for="empPhone">Phone</label>
-            <input type="tel" class="form-control" id="empPhone" placeholder="+237...">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="empPayFrequency">Pay Frequency</label>
-            <select class="form-control" id="empPayFrequency" required>
-              <option value="Monthly">Monthly</option>
-              <option value="Weekly">Weekly</option>
-              <option value="Daily">Daily</option>
-              <option value="Hourly">Hourly</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="empSalary">Pay Rate (Xaf)</label>
-            <input type="number" class="form-control" id="empSalary" min="0" step="1000" placeholder="0">
-          </div>
-        </div>
-
-        <div class="flex" style="justify-content: flex-end; gap: 1rem;">
-          <button type="button" class="btn btn-outline" onclick="app.closeModal('employeeModal')">Cancel</button>
-          <button type="submit" class="btn btn-primary">💾 Save Employee</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Add Transaction Modal -->
-  <div class="modal-overlay" id="addTransactionModal">
-    <div class="modal">
-      <div class="modal-header">
-        <h3 class="modal-title" id="transactionModalTitle">Add Transaction</h3>
-        <button class="modal-close" onclick="app.closeModal('addTransactionModal')"><i
-            class="fas fa-times"></i></button>
-      </div>
-      <form id="transactionForm" onsubmit="app.addTransaction(event)">
-        <div class="form-group">
-          <label class="form-label" for="transactionDate">Date</label>
-          <input type="date" class="form-control" id="transactionDate" required>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="transactionType">Type</label>
-          <select class="form-control" id="transactionType" required onchange="app.updateCategoryOptions()">
-            <option value="">Select type...</option>
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="transactionCategory">Category</label>
-          <select class="form-control" id="transactionCategory" required>
-            <option value="">Select type first...</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="transactionDescription">Description</label>
-          <input type="text" class="form-control" id="transactionDescription" required placeholder="Brief description">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="transactionSection">Farm Section (Optional)</label>
-          <select class="form-control" id="transactionSection">
-            <option value="">Link to section...</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="transactionAmount">Amount (Xaf)</label>
-          <input type="number" class="form-control" id="transactionAmount" required min="0" step="0.01">
-        </div>
-
-        <div class="flex" style="justify-content: flex-end; gap: 1rem;">
-          <button type="button" class="btn btn-outline" onclick="app.closeModal('addTransactionModal')">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="saveTransactionBtn">Add Transaction</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Add Crop Modal -->
-  <div class="modal-overlay" id="addCropModal">
-    <div class="modal">
-      <div class="modal-header">
-        <h3 class="modal-title" id="cropModalTitle">Add Crop</h3>
-        <button class="modal-close" onclick="app.closeModal('addCropModal')"><i class="fas fa-times"></i></button>
-      </div>
-      <form id="cropForm" onsubmit="app.addCrop(event)">
-        <input type="hidden" id="cropCategory">
-
-        <div class="form-group">
-          <label class="form-label" for="cropType">Type</label>
-          <select class="form-control" id="cropType" required onchange="app.checkCropAltitudeAlert()">
-            <option value="">Select type...</option>
-          </select>
-          <div id="cropAltitudeAlert" style="margin-top: 0.5rem; display: none;"></div>
-        </div>
-
-        <div class="form-group" id="cropCountGroup">
-          <label class="form-label" for="cropCount">Count</label>
-          <input type="number" class="form-control" id="cropCount" min="1">
-        </div>
-
-        <div class="form-group" id="cropAreaGroup">
-          <label class="form-label" for="cropArea">Area (hectares)</label>
-          <input type="number" class="form-control" id="cropArea" min="0" step="any">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="cropPlantedDate">Planted Date</label>
-          <input type="date" class="form-control" id="cropPlantedDate" required onchange="app.checkCropAltitudeAlert()">
-        </div>
-
-        <div class="form-group" id="contingencyGroup"
-          style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-          <input type="checkbox" id="cropHasContingency" onchange="app.checkCropAltitudeAlert()">
-          <label for="cropHasContingency" class="form-label" style="margin: 0;">Irrigation / Contingency Plan
-            available?</label>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="cropStatus">Status</label>
-          <select class="form-control" id="cropStatus" required>
-            <option value="planted">Planted</option>
-            <option value="growing">Growing</option>
-            <option value="flowering">Flowering</option>
-            <option value="fruiting">Fruiting</option>
-            <option value="ready">Ready for Harvest</option>
-            <option value="harvested">Harvested</option>
-          </select>
-        </div>
-
-        <!-- Dynamic Fields -->
-        <div class="form-group" id="cropExpectedHarvestGroup" style="display: none;">
-          <label class="form-label" for="cropExpectedHarvest">Expected Harvest</label>
-          <input type="text" class="form-control" id="cropExpectedHarvest" placeholder="e.g. 500kg or 50 bags">
-        </div>
-
-        <div class="form-group" id="cropHarvestDateGroup" style="display: none;">
-          <label class="form-label" for="cropHarvestDate">Expected Harvest Date</label>
-          <input type="date" class="form-control" id="cropHarvestDate">
-        </div>
-
-        <div class="form-group" id="cropYieldGroup" style="display: none;">
-          <label class="form-label" for="cropYield">Expected Yield (kg)</label>
-          <input type="number" class="form-control" id="cropYield" min="0" step="0.01" placeholder="e.g. 1000">
-        </div>
-
-        <div class="flex" style="justify-content: flex-end; gap: 1rem;">
-          <button type="button" class="btn btn-outline" onclick="app.closeModal('addCropModal')">Cancel</button>
-          <button type="submit" class="btn btn-success">Add Crop</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Create New Farm Modal -->
-  <div class="modal-overlay" id="createFarmModal">
-    <div class="modal modal-xl">
-      <div class="modal-header">
-        <h3 class="modal-title">Create New Farm</h3>
-        <button class="modal-close" onclick="app.closeModal('createFarmModal')"><i class="fas fa-times"></i></button>
-      </div>
-      <form id="farmForm" onsubmit="app.createNewFarm(event)">
-        <div class="form-group">
-          <label class="form-label" for="newFarmName">Farm Name</label>
-          <input type="text" class="form-control" id="newFarmName" required placeholder="e.g., Maloure Farm">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="newFarmLocation">Location</label>
-          <input type="text" class="form-control" id="newFarmLocation" required
-            placeholder="e.g., Maloure Village, Njimoun, Foumban">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="newFarmAltitude">Altitude (meters)</label>
-          <input type="number" class="form-control" id="newFarmAltitude" placeholder="e.g., 950" value="0">
-          <small class="text-muted">Used for Agri Calendar season calculations.</small>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="newFarmBoundaries">Boundary Coordinates (Optional)</label>
-          <textarea class="form-control" id="newFarmBoundaries" rows="5" placeholder="Paste coordinates in format: lat,lng (one per line)
-Example:
-5.916982,11.043742
-5.916911,11.043793
-5.916782,11.043831"></textarea>
-          <small class="text-muted">If provided, area will be calculated automatically. Otherwise, enter manually
-            below.</small>
-        </div>
-
-        <div class="flex" style="gap: 1rem; margin-bottom: 1rem;">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="app.calculateAreaFromBoundaries()">📐
-            Calculate Area from Boundaries</button>
-          <span id="calculatedAreaDisplay" style="font-weight: bold; color: var(--color-success);"></span>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="newFarmArea">Total Area (hectares)</label>
-          <input type="number" class="form-control" id="newFarmArea" required min="0" step="any"
-            placeholder="e.g., 2.7516">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="newFarmPerimeter">Perimeter (meters) - Optional</label>
-          <input type="number" class="form-control" id="newFarmPerimeter" min="0" step="any" placeholder="e.g., 680.16">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="newFarmLat">Center Latitude</label>
-          <input type="number" class="form-control" id="newFarmLat" required step="0.000001"
-            placeholder="e.g., 5.916982">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="newFarmLng">Center Longitude</label>
-          <input type="number" class="form-control" id="newFarmLng" required step="0.000001"
-            placeholder="e.g., 11.043742">
-        </div>
-
-        <div class="flex" style="justify-content: flex-end; gap: 1rem;">
-          <button type="button" class="btn btn-outline" onclick="app.closeModal('createFarmModal')">Cancel</button>
-          <button type="submit" class="btn btn-primary">➕ Create Farm</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Section Configuration Modal -->
-  <div class="modal-overlay" id="sectionModal">
-    <div class="modal">
-      <div class="modal-header">
-        <h3 class="modal-title">Configure Farm Section</h3>
-        <button class="modal-close" onclick="app.closeModal('sectionModal')"><i class="fas fa-times"></i></button>
-      </div>
-      <form id="sectionForm" onsubmit="app.saveFarmSection(event)">
-        <div class="form-group">
-          <label class="form-label" for="sectionName">Section Name</label>
-          <input type="text" class="form-control" id="sectionName" required placeholder="e.g., Apple Orchard">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="sectionType">Section Type</label>
-          <select class="form-control" id="sectionType" required onchange="app.handleSectionTypeChange(this.value)">
-            <option value="">Select type...</option>
-            <option value="fruit-trees">Fruit Trees</option>
-            <option value="cash-crops">Cash Crops</option>
-            <option value="infrastructure">Infrastructure</option>
-            <option value="fallow">Fallow Land</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-
-        <input type="hidden" id="sectionId">
-
-        <div class="form-group">
-          <label class="form-label" for="sectionCrop">Crop Type (if applicable)</label>
-          <input type="text" class="form-control" id="sectionCrop" placeholder="e.g., Avocado, Cassava">
-          <select class="form-control" id="sectionCropSelect" style="display: none;">
-            <option value="">Select crop...</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="sectionArea">Area (hectares)</label>
-          <input type="number" class="form-control" id="sectionArea" step="any" min="0" required
-            placeholder="e.g., 1.5025" readonly>
-          <small style="color: #666; font-size: 0.85rem;">Calculated automatically from map</small>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="sectionPercentage">Percentage of Farm (%)</label>
-          <input type="number" class="form-control" id="sectionPercentage" readonly>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="sectionColor">Section Color</label>
-          <input type="color" class="form-control" id="sectionColor" value="#4CAF50">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="sectionNotes">Notes</label>
-          <textarea class="form-control" id="sectionNotes" rows="3"
-            placeholder="Additional notes about this section"></textarea>
-        </div>
-
-        <div class="flex" style="justify-content: flex-end; gap: 1rem;">
-          <button type="button" class="btn btn-outline" onclick="app.closeModal('sectionModal')">Cancel</button>
-          <button type="submit" class="btn btn-primary">💾 Save Section</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Custom Category Modal -->
-  <div class="modal-overlay" id="customCategoryModal">
-    <div class="modal">
-      <div class="modal-header">
-        <h3 class="modal-title">Add Custom Category</h3>
-        <button class="modal-close" onclick="app.closeModal('customCategoryModal')"><i
-            class="fas fa-times"></i></button>
-      </div>
-      <form id="customCategoryForm" onsubmit="app.addCustomCategory(event)">
-        <div class="form-group">
-          <label class="form-label" for="customCategoryName">Category Name</label>
-          <input type="text" class="form-control" id="customCategoryName" required placeholder="Enter category name">
-        </div>
-
-        <div class="flex" style="justify-content: flex-end; gap: 1rem;">
-          <button type="button" class="btn btn-outline" onclick="app.closeModal('customCategoryModal')">Cancel</button>
-          <button type="submit" class="btn btn-primary">Add Category</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Coordinate Editor Modal -->
-  <div class="modal-overlay" id="coordinateEditorModal">
-    <div class="modal modal-xl">
-      <div class="modal-header">
-        <h3 class="modal-title">✏️ Edit Farm Boundary Coordinates</h3>
-        <button class="modal-close" onclick="app.closeModal('coordinateEditorModal')"><i
-            class="fas fa-times"></i></button>
-      </div>
-      <div class="modal-body">
-        <p style="margin-bottom: 1rem; color: #666;">
-          Enter coordinates for the farm plot boundaries. At least 3 points are required to form a polygon.
-        </p>
-
-        <!-- Add New Coordinate -->
-        <div class="card" style="margin-bottom: 1.5rem; background: #f8faf9;">
-          <div class="card-header">
-            <h4 style="margin: 0; font-size: 1rem;">➕ Add New Point</h4>
-          </div>
-          <div class="card-body">
-            <div style="display: flex; gap: 1rem; align-items: flex-end;">
-              <div class="form-group" style="flex: 1; margin: 0;">
-                <label class="form-label" for="newPointLat">Latitude (-90 to 90)</label>
-                <input type="number" class="form-control" id="newPointLat" step="0.000001" placeholder="e.g., 5.916982"
-                  min="-90" max="90">
-              </div>
-              <div class="form-group" style="flex: 1; margin: 0;">
-                <label class="form-label" for="newPointLng">Longitude (-180 to 180)</label>
-                <input type="number" class="form-control" id="newPointLng" step="0.000001" placeholder="e.g., 11.043742"
-                  min="-180" max="180">
-              </div>
-              <button class="btn btn-primary" onclick="app.addCoordinatePoint()" style="margin-bottom: 0;">
-                ➕ Add Point
-              </button>
-            </div>
-            <div id="coordinateError" style="color: #cc0000; margin-top: 0.5rem; display: none;"></div>
-          </div>
-        </div>
-
-        <!-- Bulk Import Coordinates -->
-        <div class="card" style="margin-bottom: 1.5rem; background: #f0f8ff;">
-          <div class="card-header">
-            <h4 style="margin: 0; font-size: 1rem;">📋 Bulk Import Coordinates</h4>
-          </div>
-          <div class="card-body">
-            <p style="margin-bottom: 0.5rem; font-size: 0.9rem; color: #666;">
-              <label for="bulkCoordinatesInput">Paste multiple coordinates (one per line). Supported formats:</label>
-            </p>
-            <ul style="margin: 0.5rem 0; padding-left: 1.5rem; font-size: 0.85rem; color: #666;">
-              <li><code>lat,lng</code> - Example: <code>5.916982,11.043742</code></li>
-              <li><code>lat lng</code> - Example: <code>5.916982 11.043742</code></li>
-              <li><code>lat, lng</code> - Example: <code>5.916982, 11.043742</code></li>
-            </ul>
-            <textarea class="form-control" id="bulkCoordinatesInput" rows="5" placeholder="Paste coordinates here (one per line)
-Example:
-5.916982,11.043742
-5.916911,11.043793
-5.916782,11.043831" style="font-family: monospace; font-size: 0.9rem; margin-bottom: 0.5rem;"></textarea>
-            <div style="display: flex; gap: 0.5rem; align-items: center;">
-              <button class="btn btn-primary" onclick="app.importBulkCoordinates()" style="margin: 0;">
-                📥 Import Coordinates
-              </button>
-              <button class="btn btn-outline" onclick="document.getElementById('bulkCoordinatesInput').value = ''"
-                style="margin: 0;">
-                Clear
-              </button>
-              <span id="bulkImportStatus" style="font-size: 0.9rem; color: #4caf50; display: none;"></span>
-            </div>
-            <div id="bulkImportError" style="color: #cc0000; margin-top: 0.5rem; font-size: 0.9rem; display: none;">
-            </div>
-          </div>
-        </div>
-
-        <!-- Current Coordinates Table -->
-        <div class="card">
-          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-            <h4 style="margin: 0; font-size: 1rem;">📍 Current Boundary Points (<span id="coordinateCount">0</span>)
-            </h4>
-            <button class="btn btn-danger btn-sm" onclick="app.clearAllCoordinates()" style="margin: 0;">
-              🗑️ Clear All
+            <h3 class="card-title">📡 Satellite Analysis Generation</h3>
+            <button class="btn btn-primary" onclick="app.generateFarmAnalysis()">
+              🔄 Refresh Analysis
             </button>
           </div>
           <div class="card-body">
-            <div class="table-container" style="max-height: 400px; overflow-y: auto;">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th style="width: 50px;">#</th>
-                    <th>LATITUDE</th>
-                    <th>LONGITUDE</th>
-                    <th style="width: 100px;">ACTIONS</th>
-                  </tr>
-                </thead>
-                <tbody id="coordinatesTableBody">
-                  <tr>
-                    <td colspan="4" class="text-center text-muted">No coordinates defined</td>
-                  </tr>
-                </tbody>
-              </table>
+            <div id="farmAnalysisContent" class="analysis-content">
+              <div class="text-center text-muted p-5">
+                <i class="fas fa-satellite" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                <p>Click "Refresh Analysis" to generate a detailed report based on your farm's location.</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="modal-footer"
-        style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-top: 1px solid #e0e0e0;">
-        <div style="color: #666; font-size: 0.9rem;">
-          <span id="validationMessage">✓ Ready to save</span>
-        </div>
-        <div style="display: flex; gap: 1rem;">
-          <button type="button" class="btn btn-outline"
-            onclick="app.closeModal('coordinateEditorModal')">Cancel</button>
-          <button type="button" class="btn btn-primary" onclick="app.saveCoordinates()" id="saveCoordinatesBtn">
-            💾 Save Changes
-          </button>
-        </div>
+    </section>
+
+    <!-- Helper Modules -->
+    <script src="canvas_drawing_functions.js?v=1.5.5"></script>
+    <script src="land_allocation_functions.js?v=1.5.12"></script>
+    <script src="farm_analysis_functions.js?v=1.0.1"></script>
+    <script src="print_functions.js?v=1.5.5"></script>
+    <script src="app.js?v=1.5.5"></script>
+    <!-- Map Context Menu -->
+    <div id="mapContextMenu">
+      <div class="map-context-menu-item" onclick="app.editSectionDetails()">
+        ✏️ Edit Details
+      </div>
+      <div class="map-context-menu-divider"></div>
+      <div class="map-context-menu-item delete-option" onclick="app.deleteSelectedSectionFromMenu()">
+        🗑️ Delete Allocation
       </div>
     </div>
-  </div>
-
-  <!-- Agri Calendar Section -->
-  <section id="agri-calendar" class="section" style="display: none;">
-    <div class="container">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-center mb-0">📅 Agri Calendar & Planting Guide</h2>
-        <div id="farmZoneBadge" class="badge badge-info" style="font-size: 1rem; padding: 0.5rem 1rem;">
-          Loading zone...
-        </div>
-      </div>
-
-      <!-- Farm Location Context -->
-      <div class="alert alert-info mb-4" id="calendarFarmInfo"
-        style="background-color: #e7f3ff; color: #004085; border: 1px solid #b8daff; border-radius: 8px; padding: 1rem;">
-        <i class="fas fa-info-circle"></i> Based on your farm's altitude and coordinates, we've generated a personalized
-        planting summary to optimize your yield and reduce climate risks.
-      </div>
-
-      <!-- Risk Alerts Container -->
-      <div id="calendarAlerts" class="mb-4">
-        <!-- Alerts will be injected here -->
-      </div>
-
-      <!-- Season Summary Grid -->
-      <div class="grid grid-2 mb-4">
-        <!-- Cereals -->
-        <div class="card h-100">
-          <div class="card-header" style="background-color: #fff3cd; color: #856404; border-bottom: 2px solid #ffeeba;">
-            <h3 class="card-title">🌾 Cereals (Maize, Rice)</h3>
-          </div>
-          <div class="card-body" id="cerealsSummary">
-            <div class="text-center text-muted">Select a farm to view analysis...</div>
-          </div>
-        </div>
-
-        <!-- Tubers -->
-        <div class="card h-100">
-          <div class="card-header" style="background-color: #d4edda; color: #155724; border-bottom: 2px solid #c3e6cb;">
-            <h3 class="card-title">🥔 Tubers (Cassava, Yam)</h3>
-          </div>
-          <div class="card-body" id="tubersSummary">
-            <div class="text-center text-muted">Select a farm to view analysis...</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid grid-2 mb-4">
-        <!-- Fruit Trees -->
-        <div class="card h-100">
-          <div class="card-header" style="background-color: #d1ecf1; color: #0c5460; border-bottom: 2px solid #bee5eb;">
-            <h3 class="card-title">🌳 Fruit Trees (Mango, Citrus)</h3>
-          </div>
-          <div class="card-body" id="fruitTreesSummary">
-            <div class="text-center text-muted">Select a farm to view analysis...</div>
-          </div>
-        </div>
-
-        <!-- Legumes -->
-        <div class="card h-100">
-          <div class="card-header" style="background-color: #e2e3e5; color: #383d41; border-bottom: 2px solid #d6d8db;">
-            <h3 class="card-title">🫘 Legumes (Beans, Cowpeas)</h3>
-          </div>
-          <div class="card-body" id="legumesSummary">
-            <div class="text-center text-muted">Select a farm to view analysis...</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Crop Durations & Cycles -->
-      <div class="card mb-4">
-        <div class="card-header" style="background-color: #e9ecef;">
-          <h3 class="card-title">🕒 Crop Durations & Growth Cycles</h3>
-        </div>
-        <div class="card-body">
-          <div class="table-container">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Category</th>
-                  <th>Crop</th>
-                  <th>Growth Duration</th>
-                  <th>Campaigns per Year</th>
-                </tr>
-              </thead>
-              <tbody id="cropDurationsBody">
-                <!-- Will be populated by JS -->
-                <tr>
-                  <td>Cereals</td>
-                  <td>Maize / Corn</td>
-                  <td>4 Months</td>
-                  <td>2 Campaigns (Lowland/Midland)</td>
-                </tr>
-                <tr>
-                  <td>Tubers</td>
-                  <td>Potato</td>
-                  <td>3 Months</td>
-                  <td>Up to 3 Campaigns</td>
-                </tr>
-                <tr>
-                  <td>Tubers</td>
-                  <td>Cassava</td>
-                  <td>12 Months</td>
-                  <td>1 Main Cycle</td>
-                </tr>
-                <tr>
-                  <td>Legumes</td>
-                  <td>Beans</td>
-                  <td>3 Months</td>
-                  <td>2-3 Campaigns</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Historical Risk Analysis -->
-      <div class="card mb-4" id="historicalRiskCard" style="display: none;">
-        <div class="card-header bg-danger text-white">
-          <h3 class="card-title"><i class="fas fa-history"></i> Historical Risk Analysis</h3>
-        </div>
-        <div class="card-body">
-          <div class="d-flex gap-4 align-items-center">
-            <div id="riskStats" style="flex: 1;">
-              <!-- Incident stats will be injected here -->
-            </div>
-            <div id="riskRecommendation" class="p-4 bg-light rounded" style="flex: 1; border-left: 5px solid #dc3545;">
-              <p class="mb-0" id="riskRecommendationText">Analyzing historical data...</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Detailed Season Guide -->
-      <div class="card mt-4">
-        <div class="card-header">
-          <h3 class="card-title">✨ Altitude-Based Strategy</h3>
-        </div>
-        <div class="card-body" id="zoneStrategies">
-          <p class="text-muted text-center">Please select a farm with valid coordinates to see specific altitude-based
-            strategies.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer class="section bg-primary" style="color: white; text-align: center; padding: 2rem 0;">
-    <div class="container">
-      <p>&copy; 2026 Farm Management System</p>
-      <p class="text-muted" style="margin-top: 0.5rem; font-size: 0.875rem;">
-        Professional farm management for sustainable agriculture
-      </p>
-    </div>
-  </footer>
-
-  <!-- Manage Crop Types Modal -->
-  <div class="modal-overlay" id="manageCropTypesModal">
-    <div class="modal">
-      <div class="modal-header">
-        <h3 class="modal-title">Manage Crop Types</h3>
-        <button class="modal-close" onclick="app.closeModal('manageCropTypesModal')"><i
-            class="fas fa-times"></i></button>
-      </div>
-      <div class="modal-body">
-        <div class="tabs" style="margin-bottom: 1rem;">
-          <button class="tab-btn active" onclick="app.switchTypeTab('fruit')" id="tabTypeFruit">Fruit Trees</button>
-          <button class="tab-btn" onclick="app.switchTypeTab('cash')" id="tabTypeCash">Cash Crops</button>
-        </div>
-
-        <ul class="list-group" id="cropTypesList" style="max-height: 300px; overflow-y: auto;">
-          <!-- Items injected here -->
-        </ul>
-
-        <div
-          style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
-          <button class="btn btn-primary btn-sm" onclick="app.restoreDefaultTypes()"
-            style="background-color: #ff9800; border-color: #ff9800; color: white;">
-            🔄 Restore Defaults
-          </button>
-          <p class="text-muted" style="font-size: 0.85rem; margin: 0;">
-            Add new types via the "Add Crop" dropdown.
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Log Incident Modal -->
-  <div id="logIncidentModal" class="modal-overlay">
-    <div class="modal">
-      <div class="modal-header">
-        <h2 class="modal-title">Log New Risk / Incident</h2>
-        <button class="close-btn" onclick="app.closeModal('logIncidentModal')">&times;</button>
-      </div>
-      <form id="logIncidentForm" onsubmit="event.preventDefault(); app.handleLogIncidentSubmit();">
-        <div class="form-group">
-          <label>Category</label>
-          <select id="incidentCategory" class="form-control" required onchange="app.updateIncidentSubcategories()">
-            <option value="">Select Category</option>
-            <option value="CLIMATE">Climate & Environmental</option>
-            <option value="BIOLOGICAL">Biological Threats</option>
-            <option value="OPERATIONAL">Operational & Logistical</option>
-            <option value="SECURITY">Security & Safety</option>
-            <option value="MARKET">Market & Economic</option>
-            <option value="MANAGEMENT">Management & Human Factor</option>
-            <option value="INFRASTRUCTURE">Infrastructure</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Subcategory (Specific Threat)</label>
-          <select id="incidentSubcategory" class="form-control" required>
-            <!-- Populated dynamically -->
-            <option value="">Select Category First</option>
-          </select>
-        </div>
-
-        <div class="row">
-          <div class="col-6">
-            <div class="form-group">
-              <label>Severity Level</label>
-              <select id="incidentSeverity" class="form-control" required>
-                <option value="Low">Low</option>
-                <option value="Medium">Medium</option>
-                <option value="High">High</option>
-                <option value="Critical" style="color: red; font-weight: bold;">Critical</option>
-              </select>
-            </div>
-          </div>
-          <div class="col-6">
-            <div class="form-group">
-              <label>Date Detected</label>
-              <input type="date" id="incidentDate" class="form-control" required>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Affected Area / Asset</label>
-          <input type="text" id="incidentAsset" class="form-control"
-            placeholder="e.g., North Field, Tractor A, Storage 1" required>
-        </div>
-
-        <div class="row">
-          <div class="col-6">
-            <div class="form-group">
-              <label>Est. Financial Impact (Xaf)</label>
-              <input type="number" id="incidentImpact" class="form-control" min="0" value="0">
-            </div>
-          </div>
-          <div class="col-6">
-            <div class="form-group">
-              <label>Status</label>
-              <select id="incidentStatus" class="form-control">
-                <option value="Open">Open</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Resolved">Resolved</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Root Cause / Details</label>
-          <textarea id="incidentDetails" class="form-control" rows="3"
-            placeholder="Describe what happened..."></textarea>
-        </div>
-
-        <div class="form-group">
-          <label>Immediate Action Taken</label>
-          <textarea id="incidentAction" class="form-control" rows="2"
-            placeholder="What was done immediately?"></textarea>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" onclick="app.closeModal('logIncidentModal')">Cancel</button>
-          <button type="submit" class="btn btn-primary">Log Incident</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Confirmation Modal -->
-  <div id="confirmationModal" class="modal-overlay">
-    <div class="modal" style="max-width: 450px;">
-      <div class="modal-header">
-        <h3 class="modal-title">Confirm Action</h3>
-        <button class="modal-close" onclick="app.closeModal('confirmationModal')"><i class="fas fa-times"></i></button>
-      </div>
-      <div style="margin-bottom: 2rem;">
-        <p id="confirmationMessage">Are you sure you want to proceed?</p>
-      </div>
-      <div class="flex" style="justify-content: flex-end; gap: 1rem;">
-        <button class="btn btn-secondary" onclick="app.closeModal('confirmationModal')">Cancel</button>
-        <button class="btn btn-danger" id="confirmActionBtn">⚠️ Confirm</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Alert Modal -->
-  <div id="alertModal" class="modal-overlay">
-    <div class="modal" style="max-width: 450px;">
-      <div class="modal-header" id="alertHeader">
-        <h3 class="modal-title" id="alertTitle">Alert</h3>
-        <button class="modal-close" id="alertCloseBtn" onclick="app.closeModal('alertModal')"><i
-            class="fas fa-times"></i></button>
-      </div>
-      <div style="margin-bottom: 2rem;">
-        <p id="alertMessage" style="color: #666; font-size: 1rem; line-height: 1.5; text-align: center;">
-          Alert Message
-        </p>
-      </div>
-      <div class="flex" style="justify-content: center;">
-        <button class="btn btn-primary" onclick="app.closeModal('alertModal')">OK</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Global App Object -->
-  <script>const app = {};</script>
-
-  <!-- API Client for Database Integration (Already included in head) -->
-  <!-- <script src="api-client.js"></script> -->
-
-
-  <!-- Farm Analysis Section -->
-  <section id="analysis" class="section hidden">
-    <div class="container">
-      <h2 class="text-center mb-4">Farm Analysis & Satellite Report</h2>
-
-      <div class="card mb-4">
-        <div class="card-header">
-          <h3 class="card-title">📡 Satellite Analysis Generation</h3>
-          <button class="btn btn-primary" onclick="app.generateFarmAnalysis()">
-            🔄 Refresh Analysis
-          </button>
-        </div>
-        <div class="card-body">
-          <div id="farmAnalysisContent" class="analysis-content">
-            <div class="text-center text-muted p-5">
-              <i class="fas fa-satellite" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-              <p>Click "Refresh Analysis" to generate a detailed report based on your farm's location.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Helper Modules -->
-  <script src="canvas_drawing_functions.js?v=1.5.5"></script>
-  <script src="land_allocation_functions.js?v=1.5.12"></script>
-  <script src="farm_analysis_functions.js?v=1.0.1"></script>
-  <script src="print_functions.js?v=1.5.5"></script>
-  <script src="app.js?v=1.5.5"></script>
-  <!-- Map Context Menu -->
-  <div id="mapContextMenu">
-    <div class="map-context-menu-item" onclick="app.editSectionDetails()">
-      ✏️ Edit Details
-    </div>
-    <div class="map-context-menu-divider"></div>
-    <div class="map-context-menu-item delete-option" onclick="app.deleteSelectedSectionFromMenu()">
-      🗑️ Delete Allocation
-    </div>
-  </div>
