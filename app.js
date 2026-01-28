@@ -1126,40 +1126,200 @@ Object.assign(app, {
         alert('✅ ' + message);
     },
 
+    formatCurrency(amount) {
+        return new Intl.NumberFormat('fr-CM', {
+            style: 'currency',
+            currency: 'XAF',
+            minimumFractionDigits: 0
+        }).format(amount).replace('FCFA', '₣');
+    },
+
+    formatDate(dateString) {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+    },
+
     renderDashboard() {
         const { income, expenses, netCashFlow } = this.calculateMetrics();
 
-        // Update stat cards
+        // Update metric cards
         document.getElementById('totalRevenue').textContent = this.formatCurrency(income);
         document.getElementById('totalExpenses').textContent = this.formatCurrency(expenses);
-        document.getElementById('netCashFlow').textContent = this.formatCurrency(netCashFlow);
 
-        // Update trends (simplified - calculate based on income/expense ratio)
-        const cashFlowTrendEl = document.getElementById('cashFlowTrend');
-        if (netCashFlow > 0) {
-            cashFlowTrendEl.textContent = '↑ Positive';
-            cashFlowTrendEl.className = 'stat-card-trend trend-up';
-        } else if (netCashFlow < 0) {
-            cashFlowTrendEl.textContent = '↓ Negative';
-            cashFlowTrendEl.className = 'stat-card-trend trend-down';
-        } else {
-            cashFlowTrendEl.textContent = '-- Neutral';
-            cashFlowTrendEl.className = 'stat-card-trend';
+        const revenueTrendEl = document.getElementById('revenueTrend');
+        const expenseTrendEl = document.getElementById('expenseTrend');
+
+        // Simplified trend logic
+        if (income > 0) {
+            revenueTrendEl.textContent = '↑ Active';
+            revenueTrendEl.className = 'metric-trend text-success';
+        }
+        if (expenses > 0) {
+            expenseTrendEl.textContent = '↓ Tracking';
+            expenseTrendEl.className = 'metric-trend text-danger';
         }
 
-        // Update farm area and perimeter
+        // Update farm area
         const farm = this.getCurrentFarm();
         const totalAreaEl = document.getElementById('totalArea');
         const areaPerimeterEl = document.getElementById('areaPerimeter');
 
         if (totalAreaEl) {
             const areaHa = farm ? (parseFloat(farm.area) || 0) : 0;
-            const areaAcres = areaHa * 2.47105;
-            totalAreaEl.textContent = `${areaHa.toFixed(2)} ha / ${areaAcres.toFixed(2)} acres`;
+            totalAreaEl.textContent = `${areaHa.toFixed(2)} ha`;
         }
         if (areaPerimeterEl) {
             areaPerimeterEl.textContent = `${farm ? (parseFloat(farm.perimeter) || 0).toFixed(2) : '0.00'} m perimeter`;
         }
+
+        // Refresh Sub-modules
+        this.renderRecentTransactions();
+        this.updateWeather();
+        this.renderUpcomingTasks();
+    },
+
+    refreshDashboard() {
+        const btn = document.querySelector('[onclick="app.refreshDashboard()"]');
+        if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+
+        setTimeout(async () => {
+            await this.loadData();
+            if (btn) btn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+            this.showSuccess('Dashboard updated');
+        }, 800);
+    },
+
+    async updateWeather() {
+        const farm = this.getCurrentFarm();
+        const widget = document.getElementById('weatherWidget');
+        if (!widget) return;
+
+        const { lat, lng } = farm.centerCoordinates || { lat: 0, lng: 0 };
+        if (lat === 0 && lng === 0) {
+            widget.innerHTML = `<div class="card-body text-center p-4">
+                <i class="fas fa-map-marker-alt mb-2"></i>
+                <p>Set farm coordinates to see weather</p>
+            </div>`;
+            return;
+        }
+
+        try {
+            const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto`);
+            const data = await response.json();
+            const current = data.current_weather;
+
+            widget.innerHTML = `
+                <div class="card-body">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h4 class="mb-0" style="color: var(--color-accent);">${current.temperature}°C</h4>
+                            <p class="mb-0 opacity-80" style="font-size: 0.85rem;">Wind: ${current.windspeed} km/h</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <i class="${this.getWeatherIcon(current.weathercode)} fa-3x" style="color: var(--color-accent);"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+                        <div class="text-center">
+                            <span style="font-size: 0.7rem; display: block; opacity: 0.7;">MAX</span>
+                            <span style="font-weight: 600;">${data.daily.temperature_2m_max[0]}°</span>
+                        </div>
+                        <div class="text-center">
+                            <span style="font-size: 0.7rem; display: block; opacity: 0.7;">MIN</span>
+                            <span style="font-weight: 600;">${data.daily.temperature_2m_min[0]}°</span>
+                        </div>
+                        <div class="text-center">
+                            <span style="font-size: 0.7rem; display: block; opacity: 0.7;">RAIN</span>
+                            <span style="font-weight: 600;">${data.daily.precipitation_probability_max[0]}%</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } catch (error) {
+            console.error('Weather fetch error:', error);
+            widget.innerHTML = `<div class="card-body text-center"><p class="text-danger">Weather Unavailable</p></div>`;
+        }
+    },
+
+    getWeatherIcon(code) {
+        if (code === 0) return 'fas fa-sun';
+        if (code <= 3) return 'fas fa-cloud-sun';
+        if (code <= 48) return 'fas fa-cloud';
+        if (code <= 67) return 'fas fa-cloud-showers-heavy';
+        if (code <= 77) return 'fas fa-snowflake';
+        if (code <= 82) return 'fas fa-cloud-rain';
+        return 'fas fa-bolt';
+    },
+
+    renderUpcomingTasks() {
+        const container = document.getElementById('upcomingTaskList');
+        if (!container) return;
+
+        const farm = this.getCurrentFarm();
+        const crops = [...(farm.fruitTrees || []), ...(farm.cashCrops || [])];
+
+        // Find crops ready to harvest or needing attention
+        const tasks = crops
+            .filter(c => c.status !== 'Harvested')
+            .map(c => ({
+                title: `Harvest ${c.type}`,
+                date: c.expected_harvest_date || c.harvest_date,
+                category: c.category,
+                status: c.status
+            }))
+            .sort((a, b) => new Date(a.date) - new Date(b.date))
+            .slice(0, 5);
+
+        if (tasks.length === 0) {
+            container.innerHTML = `<div class="p-4 text-center text-muted">
+                <i class="fas fa-clipboard-list fa-2x mb-2 opacity-20"></i>
+                <p>No upcoming tasks</p>
+            </div>`;
+            return;
+        }
+
+        container.innerHTML = tasks.map(task => `
+            <div class="task-item">
+                <div class="metric-icon" style="width: 32px; height: 32px; font-size: 0.9rem; background: ${task.category === 'fruit' ? 'rgba(241, 196, 15, 0.1)' : 'rgba(46, 204, 113, 0.1)'}; color: ${task.category === 'fruit' ? '#f39c12' : '#27ae60'};">
+                    <i class="fas ${task.category === 'fruit' ? 'fa-lemon' : 'fa-wheat-awn'}"></i>
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; font-size: 0.9rem;">${task.title}</div>
+                    <div style="font-size: 0.75rem; color: var(--color-gray-600);">${this.formatDate(task.date)}</div>
+                </div>
+                <div class="badge badge-info" style="font-size: 0.65rem;">${task.status}</div>
+            </div>
+        `).join('');
+    },
+
+    renderRecentTransactions() {
+        const tbody = document.getElementById('recentTransactionsBody');
+        if (!tbody) return;
+
+        const transactions = [...this.transactions]
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .slice(0, 5);
+
+        if (transactions.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted p-4">No recent transactions</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = transactions.map(t => `
+            <tr>
+                <td style="font-size: 0.85rem;">${this.formatDate(t.date)}</td>
+                <td><span class="badge ${t.type === 'income' ? 'badge-success' : 'badge-danger'}" style="font-size: 0.65rem;">${t.category}</span></td>
+                <td style="font-size: 0.85rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${t.description}</td>
+                <td class="text-right" style="font-weight: 600; color: ${t.type === 'income' ? 'var(--color-success)' : 'var(--color-danger)'}">
+                    ${t.type === 'income' ? '+' : '-'}${this.formatCurrency(t.amount)}
+                </td>
+            </tr>
+        `).join('');
     },
 
     // Render farm details in sidebar

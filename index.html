@@ -98,56 +98,68 @@
 
   <!-- Navigation -->
   <nav class="navbar">
-    <div class="container-fluid"
-      style="display: flex; align-items: center; justify-content: space-between; gap: 2rem; padding: 0 1rem;">
+    <div class="container-fluid">
       <!-- Far Left: Logo + Farm Name -->
-      <div style="display: flex; align-items: center; gap: 0.5rem; color: white; font-weight: 600; font-size: 1.2rem;">
-        <span style="font-size: 2rem;">Farm Management</span>
+      <div class="navbar-brand">
+        <div class="navbar-brand-icon"><i class="fas fa-leaf"></i></div>
+        <span>AgriManager Pro</span>
       </div>
 
       <!-- Center: Navigation Tabs + Dropdown -->
-      <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; justify-content: center;">
-        <ul class="navbar-nav"
-          style="display: flex; gap: 0.25rem; margin: 0; padding: 0; list-style: none; align-items: center;">
-
-          <li><a href="#dashboard" id="nav-dashboard" class="nav-link active"
-              onclick="app.showTab('dashboard')">Dashboard</a></li>
+      <div class="navbar-menu">
+        <ul class="navbar-nav">
+          <li><a href="#dashboard" id="nav-dashboard" class="nav-link active" onclick="app.showTab('dashboard')"><i
+                class="fas fa-th-large"></i> Dashboard</a></li>
 
           <!-- Operations Dropdown -->
           <li class="dropdown">
-            <a href="#" id="nav-operations" class="nav-link" onclick="event.preventDefault()">Operations ▼</a>
+            <a href="#" id="nav-operations" class="nav-link" onclick="event.preventDefault()"><i
+                class="fas fa-tasks"></i> Operations <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i></a>
             <div class="dropdown-content">
-              <a href="#employees" onclick="app.showTab('employees')">Workforce</a>
-              <a href="#incidents" onclick="app.showTab('incidents')">Risk & Incidents</a>
-              <a href="#analysis" onclick="app.showTab('analysis')">Farm Analysis</a>
-              <a href="#agri-calendar" onclick="app.showTab('agri-calendar')">Agri Calendar</a>
-              <a href="#advanced" onclick="app.showTab('advanced')">Advanced Features</a>
+              <a href="#agri-calendar" onclick="app.showTab('agri-calendar')"><i class="fas fa-calendar-alt"></i> Agri
+                Calendar</a>
+              <a href="#employees" onclick="app.showTab('employees')"><i class="fas fa-users"></i> Workforce</a>
+              <a href="#incidents" onclick="app.showTab('incidents')"><i class="fas fa-exclamation-triangle"></i> Risk &
+                Incidents</a>
+              <a href="#analysis" onclick="app.showTab('analysis')"><i class="fas fa-chart-line"></i> Farm Analysis</a>
+              <a href="#advanced" onclick="app.showTab('advanced')"><i class="fas fa-vial"></i> Advanced Features</a>
             </div>
           </li>
 
           <!-- Financials Dropdown -->
           <li class="dropdown">
-            <a href="#" id="nav-financials" class="nav-link" onclick="event.preventDefault()">Financials ▼</a>
+            <a href="#" id="nav-financials" class="nav-link" onclick="event.preventDefault()"><i
+                class="fas fa-wallet"></i> Financials <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i></a>
             <div class="dropdown-content">
-              <a href="#financial" onclick="app.showTab('financial')">Finance Console</a>
-              <a href="#reports" onclick="app.showTab('reports')">Analytics & Reports</a>
+              <a href="#financial" onclick="app.showTab('financial')"><i class="fas fa-calculator"></i> Finance
+                Console</a>
+              <a href="#reports" onclick="app.showTab('reports')"><i class="fas fa-file-invoice-dollar"></i> Analytics &
+                Reports</a>
             </div>
           </li>
 
           <!-- Farm Setup Dropdown -->
           <li class="dropdown">
-            <a href="#" id="nav-farm-setup" class="nav-link" onclick="event.preventDefault()">Farm Setup ▼</a>
+            <a href="#" id="nav-farm-setup" class="nav-link" onclick="event.preventDefault()"><i class="fas fa-cog"></i>
+              Setup <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i></a>
             <div class="dropdown-content">
-              <a href="#" onclick="app.openCreateFarmModal(); event.preventDefault()">Create New Farm</a>
-              <a href="#farm-info" onclick="app.showTab('farm-info')">Manage Farm</a>
-              <a href="#crops" onclick="app.showTab('crops')">Manage Crop</a>
+              <a href="#" onclick="app.openCreateFarmModal(); event.preventDefault()"><i class="fas fa-plus"></i> Create
+                New Farm</a>
+              <a href="#farm-info" onclick="app.showTab('farm-info')"><i class="fas fa-map-marked-alt"></i> Manage
+                Farm</a>
+              <a href="#crops" onclick="app.showTab('crops')"><i class="fas fa-seedling"></i> Manage Crop</a>
             </div>
           </li>
         </ul>
       </div>
-      <div style="display: flex; align-items: center; gap: 1rem;">
+
+      <!-- Right: User & Sync Status -->
+      <div class="navbar-actions">
+        <div class="sync-status" id="syncStatus">
+          <i class="fas fa-check-circle"></i> Connected
+        </div>
         <button class="nav-btn-logout" onclick="app.logout()">
-          Logout
+          <i class="fas fa-sign-out-alt"></i> Logout
         </button>
       </div>
     </div>
@@ -171,195 +183,137 @@
       <!-- Dashboard Section -->
       <section id="dashboard" class="section">
         <div class="container">
-          <h1 class="text-center mb-4">Farm Overview Dashboard</h1>
-
-          <!-- Key Metrics -->
-          <div class="grid grid-4 mb-4">
-            <div class="stat-card">
-              <div class="stat-card-icon">📍</div>
-              <div class="stat-card-label">Total Area</div>
-              <div class="stat-card-value" id="totalArea">0 ha</div>
-              <div class="stat-card-info" id="areaPerimeter">0 m perimeter</div>
+          <div class="dashboard-header mb-4">
+            <div>
+              <h1 class="h2 mb-1">Welcome Back, Farmer</h1>
+              <p class="text-muted">Here's what's happening on your farm today.</p>
             </div>
-
-            <div class="stat-card">
-              <div class="stat-card-icon">💰</div>
-              <div class="stat-card-label">Total Revenue</div>
-              <div class="stat-card-value" id="totalRevenue">₣0</div>
-              <div class="stat-card-trend trend-up" id="revenueTrend">↑ 0%</div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-card-icon">📊</div>
-              <div class="stat-card-label">Total Expenses</div>
-              <div class="stat-card-value" id="totalExpenses">₣0</div>
-              <div class="stat-card-trend trend-down" id="expenseTrend">↓ 0%</div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-card-icon">💵</div>
-              <div class="stat-card-label">Net Cash Flow</div>
-              <div class="stat-card-value" id="netCashFlow">₣0</div>
-              <div class="stat-card-trend" id="cashFlowTrend">--</div>
+            <div class="dashboard-actions">
+              <button class="btn btn-outline btn-sm" onclick="app.refreshDashboard()"><i class="fas fa-sync-alt"></i>
+                Refresh</button>
+              <button class="btn btn-primary btn-sm" onclick="app.openAddTransactionModal()"><i class="fas fa-plus"></i>
+                Add Event</button>
             </div>
           </div>
 
-          <!-- Change Password Modal -->
-          <div class="modal-overlay" id="changePasswordModal" style="z-index: 2000;">
-            <div class="modal">
-              <div class="modal-header">
-                <h3 class="modal-title">Change Password</h3>
-              </div>
-              <div class="modal-body">
-                <div class="alert alert-warning" id="passwordChangeAlert">
-                  You must change your password before continuing.
-                </div>
-                <form id="changePasswordForm">
-                  <div class="form-group">
-                    <label class="form-label" for="currentPassword">Current Password</label>
-                    <input type="password" class="form-control" id="currentPassword" required>
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label" for="newPassword">New Password</label>
-                    <input type="password" class="form-control" id="newPassword" required minlength="6">
-                    <small class="text-muted">Minimum 6 characters</small>
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label" for="confirmNewPassword">Confirm New Password</label>
-                    <input type="password" class="form-control" id="confirmNewPassword" required>
-                  </div>
-                </form>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-primary" onclick="app.submitPasswordChange()">Update
-                  Password</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- User Management Modal (Admin Only) -->
-          <div class="modal-overlay" id="userManagementModal">
-            <div class="modal modal-xl">
-              <div class="modal-header">
-                <h3 class="modal-title">User Management</h3>
-                <button class="modal-close" onclick="app.closeModal('userManagementModal')"><i
-                    class="fas fa-times"></i></button>
-              </div>
-              <div class="modal-body">
-                <div class="tabs-container">
-                  <div class="modal-tabs">
-                    <button class="modal-tab active" id="btnUserList" onclick="app.switchUserTab('list')">
-                      <i class="fas fa-users"></i> Users List
-                    </button>
-                    <button class="modal-tab" id="btnUserCreate" onclick="app.switchUserTab('create')">
-                      <i class="fas fa-user-plus"></i> Create User
-                    </button>
+          <!-- Modular Grid -->
+          <div class="dashboard-grid">
+            <!-- Left Column: Primary Stats & Weather -->
+            <div class="dashboard-col-main">
+              <!-- Top Metrics Row -->
+              <div class="metrics-grid mb-4">
+                <div class="metric-card">
+                  <div class="metric-icon bg-success-light"><i class="fas fa-chart-line"></i></div>
+                  <div class="metric-data">
+                    <span class="metric-label">Total Revenue</span>
+                    <h3 class="metric-value" id="totalRevenue">₣0</h3>
+                    <span class="metric-trend text-success" id="revenueTrend">↑ 0%</span>
                   </div>
                 </div>
+                <div class="metric-card">
+                  <div class="metric-icon bg-danger-light"><i class="fas fa-file-invoice-dollar"></i></div>
+                  <div class="metric-data">
+                    <span class="metric-label">Total Expenses</span>
+                    <h3 class="metric-value" id="totalExpenses">₣0</h3>
+                    <span class="metric-trend text-danger" id="expenseTrend">↓ 0%</span>
+                  </div>
+                </div>
+                <div class="metric-card">
+                  <div class="metric-icon bg-info-light"><i class="fas fa-wheat-awn"></i></div>
+                  <div class="metric-data">
+                    <span class="metric-label">Total Area</span>
+                    <h3 class="metric-value" id="totalArea">0 ha</h3>
+                    <span class="metric-sub" id="areaPerimeter">0 m perimeter</span>
+                  </div>
+                </div>
+              </div>
 
-                <div id="userListTab" class="tab-content active">
-                  <div class="table-container improved-table">
-                    <table class="table">
+              <!-- Main Charts Row -->
+              <div class="grid grid-2 mb-4">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-chart-area"></i> Cash Flow Trend</h3>
+                  </div>
+                  <div class="card-body">
+                    <canvas id="cashFlowChart"></canvas>
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-chart-pie"></i> Land Utilization</h3>
+                  </div>
+                  <div class="card-body">
+                    <canvas id="landUtilizationChart"></canvas>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recent Activity List -->
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title"><i class="fas fa-history"></i> Recent Transactions</h3>
+                  <a href="#financial" onclick="app.showTab('financial')" class="text-primary"
+                    style="font-size: 0.85rem; font-weight: 600;">View All</a>
+                </div>
+                <div class="card-body">
+                  <div class="table-container">
+                    <table class="table no-border" id="recentTransactionsTable">
                       <thead>
                         <tr>
-                          <th>NAME</th>
-                          <th>EMAIL</th>
-                          <th>ROLE</th>
-                          <th>CREATED AT</th>
-                          <th style="width: 100px; text-align: center;">ACTIONS</th>
+                          <th>Date</th>
+                          <th>Category</th>
+                          <th>Description</th>
+                          <th class="text-right">Amount</th>
                         </tr>
                       </thead>
-                      <tbody id="usersTableBody">
-                        <!-- Loaded via JS -->
+                      <tbody id="recentTransactionsBody">
+                        <tr>
+                          <td colspan="4" class="text-center text-muted p-4">No recent transactions</td>
+                        </tr>
                       </tbody>
                     </table>
                   </div>
                 </div>
+              </div>
+            </div>
 
-                <div id="createUserTab" class="tab-content" style="display: none;">
-                  <form id="createUserForm" onsubmit="event.preventDefault(); app.saveUser();">
-                    <input type="hidden" id="editUserId">
-                    <div class="form-group">
-                      <label class="form-label" for="newUserFullName">Full Name</label>
-                      <input type="text" class="form-control" id="newUserFullName" required
-                        placeholder="e.g. Jean Dupont">
-                    </div>
-                    <div class="form-group">
-                      <label class="form-label" for="newUserEmail">Email Address</label>
-                      <input type="email" class="form-control" id="newUserEmail" required
-                        placeholder="email@example.com">
-                    </div>
-                    <div class="form-group">
-                      <label class="form-label" for="newUserPassword">Password</label>
-                      <input type="password" class="form-control" id="newUserPassword" required minlength="6"
-                        placeholder="••••••••">
-                      <small class="text-muted" id="passwordNotice">Required for new users (min 6 chars)</small>
-                    </div>
-                    <div class="form-group">
-                      <label class="form-label" for="newUserRole">User Role</label>
-                      <select class="form-control" id="newUserRole">
-                        <option value="user">User</option>
-                        <option value="admin">Admin</option>
-                        <option value="guest">Guest</option>
-                      </select>
-                    </div>
-                    <div class="modal-footer" style="padding: 1.5rem 0 0 0; border-top: none;">
-                      <button type="submit" class="btn btn-primary" id="saveUserBtn">💾 Create User</button>
-                      <button type="button" class="btn btn-outline" onclick="app.switchUserTab('list')">Cancel</button>
-                    </div>
-                  </form>
+            <!-- Right Column: Weather & Tasks -->
+            <div class="dashboard-col-side">
+              <!-- Weather Widget -->
+              <div class="card weather-card mb-4" id="weatherWidget">
+                <div class="card-body">
+                  <div class="weather-loading text-center p-4">
+                    <i class="fas fa-spinner fa-spin mb-2"></i>
+                    <p>Loading Weather...</p>
+                  </div>
+                  <!-- Content injected via JS -->
                 </div>
               </div>
-            </div>
-          </div>
 
-          <!-- Charts -->
-          <div class="grid grid-2 mb-4">
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">Cash Flow Trend</h3>
+              <!-- Upcoming Tasks/Activities -->
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title"><i class="fas fa-calendar-check"></i> Upcoming Tasks</h3>
+                  <button class="btn-icon" onclick="app.showTab('agri-calendar')"><i class="fas fa-plus"></i></button>
+                </div>
+                <div class="card-body p-0">
+                  <div class="task-list" id="upcomingTaskList">
+                    <!-- Tasks injected via JS -->
+                    <div class="p-4 text-center text-muted">
+                      <i class="fas fa-clipboard-list fa-2x mb-2 opacity-20"></i>
+                      <p>No tasks scheduled</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="card-body">
-                <canvas id="cashFlowChart"></canvas>
-              </div>
-            </div>
 
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">Land Utilization</h3>
-              </div>
-              <div class="card-body">
-                <canvas id="landUtilizationChart"></canvas>
-              </div>
-            </div>
-          </div>
-
-          <!-- Recent Transactions -->
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Recent Transactions</h3>
-              <button class="btn btn-primary btn-sm" onclick="app.openAddTransactionModal()">
-                ➕ Add Transaction
-              </button>
-            </div>
-            <div class="card-body">
-              <div class="table-container">
-                <table class="table" id="recentTransactionsTable">
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Type</th>
-                      <th>Category</th>
-                      <th>Description</th>
-                      <th>Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody id="recentTransactionsBody">
-                    <tr>
-                      <td colspan="5" class="text-center text-muted">No transactions yet</td>
-                    </tr>
-                  </tbody>
-                </table>
+              <!-- Quick Insights -->
+              <div class="card mt-4 bg-primary text-white ivory-card">
+                <div class="card-body">
+                  <h4 class="mb-2" style="color: var(--color-accent);"><i class="fas fa-lightbulb"></i> Pro Tip</h4>
+                  <p style="font-size: 0.9rem; opacity: 0.9;">Analyze your soil moisture levels before the next planting
+                    season to optimize yield.</p>
+                </div>
               </div>
             </div>
           </div>
@@ -455,24 +409,29 @@
             <div class="card">
               <div class="card-header">
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                  <button class="btn btn-secondary btn-sm" onclick="app.toggleMapView('satellite')"
-                    id="satelliteViewBtn">
-                    Satellite View
-                  </button>
-                  <button class="btn btn-outline btn-sm" onclick="app.toggleMapView('graphical')" id="graphicalViewBtn">
-                    📊 Graphical
-                  </button>
-                  <button class="btn btn-success btn-sm" onclick="app.openCoordinateEditorModal()"
-                    title="Edit farm plot coordinates">
-                    ✏️ Edit Coordinates
-                  </button>
-                  <button class="btn btn-primary btn-sm" onclick="app.toggleDrawingMode()" id="drawSectionBtn">
-                    Crop Allocation
-                  </button>
-                  <button class="btn btn-warning btn-sm" onclick="app.autoAllocateSections()"
-                    title="Automatically generate layout">
-                    ✨ Auto Allocation
-                  </button>
+                  <div class="map-controls">
+                    <div class="btn-group">
+                      <button class="btn btn-secondary btn-sm active" onclick="app.toggleMapView('satellite')"
+                        id="satelliteViewBtn">
+                        <i class="fas fa-satellite"></i> Satellite
+                      </button>
+                      <button class="btn btn-outline btn-sm" onclick="app.toggleMapView('graphical')"
+                        id="graphicalViewBtn">
+                        <i class="fas fa-draw-polygon"></i> Graphical
+                      </button>
+                    </div>
+                    <div class="btn-group">
+                      <button class="btn btn-success btn-sm" onclick="app.openCoordinateEditorModal()">
+                        <i class="fas fa-edit"></i> Coordinates
+                      </button>
+                      <button class="btn btn-primary btn-sm" onclick="app.toggleDrawingMode()" id="drawSectionBtn">
+                        <i class="fas fa-plus"></i> Allocate
+                      </button>
+                      <button class="btn btn-warning btn-sm" onclick="app.autoAllocateSections()">
+                        <i class="fas fa-magic"></i> Auto
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="card-body">
@@ -1507,50 +1466,80 @@ Example:
           </div>
 
           <!-- Season Summary Grid -->
-          <div class="grid grid-2 mb-4">
-            <!-- Cereals -->
-            <div class="card h-100">
-              <div class="card-header"
-                style="background-color: #fff3cd; color: #856404; border-bottom: 2px solid #ffeeba;">
-                <h3 class="card-title">🌾 Cereals (Maize, Rice)</h3>
+          <div class="dashboard-grid">
+            <!-- Left: Summaries -->
+            <div class="dashboard-col-main">
+              <div class="metrics-grid mb-4">
+                <div class="card ivory-card">
+                  <div class="card-header bg-primary text-white">
+                    <h3 class="card-title font-size-sm"><i class="fas fa-wheat-awn"></i> Cereals</h3>
+                  </div>
+                  <div class="card-body" id="cerealsSummary" style="min-height: 120px;">
+                    <div class="text-center text-muted">Select a farm...</div>
+                  </div>
+                </div>
+                <div class="card ivory-card">
+                  <div class="card-header bg-primary text-white">
+                    <h3 class="card-title font-size-sm"><i class="fas fa-leaf"></i> Tubers</h3>
+                  </div>
+                  <div class="card-body" id="tubersSummary" style="min-height: 120px;">
+                    <div class="text-center text-muted">Select a farm...</div>
+                  </div>
+                </div>
+                <div class="card ivory-card">
+                  <div class="card-header bg-primary text-white">
+                    <h3 class="card-title font-size-sm"><i class="fas fa-apple-whole"></i> Fruit Trees</h3>
+                  </div>
+                  <div class="card-body" id="fruitTreesSummary" style="min-height: 120px;">
+                    <div class="text-center text-muted">Select a farm...</div>
+                  </div>
+                </div>
               </div>
-              <div class="card-body" id="cerealsSummary">
-                <div class="text-center text-muted">Select a farm to view analysis...</div>
+
+              <!-- Crop Durations Table -->
+              <div class="card mb-4">
+                <div class="card-header">
+                  <h3 class="card-title"><i class="fas fa-clock"></i> Growth Cycles & Campaigns</h3>
+                </div>
+                <div class="card-body p-0">
+                  <div class="table-container">
+                    <table class="table no-border">
+                      <thead>
+                        <tr>
+                          <th>Category</th>
+                          <th>Crop</th>
+                          <th>Duration</th>
+                          <th>Campaigns</th>
+                        </tr>
+                      </thead>
+                      <tbody id="cropDurationsBody">
+                        <tr>
+                          <td colspan="4" class="text-center text-muted p-4">Loading data...</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <!-- Tubers -->
-            <div class="card h-100">
-              <div class="card-header"
-                style="background-color: #d4edda; color: #155724; border-bottom: 2px solid #c3e6cb;">
-                <h3 class="card-title">🥔 Tubers (Cassava, Yam)</h3>
+            <!-- Right: Risks & Legend -->
+            <div class="dashboard-col-side">
+              <div class="card h-100 ivory-card">
+                <div class="card-header bg-primary text-white">
+                  <h3 class="card-title font-size-sm"><i class="fas fa-bean"></i> Legumes</h3>
+                </div>
+                <div class="card-body" id="legumesSummary">
+                  <div class="text-center text-muted">Select a farm...</div>
+                </div>
               </div>
-              <div class="card-body" id="tubersSummary">
-                <div class="text-center text-muted">Select a farm to view analysis...</div>
-              </div>
-            </div>
-          </div>
 
-          <div class="grid grid-2 mb-4">
-            <!-- Fruit Trees -->
-            <div class="card h-100">
-              <div class="card-header"
-                style="background-color: #d1ecf1; color: #0c5460; border-bottom: 2px solid #bee5eb;">
-                <h3 class="card-title">🌳 Fruit Trees (Mango, Citrus)</h3>
-              </div>
-              <div class="card-body" id="fruitTreesSummary">
-                <div class="text-center text-muted">Select a farm to view analysis...</div>
-              </div>
-            </div>
-
-            <!-- Legumes -->
-            <div class="card h-100">
-              <div class="card-header"
-                style="background-color: #e2e3e5; color: #383d41; border-bottom: 2px solid #d6d8db;">
-                <h3 class="card-title">🫘 Legumes (Beans, Cowpeas)</h3>
-              </div>
-              <div class="card-body" id="legumesSummary">
-                <div class="text-center text-muted">Select a farm to view analysis...</div>
+              <div class="card mt-4 bg-secondary text-white ivory-card">
+                <div class="card-body">
+                  <h4 class="mb-2" style="color: var(--color-accent); font-size: 0.9rem;">Intervention Tip</h4>
+                  <p style="font-size: 0.8rem; opacity: 0.9;">Green alerts indicate optimal planting windows. Yellow
+                    alerts suggest caution for specific varieties.</p>
+                </div>
               </div>
             </div>
           </div>
